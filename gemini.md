@@ -98,40 +98,40 @@
 
 ## Directory Structure
 
-````text
 ```text
 ids_elder_rehab_app/
 ├── assets/                             # Static physical files
 │   ├── images/
+│   ├── fonts/                          # Local fonts (e.g., Roboto)
 │   ├── models/                         # AR 3D Models (.glb)
 │   └── sounds/                         # Gamification SFX & Voice Guides
 ├── lib/
 │   ├── core/                           # ⚙️ GLOBAL CORE (Shared everywhere)
-│   │   ├── config/                     # api_client.dart (Dio config & interceptors)
-│   │   ├── constants/                  # app_colors.dart, app_sizes.dart, api_endpoints.dart
+│   │   ├── config/                     # app_info.dart, api_client.dart (Dio config)
+│   │   ├── constants/                  # app_colors.dart, app_typography.dart, app_routes.dart
 │   │   ├── di/                         # injection_container.dart (GetIt setup)
 │   │   ├── error/                      # failures.dart, exceptions.dart
 │   │   ├── middlewares/                # auth_middleware.dart, role_guard.dart
-│   │   ├── router/                     # app_router.dart (GoRouter Registry & Guards)
-│   │   ├── themes/                     # app_theme.dart (High contrast, A11y focus)
+│   │   ├── router/                     # app_router.dart (GoRouter Registry)
+│   │   ├── themes/                     # app_themes.dart, app_custom_colors.dart
 │   │   ├── utils/                      # angle_calculator.dart, date_formatter.dart
 │   │   └── widgets/                    # 🧱 Global Reusable UI (PrimaryButton, CustomDialog)
 │   │
 │   ├── features/                       # 📦 MAIN FEATURE MODULES (Clean Architecture)
 │   │   │
-│   │   ├── auth/                       # Authentication & Role Selection
-│   │   │   └── data/                   # Datasources, Models, Repository Impl
-|   |   |       ├── models/             # Models
-│   │   |       ├── repositories/       # Repository Impl
-│   │   |       └── usecases/           # UseCases
-│   │   │   ├── domain/                 # Entities, Repository Interface, UseCases
-|   |   |       ├── entities/           # Entities
-│   │   |       ├── repositories/       # Repository Interface
-│   │   |       └── usecases/           # UseCases
-│   │   │   └── presentation/           # Screens, Widgets, BLoC
-│   |   |       ├── screens/            # Screens
-│   |   |       ├── widgets/            # Widgets
-│   |   |       └── bloc/               # BLoC
+│   │   ├── auth/                       # 🔐 Authentication & Role Selection (Structure Blueprint)
+│   │   │   ├── data/                   # ➔ DATA LAYER (Handles API / Local DB Interactions)
+│   │   │   │   ├── datasources/        # API Execution (Dio) or Local Storage (Hive)
+│   │   │   │   ├── models/             # DTOs (Data Transfer Objects) with fromJson/toJson
+│   │   │   │   └── repositories/       # Concrete implementation of Domain layer contracts
+│   │   │   ├── domain/                 # ➔ CORE LAYER (Pure Business Logic)
+│   │   │   │   ├── entities/           # Pure Dart Objects (No JSON/external dependencies)
+│   │   │   │   ├── repositories/       # Contracts/Interfaces (Rules the Data layer must follow)
+│   │   │   │   └── usecases/           # Single specific business actions (e.g., LoginUseCase)
+│   │   │   └── presentation/           # ➔ UI LAYER (Screens & State Management)
+│   │   │       ├── bloc/               # BLoC (Manages state transitions like Loading/Success/Error)
+│   │   │       ├── screens/            # Full page views (e.g., LoginScreen)
+│   │   │       └── widgets/            # UI components strictly used ONLY within this feature
 │   │   │
 │   │   ├── ar_treatment/               # AR 3D Instruction Module
 │   │   │   ├── data/
@@ -147,9 +147,11 @@ ids_elder_rehab_app/
 │   │   ├── schedule_reminder/          # Local adaptive scheduling & notifications
 │   │   └── caregiver_feedback/         # Dashboard & monitoring module
 │   │
+│   └── app.dart                        # App Initialization (Routes, Themes)
 │   └── main.dart                       # App Entry Point & Provider Init
 │
-├── pubspec.yaml                        # Dependencies (flutter_bloc, dio, hive, get_it, etc.)
+├── .env                                # Environment Variables (App Info, Base URL API)
+├── pubspec.yaml                        # Dependencies (flutter_bloc, dio, hive, get_it, flutter_dotenv)
 ├── build.yaml                          # Freezed/Code Generation config
 └── gemini.md                           # 🤖 AI Agent Instructions
-````
+```
