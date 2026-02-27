@@ -1,14 +1,33 @@
 import 'package:get_it/get_it.dart';
+import 'package:ids_elder_rehab_app/core/config/api_client.dart';
+import 'package:ids_elder_rehab_app/core/config/secure_storage_config.dart';
+import 'package:ids_elder_rehab_app/core/utils/secure_storage_helper.dart';
 
-// Standar penamaan untuk GetIt biasanya adalah 'sl' (Service Locator)
+// Service Locator
 final sl = GetIt.instance;
 
 Future<void> init() async {
   // ===============================================================
-  // Nanti kita akan mendaftarkan semua dependensi di sini.
-  // Urutan yang baik: Core -> Data Sources -> Repositories -> UseCases -> BLoC
+  // CORE LAYERS
   // ===============================================================
 
-  // Contoh (Jangan di-uncomment dulu karena file-nya belum ada):
-  // sl.registerLazySingleton<Dio>(() => Dio());
+  // Register ApiClient as LazySingleton
+  sl.registerLazySingleton<ApiClient>(
+    () => ApiClient(sl()),
+  );
+
+  // Register Dio as LazySingleton
+  sl.registerLazySingleton(
+    () => sl<ApiClient>().dio,
+  );
+
+  // Register FlutterSecureStorage
+  sl.registerLazySingleton(
+    () => SecureStorageConfig.instance,
+  );
+
+  // Register SecureStorage Helper
+  sl.registerLazySingleton<SecureStorageHelper>(
+    () => SecureStorageHelper(sl()),
+  );
 }
