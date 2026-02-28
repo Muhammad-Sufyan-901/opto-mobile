@@ -9,6 +9,10 @@ class AppRoute {
 }
 
 abstract class AppRoutes {
+  static const String doctorRoutePrefix = '/doctor';
+  static const String caregiverRoutePrefix = '/caregiver';
+  static const String lansiaRoutePrefix = '/lansia';
+
   // Onboarding routes
   static const AppRoute onboarding = AppRoute(
     path: '/onboarding',
@@ -27,5 +31,35 @@ abstract class AppRoutes {
   static const AppRoute forgotPassword = AppRoute(
     path: '/forgot-password',
     name: 'forgot-password',
+  );
+
+  // Lansia routes (Grouped with "/lansia" as parent)
+  static const AppRoute lansiaDashboard = AppRoute(
+    path: '$lansiaRoutePrefix/dashboard',
+    name: 'lansia_dashboard',
+  );
+  static const AppRoute lansiaAssessment = AppRoute(
+    path: '$lansiaRoutePrefix/assessment',
+    name: 'lansia_assessment',
+  );
+
+  // Caregiver routes (Grouped with "/caregiver" as parent)
+  static const AppRoute caregiverDashboard = AppRoute(
+    path: '$caregiverRoutePrefix/dashboard',
+    name: 'caregiver_dashboard',
+  );
+  static const AppRoute caregiverAssessment = AppRoute(
+    path: '$caregiverRoutePrefix/assessment',
+    name: 'caregiver_assessment',
+  );
+
+  // Doctor routes (Grouped with "/doctor" as parent)
+  static const AppRoute doctorDashboard = AppRoute(
+    path: '$doctorRoutePrefix/dashboard',
+    name: 'doctor_dashboard',
+  );
+  static const AppRoute doctorAssessment = AppRoute(
+    path: '$doctorRoutePrefix/assessment',
+    name: 'doctor_assessment',
   );
 }

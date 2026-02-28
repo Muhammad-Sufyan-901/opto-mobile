@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -50,11 +52,7 @@ class OnboardingScreen extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Nanti akan diarahkan ke Login!'),
-                    ),
-                  );
+                  context.go(AppRoutes.login.path);
                 },
                 child: const Text('Mulai Latihan'),
               ),
