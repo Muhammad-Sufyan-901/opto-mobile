@@ -20,6 +20,12 @@ abstract class AppColors {
   static const Color lightSuccess = Color(0xFF22C55E);
   static const Color lightInfo = Color(0xFF3B82F6);
 
+  // On Semantic Colors
+  static const Color lightOnError = Color(0xFFFFFFFF);
+  static const Color lightOnWarning = Color(0xFFFFFFFF);
+  static const Color lightOnSuccess = Color(0xFFFFFFFF);
+  static const Color lightOnInfo = Color(0xFFFFFFFF);
+
   // ==========================================
   // 🌙 DARK THEME PALETTE
   // ==========================================
@@ -38,4 +44,10 @@ abstract class AppColors {
   static const Color darkWarning = Color(0xFFD97706);
   static const Color darkSuccess = Color(0xFF16A34A);
   static const Color darkInfo = Color(0xFF2563EB);
+
+  // On Semantic Colors
+  static const Color darkOnError = Color(0xFFFFFFFF);
+  static const Color darkOnWarning = Color(0xFFFFFFFF);
+  static const Color darkOnSuccess = Color(0xFFFFFFFF);
+  static const Color darkOnInfo = Color(0xFFFFFFFF);
 }

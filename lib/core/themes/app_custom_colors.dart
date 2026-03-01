@@ -6,12 +6,20 @@ class AppExtendedCustomColors extends ThemeExtension<AppExtendedCustomColors> {
   final Color? warning;
   final Color? error;
   final Color? info;
+  final Color? onSuccess;
+  final Color? onWarning;
+  final Color? onError;
+  final Color? onInfo;
 
   const AppExtendedCustomColors({
     required this.success,
     required this.warning,
     required this.error,
     required this.info,
+    required this.onSuccess,
+    required this.onWarning,
+    required this.onError,
+    required this.onInfo,
   });
 
   @override
@@ -20,12 +28,20 @@ class AppExtendedCustomColors extends ThemeExtension<AppExtendedCustomColors> {
     Color? warning,
     Color? error,
     Color? info,
+    Color? onSuccess,
+    Color? onWarning,
+    Color? onError,
+    Color? onInfo,
   }) {
     return AppExtendedCustomColors(
       success: success ?? this.success,
       warning: warning ?? this.warning,
       error: error ?? this.error,
       info: info ?? this.info,
+      onSuccess: onSuccess ?? this.onSuccess,
+      onWarning: onWarning ?? this.onWarning,
+      onError: onError ?? this.onError,
+      onInfo: onInfo ?? this.onInfo,
     );
   }
 
@@ -40,6 +56,10 @@ class AppExtendedCustomColors extends ThemeExtension<AppExtendedCustomColors> {
       warning: Color.lerp(warning, other.warning, t),
       error: Color.lerp(error, other.error, t),
       info: Color.lerp(info, other.info, t),
+      onSuccess: Color.lerp(onSuccess, other.onSuccess, t),
+      onWarning: Color.lerp(onWarning, other.onWarning, t),
+      onError: Color.lerp(onError, other.onError, t),
+      onInfo: Color.lerp(onInfo, other.onInfo, t),
     );
   }
 }
@@ -74,6 +94,10 @@ class AppCustomColors {
       warning: AppColors.lightWarning,
       error: AppColors.lightError,
       info: AppColors.lightInfo,
+      onSuccess: AppColors.lightOnSuccess,
+      onWarning: AppColors.lightOnWarning,
+      onError: AppColors.lightOnError,
+      onInfo: AppColors.lightOnInfo,
     );
   }
 
@@ -84,6 +108,10 @@ class AppCustomColors {
       warning: AppColors.darkWarning,
       error: AppColors.darkError,
       info: AppColors.darkInfo,
+      onSuccess: AppColors.darkOnSuccess,
+      onWarning: AppColors.darkOnWarning,
+      onError: AppColors.darkOnError,
+      onInfo: AppColors.darkOnInfo,
     );
   }
 }
