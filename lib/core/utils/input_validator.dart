@@ -1,3 +1,5 @@
+import 'dart:io';
+
 class InputValidator {
   /// Internal Helper: Check if value is empty (null or just spaces)
   static bool _isEmpty(String? value) {
@@ -68,7 +70,11 @@ class InputValidator {
     if (_isEmpty(value)) return null;
 
     final RegExp phoneRegex = RegExp(
-      r'^\\+?[0-9]{$minLength,$maxLength}\$',
+      r'^\+?[0-9]{'
+      '$minLength'
+      ','
+      '$maxLength'
+      r'}$',
     );
 
     if (!phoneRegex.hasMatch(value!)) {
@@ -175,6 +181,53 @@ class InputValidator {
     final int? number = int.tryParse(value);
     if (number == null || number < minNumber || number > maxNumber) {
       return errorMessage ?? 'Nomor harus antara $minNumber dan $maxNumber';
+    }
+
+    return null;
+  }
+
+  static String? file(
+    String? value, {
+    String? errorMessage,
+    List<String> allowedExtensions = const [],
+    double? maxSizeMB,
+  }) {
+    if (_isEmpty(value)) return null;
+
+    try {
+      final File fileInfo = File(value!);
+
+      // 1. Check if file exists
+      if (!fileInfo.existsSync()) {
+        return errorMessage ?? 'File tidak ditemukan di perangkat';
+      }
+
+      // 2. Check file extension
+      if (allowedExtensions.isNotEmpty) {
+        final String extension = value.split('.').last.toLowerCase();
+        final bool isValidExt = allowedExtensions.any((ext) {
+          return ext.toLowerCase() == extension;
+        });
+
+        if (!isValidExt) {
+          return errorMessage ??
+              'Format tidak didukung. Gunakan: ${allowedExtensions.join(', ')}';
+        }
+      }
+
+      // 3. Check file size
+      if (maxSizeMB != null) {
+        final int sizeInBytes = fileInfo.lengthSync();
+        final double sizeInMB = sizeInBytes / (1024 * 1024);
+
+        if (sizeInMB > maxSizeMB) {
+          // Decimal format (e.g: 2.5 MB)
+          String maxStr = maxSizeMB.toStringAsFixed(1).replaceAll('.0', '');
+          return errorMessage ?? 'Ukuran maksimal file adalah $maxStr MB';
+        }
+      }
+    } catch (error) {
+      return errorMessage ?? 'Path file tidak valid';
     }
 
     return null;

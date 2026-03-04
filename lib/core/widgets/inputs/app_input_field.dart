@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+
 import 'package:ids_elder_rehab_app/core/utils/input_validator.dart';
 
 enum AppInputFieldType {
@@ -8,6 +10,7 @@ enum AppInputFieldType {
   number,
   date,
   textArea,
+  file,
 }
 
 const double _defaultRadius = 16.0;
@@ -191,16 +194,42 @@ class AppInputField extends StatefulWidget {
     this.textInputAction = TextInputAction.newline,
   }) : type = AppInputFieldType.textArea;
 
+  const AppInputField.file({
+    super.key,
+    this.label,
+    this.hintText = 'Pilih atau unggah file...',
+    this.helperText,
+    this.controller,
+    this.validator,
+    this.prefixIcon,
+    this.suffixIcon = Icons.upload_file_outlined,
+    this.onTap,
+    this.readOnly = true, // Always readOnly to enable tap
+    this.disabled = false,
+    this.isRequired = false,
+    this.radius = _defaultRadius,
+    this.suffixIconColor,
+    this.suffixIconSize = _defaultSuffixIconSize,
+    this.prefixIconColor,
+    this.prefixIconSize = _defaultPrefixIconSize,
+    this.hintTextStyle,
+    this.helperTextStyle,
+    this.hintTextColor,
+    this.maxLines = 1,
+    this.textInputAction,
+  }) : type = AppInputFieldType.file;
+
   @override
   State<AppInputField> createState() => _AppInputFieldState();
 }
 
 class _AppInputFieldState extends State<AppInputField> {
   bool _isObscured = true;
-
-  // FOCUS NODE
   late FocusNode _focusNode;
   bool _isFocused = false;
+
+  // Visual Controller (Display File Name)
+  late TextEditingController _displayController;
 
   @override
   void initState() {
@@ -211,16 +240,49 @@ class _AppInputFieldState extends State<AppInputField> {
         _isFocused = _focusNode.hasFocus;
       });
     });
+
+    // Inisialisasi controller visual
+    _displayController = TextEditingController();
+
+    // Listen changes on main controller (full path)
+    if (widget.type == AppInputFieldType.file && widget.controller != null) {
+      _syncDisplayController(); // Initial sync
+      widget.controller!.addListener(_syncDisplayController);
+    }
+  }
+
+  // Truncate File Name
+  void _syncDisplayController() {
+    if (widget.controller == null) return;
+
+    final String fullPath = widget.controller!.text;
+
+    // Truncate string based on slash (support Android/iOS '/' and Windows '\')
+    final String fileName = fullPath.isEmpty
+        ? ''
+        : fullPath.split('/').last.split('\\').last;
+
+    // Update UI text ONLY if the value is different (prevent loop)
+    if (_displayController.text != fileName) {
+      _displayController.text = fileName;
+    }
+
+    if (mounted) setState(() {}); // Re-render preview
   }
 
   @override
   void dispose() {
+    if (widget.type == AppInputFieldType.file && widget.controller != null) {
+      widget.controller!.removeListener(_syncDisplayController);
+    }
+    _displayController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
   Future<void> _handleInputTapped() async {
-    // Interceptor to handle date input
+    if (widget.disabled) return;
+
     if (widget.type == AppInputFieldType.date) {
       final DateTime? picked = await showDatePicker(
         context: context,
@@ -229,17 +291,16 @@ class _AppInputFieldState extends State<AppInputField> {
         lastDate: DateTime(2100),
       );
 
-      // If date is picked, format it and set it to the controller
       if (picked != null && widget.controller != null) {
         final day = picked.day.toString().padLeft(2, '0');
         final month = picked.month.toString().padLeft(2, '0');
         final year = picked.year.toString();
-
         widget.controller!.text = "$day/$month/$year";
       }
+    } else if (widget.type == AppInputFieldType.file) {
+      FocusScope.of(context).unfocus();
     }
 
-    // Call the onTap callback if provided
     widget.onTap?.call();
   }
 
@@ -257,29 +318,23 @@ class _AppInputFieldState extends State<AppInputField> {
         ? colorScheme.outlineVariant
         : defaultGrey500;
 
-    // Fill color: Dark mode provides a dark grey fill. Light mode stays transparent (surface) except when readOnly or disabled.
     Color resolvedFillColor = colorScheme.surface;
-    if (widget.disabled || widget.readOnly) {
+    if (widget.disabled ||
+        widget.readOnly && widget.type != AppInputFieldType.file) {
       resolvedFillColor = colorScheme.surfaceContainerHighest;
     } else if (isDarkMode) {
-      // Shadcn dark mode input has background fill
       resolvedFillColor = colorScheme.surfaceContainer;
     }
 
-    // Icon and text color resolution
     final Color resolvedHintColor = widget.hintTextColor ?? defaultGrey600;
     final Color resolvedPrefixColor = widget.prefixIconColor ?? defaultGrey600;
     final Color resolvedSuffixColor = widget.suffixIconColor ?? defaultGrey600;
 
-    // ==========================================
-    // RESOLUTION LOGIC
-    // ==========================================
     bool resolvedObscureText = false;
     TextInputType resolvedKeyboardType = TextInputType.text;
     Widget? resolvedSuffixIcon;
     Widget? resolvedPrefixIcon;
 
-    // 1. Keyboard Type
     if (widget.type == AppInputFieldType.email) {
       resolvedKeyboardType = TextInputType.emailAddress;
     } else if (widget.type == AppInputFieldType.number) {
@@ -287,13 +342,13 @@ class _AppInputFieldState extends State<AppInputField> {
     } else if (widget.type == AppInputFieldType.password) {
       resolvedObscureText = _isObscured;
       resolvedKeyboardType = TextInputType.visiblePassword;
-    } else if (widget.type == AppInputFieldType.date) {
-      resolvedKeyboardType = TextInputType.datetime;
+    } else if (widget.type == AppInputFieldType.date ||
+        widget.type == AppInputFieldType.file) {
+      resolvedKeyboardType = TextInputType.none;
     } else if (widget.type == AppInputFieldType.textArea) {
       resolvedKeyboardType = TextInputType.multiline;
     }
 
-    // 2. Right Icon
     if (widget.type == AppInputFieldType.password) {
       IconData eyeIcon = _isObscured
           ? Icons.visibility_off_outlined
@@ -318,7 +373,6 @@ class _AppInputFieldState extends State<AppInputField> {
       );
     }
 
-    // 3. Left Icon
     if (widget.prefixIcon != null) {
       resolvedPrefixIcon = Icon(
         widget.prefixIcon,
@@ -327,9 +381,6 @@ class _AppInputFieldState extends State<AppInputField> {
       );
     }
 
-    // ==========================================
-    // BORDER STYLING
-    // ==========================================
     final InputBorder inputBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(widget.radius),
       borderSide: BorderSide(
@@ -365,37 +416,106 @@ class _AppInputFieldState extends State<AppInputField> {
     );
 
     // ==========================================
-    // VALIDATOR RESOLUTION
+    // ➔ ✨ INTERSEPTOR VALIDATOR
     // ==========================================
     String? Function(String?)? resolvedValidator;
-
     if (widget.isRequired || widget.validator != null) {
       resolvedValidator = (String? value) {
+        // KEY: Although the UI displays a short file name,
+        // validation must still use the Full Path so the file can be checked for size!
+        final String? valueToValidate = widget.type == AppInputFieldType.file
+            ? widget.controller?.text
+            : value;
+
         if (widget.isRequired) {
           final String? cleanLabel = widget.label?.replaceAll('*', '').trim();
           final String? requiredError = InputValidator.required(
-            value,
+            valueToValidate,
             fieldName: cleanLabel,
           );
-
-          if (requiredError != null) {
-            return requiredError;
-          }
+          if (requiredError != null) return requiredError;
         }
-
-        if (widget.validator != null) {
-          return widget.validator!(value);
-        }
-
+        if (widget.validator != null) return widget.validator!(valueToValidate);
         return null;
       };
+    }
+
+    Widget? filePreviewWidget;
+    if (widget.type == AppInputFieldType.file &&
+        widget.controller != null &&
+        widget.controller!.text.isNotEmpty) {
+      final String filePath = widget.controller!.text;
+      final String extension = filePath.split('.').last.toLowerCase();
+
+      final bool isImage = [
+        'jpg',
+        'jpeg',
+        'png',
+        'gif',
+        'webp',
+      ].contains(extension);
+      final bool isVideo = ['mp4', 'mov', 'avi', 'mkv'].contains(extension);
+
+      try {
+        final File targetFile = File(filePath);
+        if (targetFile.existsSync()) {
+          if (isImage) {
+            filePreviewWidget = Container(
+              margin: const EdgeInsets.only(top: 12),
+              height: 160,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(widget.radius),
+                border: Border.all(color: baseBorderColor),
+                image: DecorationImage(
+                  image: FileImage(targetFile),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            );
+          } else if (isVideo) {
+            filePreviewWidget = Container(
+              margin: const EdgeInsets.only(top: 12),
+              height: 120,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(widget.radius),
+                color: colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.3,
+                ),
+                border: Border.all(color: baseBorderColor),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.video_camera_back_outlined,
+                      size: 40,
+                      color: defaultGrey600,
+                    ),
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    Text(
+                      'Video siap diunggah',
+                      style: textTheme.labelMedium?.copyWith(
+                        color: defaultGrey600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        }
+      } catch (_) {}
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // LABEL WITH ASTERISK
         if (widget.label != null) ...[
           RichText(
             text: TextSpan(
@@ -416,23 +536,17 @@ class _AppInputFieldState extends State<AppInputField> {
               ],
             ),
           ),
-          const SizedBox(
-            height: 8,
-          ),
+          const SizedBox(height: 8),
         ],
 
-        // INPUT BOX (SOLID FOCUS RING)
         Container(
           decoration: BoxDecoration(
             color: resolvedFillColor,
-            // Add 4px to the radius to create space for the focus ring
             borderRadius: BorderRadius.circular(widget.radius + 4),
             boxShadow: _isFocused
                 ? [
                     BoxShadow(
-                      color: colorScheme.primary.withValues(
-                        alpha: 0.25,
-                      ),
+                      color: colorScheme.primary.withValues(alpha: 0.25),
                       blurRadius: 0,
                       spreadRadius: 4,
                       offset: const Offset(0, 0),
@@ -441,7 +555,11 @@ class _AppInputFieldState extends State<AppInputField> {
                 : [],
           ),
           child: TextFormField(
-            controller: widget.controller,
+            // ➔ ✨ USE DISPLAY CONTROLLER FOR FILE
+            controller: widget.type == AppInputFieldType.file
+                ? _displayController
+                : widget.controller,
+
             focusNode: _focusNode,
             enabled: !widget.disabled,
             obscureText: resolvedObscureText,
@@ -458,7 +576,9 @@ class _AppInputFieldState extends State<AppInputField> {
                   ?.copyWith(
                     color: resolvedHintColor,
                   )
-                  .merge(widget.hintTextStyle),
+                  .merge(
+                    widget.hintTextStyle,
+                  ),
               prefixIcon: resolvedPrefixIcon,
               suffixIcon: resolvedSuffixIcon,
 
@@ -479,7 +599,8 @@ class _AppInputFieldState extends State<AppInputField> {
           ),
         ),
 
-        // HELPER TEXT
+        ?filePreviewWidget,
+
         if (widget.helperText != null) ...[
           const SizedBox(
             height: 6,
@@ -490,7 +611,9 @@ class _AppInputFieldState extends State<AppInputField> {
                 ?.copyWith(
                   color: defaultGrey600,
                 )
-                .merge(widget.helperTextStyle),
+                .merge(
+                  widget.helperTextStyle,
+                ),
           ),
         ],
       ],
