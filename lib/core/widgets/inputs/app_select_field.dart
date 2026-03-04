@@ -49,7 +49,7 @@ class AppSelectField<T> extends StatefulWidget {
   final double prefixIconSize;
   final String? Function(T?)? validator;
 
-  final bool isDisabled;
+  final bool disabled;
   final double maxHeight;
 
   const AppSelectField({
@@ -67,7 +67,7 @@ class AppSelectField<T> extends StatefulWidget {
     this.prefixIconColor,
     this.prefixIconSize = _defaultPrefixIconSize,
     this.validator,
-    this.isDisabled = false,
+    this.disabled = false,
     this.maxHeight = _defaultMaxHeight,
   }) : assert(
          items != null || groupedItems != null,
@@ -151,7 +151,7 @@ class _AppSelectFieldState<T> extends State<AppSelectField<T>> {
         : defaultGrey;
 
     final bool effectivelyDisabled =
-        widget.isDisabled || widget.onChanged == null;
+        widget.disabled || widget.onChanged == null;
 
     Color resolvedFillColor = colorScheme.surface;
     if (effectivelyDisabled) {
