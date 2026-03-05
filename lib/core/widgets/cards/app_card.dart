@@ -168,7 +168,10 @@ class AppCardHeader extends StatelessWidget {
 // ==========================================
 class AppCardTitle extends StatelessWidget {
   final String text;
-  const AppCardTitle(this.text, {super.key});
+  const AppCardTitle(
+    this.text, {
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
