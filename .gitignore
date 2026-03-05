@@ -46,3 +46,6 @@ app.*.map.json
 
 # Environment variables
 .env
+
+# Developer screen (will be ignored on git so developer has it own canvas)
+/lib/features/dev/presentation/screens/dev_screen.dart
