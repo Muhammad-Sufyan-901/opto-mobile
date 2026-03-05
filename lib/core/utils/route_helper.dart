@@ -1,9 +1,13 @@
+import 'package:ids_elder_rehab_app/core/config/app_info.dart';
 import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
 
 class RouteHelper {
   static final Set<String> _publicRoutes = {
     AppRoutes.onboarding.path,
     AppRoutes.login.path,
+    AppRoutes.register.path,
+    AppRoutes.forgotPassword.path,
+    if (AppInfo.isDevelopment) AppRoutes.developer.path,
   };
 
   /// Check if a path is public route

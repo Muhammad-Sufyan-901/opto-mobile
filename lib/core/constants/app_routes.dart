@@ -19,6 +19,12 @@ abstract class AppRoutes {
     name: 'onboarding',
   );
 
+  // Developer routes
+  static const AppRoute developer = AppRoute(
+    path: '/developer',
+    name: 'developer',
+  );
+
   // Auth routes (Login, Register, Forgot Password)
   static const AppRoute login = AppRoute(
     path: '/login',

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ids_elder_rehab_app/core/config/app_info.dart';
 
 import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
 import 'package:ids_elder_rehab_app/core/middlewares/authentication_middleware.dart';
 import 'package:ids_elder_rehab_app/core/middlewares/roles_middleware.dart';
+import 'package:ids_elder_rehab_app/features/dev/presentation/screens/dev_screen.dart';
 import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/onboarding_screen.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -23,6 +25,18 @@ final GoRouter appRouter = GoRouter(
         return const OnboardingScreen();
       },
     ),
+
+    // ==========================================
+    // Developer Routes (For Widget Testing Purpose Only MUST NOT SHOWN IN PRODUCTION)
+    // ==========================================
+    if (AppInfo.isDevelopment)
+      GoRoute(
+        path: AppRoutes.developer.path,
+        name: AppRoutes.developer.name,
+        builder: (BuildContext context, GoRouterState state) {
+          return const DevScreen();
+        },
+      ),
 
     // ==========================================
     // Authentication Routes (Public)
