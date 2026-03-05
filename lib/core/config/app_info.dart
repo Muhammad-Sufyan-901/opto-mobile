@@ -1,9 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'package:ids_elder_rehab_app/core/constants/app_env_keys.dart';
 
 enum EnvironmentMode { development, production }
 
 class AppInfo {
+  @visibleForTesting
+  static EnvironmentMode? mockEnvironment;
+
   static String get appName =>
       dotenv.env[AppEnvKeys.appName] ?? 'IDS Elder Rehab';
   static String get appDescription =>
@@ -15,6 +20,11 @@ class AppInfo {
   static String get appBuildVersion => '$appVersion+$appBuildNumber';
 
   static EnvironmentMode get environment {
+    if (mockEnvironment != null) {
+      return mockEnvironment!;
+    }
+
+    // If not mocked, read from .env
     final String? envString = dotenv.env[AppEnvKeys.appEnvMode]?.toLowerCase();
 
     if (envString == 'production') {
