@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
+import 'package:ids_elder_rehab_app/features/onboarding/presentation/widgets/onboarding_footer.dart';
+import 'package:ids_elder_rehab_app/features/onboarding/presentation/widgets/onboarding_hero.dart';
+import 'package:ids_elder_rehab_app/features/onboarding/presentation/widgets/onboarding_primary_button.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -12,53 +16,66 @@ class OnboardingScreen extends StatelessWidget {
     final TextTheme textTheme = theme.textTheme;
 
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Icon(
-                Icons.elderly,
-                size: 100,
-                color: colorScheme.primary,
-              ),
-              const SizedBox(height: 32),
-
-              Text(
-                'Selamat Datang di\nIDS Elder Rehab',
-                textAlign: TextAlign.center,
-                style: textTheme.headlineMedium?.copyWith(
-                  color: colorScheme.primary,
+      backgroundColor: Colors.white,
+      body: CustomScrollView(
+        slivers: <Widget>[
+          SliverFillRemaining(
+            // Important: hasScrollBody: false allows Expanded to work in a ScrollView
+            hasScrollBody: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ==========================================
+                // 1. HERO SECTION
+                // ==========================================
+                const Expanded(
+                  flex: 3,
+                  child: OnboardingHero(),
                 ),
-              ),
-              const SizedBox(height: 16),
 
-              Text(
-                'Aplikasi rehabilitasi fisik digital yang dirancang khusus untuk menemani latihan harian Anda dengan mudah dan menyenangkan.',
-                textAlign: TextAlign.center,
-                style: textTheme.bodyLarge,
-              ),
-              const SizedBox(height: 48),
+                // ==========================================
+                // 2. CONTENT SECTION
+                // ==========================================
+                Expanded(
+                  flex: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Rehabilitasi Fisik\nUntuk Lansia',
+                          textAlign: TextAlign.center,
+                          style: textTheme.displayMedium?.copyWith(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                            height: 1.2,
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 48,
+                        ),
 
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                        OnboardingPrimaryButton(
+                          text: 'Mulai Sekarang',
+                          onPressed: () => context.go(AppRoutes.login.path),
+                        ),
+
+                        const SizedBox(
+                          height: 24,
+                        ),
+
+                        const OnboardingFooter(),
+                      ],
+                    ),
                   ),
                 ),
-                onPressed: () {
-                  context.go(AppRoutes.login.path);
-                },
-                child: const Text('Mulai Latihan'),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
