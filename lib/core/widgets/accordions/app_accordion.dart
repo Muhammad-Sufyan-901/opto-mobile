@@ -123,6 +123,7 @@ class AppAccordionItem extends StatelessWidget {
   final String title;
   final Widget content;
   final bool disabled;
+  final Color? activeColor;
 
   const AppAccordionItem({
     super.key,
@@ -130,6 +131,7 @@ class AppAccordionItem extends StatelessWidget {
     required this.title,
     required this.content,
     this.disabled = false,
+    this.activeColor,
   });
 
   @override
@@ -154,7 +156,7 @@ class AppAccordionItem extends StatelessWidget {
       resolvedTitleColor = Colors.grey.shade400;
       resolvedIconColor = Colors.grey.shade400;
     } else if (isOpen) {
-      resolvedTitleColor = colorScheme.primary;
+      resolvedTitleColor = activeColor ?? Colors.black;
     }
 
     // Resolve content
@@ -204,7 +206,7 @@ class AppAccordionItem extends StatelessWidget {
                     child: Text(
                       title,
                       style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
+                        fontWeight: isOpen ? FontWeight.w700 : FontWeight.w500,
                         color: resolvedTitleColor,
                       ),
                     ),
