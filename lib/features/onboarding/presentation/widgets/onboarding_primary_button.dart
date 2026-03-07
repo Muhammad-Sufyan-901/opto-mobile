@@ -32,6 +32,7 @@ class OnboardingPrimaryButton extends StatelessWidget {
         text: text,
         radius: 150,
         onPressed: onPressed,
+        isFullWidth: true,
       ),
     );
   }

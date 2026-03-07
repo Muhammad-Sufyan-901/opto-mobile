@@ -23,6 +23,7 @@ class AppButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isLoading;
+  final bool isFullWidth;
   final ButtonStyle? customStyle;
   final EdgeInsetsGeometry? padding;
   final double width;
@@ -41,6 +42,7 @@ class AppButton extends StatelessWidget {
     required this.text,
     this.onPressed,
     this.isLoading = false,
+    this.isFullWidth = false,
     this.customStyle,
     this.padding,
     this.width = defaultWidth,
@@ -56,6 +58,7 @@ class AppButton extends StatelessWidget {
     required this.text,
     this.onPressed,
     this.isLoading = false,
+    this.isFullWidth = false,
     this.customStyle,
     this.padding,
     this.width = defaultWidth,
@@ -71,6 +74,7 @@ class AppButton extends StatelessWidget {
     required this.text,
     this.onPressed,
     this.isLoading = false,
+    this.isFullWidth = false,
     this.customStyle,
     this.padding,
     this.width = defaultWidth,
@@ -86,6 +90,7 @@ class AppButton extends StatelessWidget {
     required this.text,
     this.onPressed,
     this.isLoading = false,
+    this.isFullWidth = false,
     this.customStyle,
     this.padding,
     this.width = defaultWidth,
@@ -101,6 +106,7 @@ class AppButton extends StatelessWidget {
     required this.text,
     this.onPressed,
     this.isLoading = false,
+    this.isFullWidth = false,
     this.customStyle,
     this.padding,
     this.width = defaultWidth,
@@ -116,6 +122,7 @@ class AppButton extends StatelessWidget {
     required this.text,
     this.onPressed,
     this.isLoading = false,
+    this.isFullWidth = false,
     this.customStyle,
     this.padding,
     this.width = defaultWidth,
@@ -131,6 +138,7 @@ class AppButton extends StatelessWidget {
     required this.text,
     this.onPressed,
     this.isLoading = false,
+    this.isFullWidth = false,
     this.customStyle,
     this.padding,
     this.width = defaultWidth,
@@ -146,6 +154,7 @@ class AppButton extends StatelessWidget {
     required this.text,
     this.onPressed,
     this.isLoading = false,
+    this.isFullWidth = false,
     this.customStyle,
     this.padding,
     this.width = defaultWidth,
@@ -244,14 +253,20 @@ class AppButton extends StatelessWidget {
     Color? resolvedDecorationColor;
     double? resolvedWidth = width;
 
+    if (isFullWidth) {
+      resolvedWidth = double.infinity;
+    } else if (width != double.infinity) {
+      resolvedWidth = width;
+    } else {
+      resolvedWidth = null;
+    }
+
     if (isLink) {
       if (padding == null) resolvedPadding = EdgeInsets.zero;
 
       resolvedMinimumSize = Size.zero;
       resolvedDecoration = TextDecoration.underline;
       resolvedDecorationColor = colorScheme.primary;
-
-      if (width == double.infinity) resolvedWidth = null;
     }
 
     final ButtonStyle baseStyle = ElevatedButton.styleFrom(
