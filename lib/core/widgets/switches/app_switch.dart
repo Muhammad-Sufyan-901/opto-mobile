@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-// ==========================================
-// DEFAULT CONSTANTS
-// ==========================================
 const double _switchWidth = 44.0;
 const double _switchHeight = 24.0;
 const double _thumbSize = 20.0;
@@ -14,6 +11,7 @@ class AppSwitch extends StatelessWidget {
   final String? label;
   final bool disabled;
   final bool isInvalid;
+  final Color? color;
 
   const AppSwitch({
     super.key,
@@ -22,6 +20,7 @@ class AppSwitch extends StatelessWidget {
     this.label,
     this.disabled = false,
     this.isInvalid = false,
+    this.color,
   });
 
   @override
@@ -36,23 +35,19 @@ class AppSwitch extends StatelessWidget {
     BoxBorder? trackBorder;
     List<BoxShadow>? trackShadow;
 
-    // 1. Status Disabled (Prioritas Tertinggi)
+    final Color activeColor = color ?? colorScheme.primary;
+
     if (disabled) {
       labelColor = isDarkMode ? Colors.grey.shade600 : Colors.grey.shade400;
       trackColor = value
-          ? colorScheme.primary.withValues(
+          ? activeColor.withValues(
               alpha: 0.5,
             )
           : (isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200);
-    }
-    // 2. Status Invalid (Error / Red Ring)
-    else if (isInvalid) {
+    } else if (isInvalid) {
       labelColor = Colors.red.shade600;
       trackColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200;
-      trackBorder = Border.all(
-        color: Colors.red.shade600,
-        width: 2,
-      );
+      trackBorder = Border.all(color: Colors.red.shade600, width: 2);
       trackShadow = [
         BoxShadow(
           color: Colors.red.shade600.withValues(alpha: 0.2),
@@ -60,17 +55,12 @@ class AppSwitch extends StatelessWidget {
           blurRadius: 0,
         ),
       ];
-    }
-    // 3. Status Normal (Default)
-    else {
+    } else {
       trackColor = value
-          ? colorScheme.primary
+          ? activeColor
           : (isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300);
     }
 
-    // ==========================================
-    // ➔ ✨ KONTEN SWITCH (Trek + Tombol Bulat)
-    // ==========================================
     Widget switchToggle = AnimatedContainer(
       duration: _animationDuration,
       width: _switchWidth,
@@ -106,9 +96,6 @@ class AppSwitch extends StatelessWidget {
       ),
     );
 
-    // ==========================================
-    // WRAPPER (Toggle + Label)
-    // ==========================================
     Widget content = switchToggle;
 
     if (label != null) {
