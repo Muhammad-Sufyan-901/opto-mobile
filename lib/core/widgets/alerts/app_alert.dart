@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // ==========================================
-// ➔ ✨ VARIANTS ENUM
+// VARIANTS ENUM
 // ==========================================
 enum AppAlertVariant {
   standard,
@@ -17,7 +17,7 @@ const double _defaultIconSize = 20.0;
 const double _defaultPadding = 16.0;
 
 // ==========================================
-// ➔ ✨ ROOT ALERT COMPONENT
+// ROOT ALERT COMPONENT
 // ==========================================
 class AppAlert extends StatelessWidget {
   final String title;

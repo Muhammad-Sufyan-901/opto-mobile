@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // ==========================================
-// ➔ ✨ VARIANTS ENUM
+// VARIANTS ENUM
 // ==========================================
 enum AppBadgeVariant {
   primary, // Solid Background, white text (Default)
@@ -13,7 +13,7 @@ enum AppBadgeVariant {
 }
 
 // ==========================================
-// ➔ ✨ DEFAULT CONSTANTS
+// DEFAULT CONSTANTS
 // ==========================================
 const double _defaultRadius = 999.0;
 const EdgeInsetsGeometry _defaultPadding = EdgeInsets.symmetric(
