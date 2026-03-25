@@ -18,9 +18,7 @@ const double _defaultSuffixIconSize = 20.0;
 const double _defaultPrefixIconSize = 20.0;
 
 class AppInputField extends StatefulWidget {
-  final String? label;
   final String? hintText;
-  final String? helperText;
   final TextEditingController? controller;
   final AppInputFieldType type;
   final bool readOnly;
@@ -32,7 +30,6 @@ class AppInputField extends StatefulWidget {
   final Color? prefixIconColor;
   final double prefixIconSize;
   final TextStyle? hintTextStyle;
-  final TextStyle? helperTextStyle;
   final Color? hintTextColor;
   final VoidCallback? onTap;
   final String? Function(String?)? validator;
@@ -46,9 +43,7 @@ class AppInputField extends StatefulWidget {
   // ==========================================
   const AppInputField({
     super.key,
-    this.label,
     this.hintText,
-    this.helperText,
     this.controller,
     this.validator,
     this.prefixIcon,
@@ -63,7 +58,6 @@ class AppInputField extends StatefulWidget {
     this.prefixIconColor,
     this.prefixIconSize = _defaultPrefixIconSize,
     this.hintTextStyle,
-    this.helperTextStyle,
     this.hintTextColor,
     this.maxLines = 1,
     this.textInputAction,
@@ -71,9 +65,7 @@ class AppInputField extends StatefulWidget {
 
   const AppInputField.email({
     super.key,
-    this.label,
     this.hintText = 'contoh@email.com',
-    this.helperText,
     this.controller,
     this.validator,
     this.prefixIcon = Icons.email_outlined,
@@ -88,7 +80,6 @@ class AppInputField extends StatefulWidget {
     this.prefixIconColor,
     this.prefixIconSize = _defaultPrefixIconSize,
     this.hintTextStyle,
-    this.helperTextStyle,
     this.hintTextColor,
     this.maxLines = 1,
     this.textInputAction = TextInputAction.next,
@@ -96,9 +87,7 @@ class AppInputField extends StatefulWidget {
 
   const AppInputField.password({
     super.key,
-    this.label,
     this.hintText = 'Kata Sandi',
-    this.helperText,
     this.controller,
     this.validator,
     this.prefixIcon = Icons.lock_outline,
@@ -112,7 +101,6 @@ class AppInputField extends StatefulWidget {
     this.prefixIconColor,
     this.prefixIconSize = _defaultPrefixIconSize,
     this.hintTextStyle,
-    this.helperTextStyle,
     this.hintTextColor,
     this.maxLines = 1,
     this.textInputAction = TextInputAction.done,
@@ -121,9 +109,7 @@ class AppInputField extends StatefulWidget {
 
   const AppInputField.number({
     super.key,
-    this.label,
     this.hintText = '0123456789',
-    this.helperText,
     this.controller,
     this.validator,
     this.prefixIcon,
@@ -138,7 +124,6 @@ class AppInputField extends StatefulWidget {
     this.prefixIconColor,
     this.prefixIconSize = _defaultPrefixIconSize,
     this.hintTextStyle,
-    this.helperTextStyle,
     this.hintTextColor,
     this.maxLines = 1,
     this.textInputAction = TextInputAction.next,
@@ -146,9 +131,7 @@ class AppInputField extends StatefulWidget {
 
   const AppInputField.date({
     super.key,
-    this.label,
     this.hintText = 'Pilih tanggal',
-    this.helperText,
     this.controller,
     this.validator,
     this.prefixIcon,
@@ -163,7 +146,6 @@ class AppInputField extends StatefulWidget {
     this.prefixIconColor,
     this.prefixIconSize = _defaultPrefixIconSize,
     this.hintTextStyle,
-    this.helperTextStyle,
     this.hintTextColor,
     this.maxLines = 1,
     this.textInputAction,
@@ -171,9 +153,7 @@ class AppInputField extends StatefulWidget {
 
   const AppInputField.textArea({
     super.key,
-    this.label,
     this.hintText = 'Tuliskan catatan...',
-    this.helperText,
     this.controller,
     this.validator,
     this.prefixIcon,
@@ -188,7 +168,6 @@ class AppInputField extends StatefulWidget {
     this.prefixIconColor,
     this.prefixIconSize = _defaultPrefixIconSize,
     this.hintTextStyle,
-    this.helperTextStyle,
     this.hintTextColor,
     this.maxLines = 5,
     this.textInputAction = TextInputAction.newline,
@@ -196,9 +175,7 @@ class AppInputField extends StatefulWidget {
 
   const AppInputField.file({
     super.key,
-    this.label,
     this.hintText = 'Pilih atau unggah file...',
-    this.helperText,
     this.controller,
     this.validator,
     this.prefixIcon,
@@ -213,7 +190,6 @@ class AppInputField extends StatefulWidget {
     this.prefixIconColor,
     this.prefixIconSize = _defaultPrefixIconSize,
     this.hintTextStyle,
-    this.helperTextStyle,
     this.hintTextColor,
     this.maxLines = 1,
     this.textInputAction,
@@ -228,7 +204,6 @@ class _AppInputFieldState extends State<AppInputField> {
   late FocusNode _focusNode;
   bool _isFocused = false;
 
-  // Visual Controller (Display File Name)
   late TextEditingController _displayController;
 
   @override
@@ -241,33 +216,27 @@ class _AppInputFieldState extends State<AppInputField> {
       });
     });
 
-    // Inisialisasi controller visual
     _displayController = TextEditingController();
 
-    // Listen changes on main controller (full path)
     if (widget.type == AppInputFieldType.file && widget.controller != null) {
-      _syncDisplayController(); // Initial sync
+      _syncDisplayController();
       widget.controller!.addListener(_syncDisplayController);
     }
   }
 
-  // Truncate File Name
   void _syncDisplayController() {
     if (widget.controller == null) return;
 
     final String fullPath = widget.controller!.text;
-
-    // Truncate string based on slash (support Android/iOS '/' and Windows '\')
     final String fileName = fullPath.isEmpty
         ? ''
         : fullPath.split('/').last.split('\\').last;
 
-    // Update UI text ONLY if the value is different (prevent loop)
     if (_displayController.text != fileName) {
       _displayController.text = fileName;
     }
 
-    if (mounted) setState(() {}); // Re-render preview
+    if (mounted) setState(() {});
   }
 
   @override
@@ -392,9 +361,7 @@ class _AppInputFieldState extends State<AppInputField> {
     final InputBorder disabledBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(widget.radius),
       borderSide: BorderSide(
-        color: baseBorderColor.withValues(
-          alpha: 0.5,
-        ),
+        color: baseBorderColor.withValues(alpha: 0.5),
         width: 1.5,
       ),
     );
@@ -421,17 +388,14 @@ class _AppInputFieldState extends State<AppInputField> {
     String? Function(String?)? resolvedValidator;
     if (widget.isRequired || widget.validator != null) {
       resolvedValidator = (String? value) {
-        // KEY: Although the UI displays a short file name,
-        // validation must still use the Full Path so the file can be checked for size!
         final String? valueToValidate = widget.type == AppInputFieldType.file
             ? widget.controller?.text
             : value;
 
         if (widget.isRequired) {
-          final String? cleanLabel = widget.label?.replaceAll('*', '').trim();
+          // FieldName tidak dikirim agar menggunakan pesan default dari validator
           final String? requiredError = InputValidator.required(
             valueToValidate,
-            fieldName: cleanLabel,
           );
           if (requiredError != null) return requiredError;
         }
@@ -494,9 +458,7 @@ class _AppInputFieldState extends State<AppInputField> {
                       size: 40,
                       color: defaultGrey600,
                     ),
-                    const SizedBox(
-                      height: 8,
-                    ),
+                    const SizedBox(height: 8),
                     Text(
                       'Video siap diunggah',
                       style: textTheme.labelMedium?.copyWith(
@@ -512,111 +474,70 @@ class _AppInputFieldState extends State<AppInputField> {
       } catch (_) {}
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (widget.label != null) ...[
-          RichText(
-            text: TextSpan(
-              text: widget.label!,
-              style: textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: widget.disabled ? defaultGrey500 : colorScheme.onSurface,
-              ),
-              children: [
-                if (widget.isRequired)
-                  TextSpan(
-                    text: ' *',
-                    style: textTheme.labelMedium?.copyWith(
-                      color: colorScheme.error,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
-
-        Container(
-          decoration: BoxDecoration(
-            color: resolvedFillColor,
-            borderRadius: BorderRadius.circular(widget.radius + 4),
-            boxShadow: _isFocused
-                ? [
-                    BoxShadow(
-                      color: colorScheme.primary.withValues(alpha: 0.25),
-                      blurRadius: 0,
-                      spreadRadius: 4,
-                      offset: const Offset(0, 0),
-                    ),
-                  ]
-                : [],
-          ),
-          child: TextFormField(
-            // ➔ ✨ USE DISPLAY CONTROLLER FOR FILE
-            controller: widget.type == AppInputFieldType.file
-                ? _displayController
-                : widget.controller,
-
-            focusNode: _focusNode,
-            enabled: !widget.disabled,
-            obscureText: resolvedObscureText,
-            keyboardType: resolvedKeyboardType,
-            readOnly: widget.readOnly,
-            onTap: _handleInputTapped,
-            validator: resolvedValidator,
-            maxLines: widget.maxLines,
-            textInputAction: widget.textInputAction,
-            style: textTheme.bodyLarge,
-            decoration: InputDecoration(
-              hintText: widget.hintText,
-              hintStyle: textTheme.bodyLarge
-                  ?.copyWith(
-                    color: resolvedHintColor,
-                  )
-                  .merge(
-                    widget.hintTextStyle,
-                  ),
-              prefixIcon: resolvedPrefixIcon,
-              suffixIcon: resolvedSuffixIcon,
-
-              enabledBorder: inputBorder,
-              disabledBorder: disabledBorder,
-              focusedBorder: focusedBorder,
-              errorBorder: errorBorder,
-              focusedErrorBorder: errorBorder,
-
-              filled: true,
-              fillColor: resolvedFillColor,
-
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 16,
-              ),
-            ),
+    // UI KINI HANYA BERFOKUS PADA KOTAK INPUT
+    Widget inputWidget = Container(
+      decoration: BoxDecoration(
+        color: resolvedFillColor,
+        borderRadius: BorderRadius.circular(widget.radius + 4),
+        boxShadow: _isFocused
+            ? [
+                BoxShadow(
+                  color: colorScheme.primary.withValues(alpha: 0.25),
+                  blurRadius: 0,
+                  spreadRadius: 4,
+                  offset: const Offset(0, 0),
+                ),
+              ]
+            : [],
+      ),
+      child: TextFormField(
+        controller: widget.type == AppInputFieldType.file
+            ? _displayController
+            : widget.controller,
+        focusNode: _focusNode,
+        enabled: !widget.disabled,
+        obscureText: resolvedObscureText,
+        keyboardType: resolvedKeyboardType,
+        readOnly: widget.readOnly,
+        onTap: _handleInputTapped,
+        validator: resolvedValidator,
+        maxLines: widget.maxLines,
+        textInputAction: widget.textInputAction,
+        style: textTheme.bodyLarge,
+        decoration: InputDecoration(
+          hintText: widget.hintText,
+          hintStyle: textTheme.bodyLarge
+              ?.copyWith(color: resolvedHintColor)
+              .merge(widget.hintTextStyle),
+          prefixIcon: resolvedPrefixIcon,
+          suffixIcon: resolvedSuffixIcon,
+          enabledBorder: inputBorder,
+          disabledBorder: disabledBorder,
+          focusedBorder: focusedBorder,
+          errorBorder: errorBorder,
+          focusedErrorBorder: errorBorder,
+          filled: true,
+          fillColor: resolvedFillColor,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
           ),
         ),
-
-        ?filePreviewWidget,
-
-        if (widget.helperText != null) ...[
-          const SizedBox(
-            height: 6,
-          ),
-          Text(
-            widget.helperText!,
-            style: textTheme.labelSmall
-                ?.copyWith(
-                  color: defaultGrey600,
-                )
-                .merge(
-                  widget.helperTextStyle,
-                ),
-          ),
-        ],
-      ],
+      ),
     );
+
+    // Jika ada file preview, bungkus dengan Column, jika tidak, langsung return kotaknya!
+    if (filePreviewWidget != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          inputWidget,
+          filePreviewWidget,
+        ],
+      );
+    }
+
+    return inputWidget;
   }
 }
