@@ -5,6 +5,10 @@ import 'package:ids_elder_rehab_app/core/config/app_info.dart';
 import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
 import 'package:ids_elder_rehab_app/core/middlewares/authentication_middleware.dart';
 import 'package:ids_elder_rehab_app/core/middlewares/roles_middleware.dart';
+import 'package:ids_elder_rehab_app/features/dashboard/presentation/screens/lansia_dashboard_screen.dart';
+import 'package:ids_elder_rehab_app/features/auth/presentation/screens/forgot_password_screen.dart';
+import 'package:ids_elder_rehab_app/features/auth/presentation/screens/login_screen.dart';
+import 'package:ids_elder_rehab_app/features/auth/presentation/screens/register_screen.dart';
 import 'package:ids_elder_rehab_app/features/dev/presentation/screens/dev_screen.dart';
 import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/onboarding_screen.dart';
 
@@ -43,50 +47,30 @@ final GoRouter appRouter = GoRouter(
     // ==========================================
     ShellRoute(
       builder: (BuildContext context, GoRouterState state, Widget child) {
-        return Scaffold(
-          body: Center(
-            child: child,
-          ),
-        );
+        return child;
       },
       routes: [
         GoRoute(
           path: AppRoutes.login.path,
           name: AppRoutes.login.name,
           builder: (BuildContext context, GoRouterState state) {
-            final String? errorMessage = state.uri.queryParameters['error'];
+            // final String? errorMessage = state.uri.queryParameters['error'];
 
-            return Scaffold(
-              body: Center(
-                child: Text(errorMessage ?? 'Login'),
-              ),
-            );
+            return const LoginScreen();
           },
         ),
         GoRoute(
           path: AppRoutes.register.path,
           name: AppRoutes.register.name,
           builder: (BuildContext context, GoRouterState state) {
-            final String? errorMessage = state.uri.queryParameters['error'];
-
-            return Scaffold(
-              body: Center(
-                child: Text(errorMessage ?? 'Register'),
-              ),
-            );
+            return const RegisterScreen();
           },
         ),
         GoRoute(
           path: AppRoutes.forgotPassword.path,
           name: AppRoutes.forgotPassword.name,
           builder: (BuildContext context, GoRouterState state) {
-            final String? errorMessage = state.uri.queryParameters['error'];
-
-            return Scaffold(
-              body: Center(
-                child: Text(errorMessage ?? 'Forgot Password'),
-              ),
-            );
+            return const ForgotPasswordScreen();
           },
         ),
       ],
@@ -217,17 +201,6 @@ final GoRouter appRouter = GoRouter(
       },
       routes: [
         GoRoute(
-          path: AppRoutes.lansiaDashboard.path,
-          name: AppRoutes.lansiaDashboard.name,
-          builder: (BuildContext context, GoRouterState state) {
-            return const Scaffold(
-              body: Center(
-                child: Text('Lansia Dashboard'),
-              ),
-            );
-          },
-        ),
-        GoRoute(
           path: AppRoutes.lansiaAssessment.path,
           name: AppRoutes.lansiaAssessment.name,
           builder: (BuildContext context, GoRouterState state) {
@@ -245,6 +218,17 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.lansiaRoutePrefix,
       redirect: (BuildContext context, GoRouterState state) {
         return AppRoutes.lansiaDashboard.path;
+      },
+    ),
+
+    // ==========================================
+    // Lansia Dashboard (Temporary Public Route)
+    // ==========================================
+    GoRoute(
+      path: AppRoutes.lansiaDashboard.path,
+      name: AppRoutes.lansiaDashboard.name,
+      builder: (BuildContext context, GoRouterState state) {
+        return const LansiaDashboardScreen();
       },
     ),
 

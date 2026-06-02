@@ -7,6 +7,7 @@ class RouteHelper {
     AppRoutes.login.path,
     AppRoutes.register.path,
     AppRoutes.forgotPassword.path,
+    AppRoutes.lansiaDashboard.path,
     if (AppInfo.isDevelopment) AppRoutes.developer.path,
   };
 

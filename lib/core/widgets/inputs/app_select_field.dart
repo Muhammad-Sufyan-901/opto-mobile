@@ -83,6 +83,9 @@ class _AppSelectFieldState<T> extends State<AppSelectField<T>> {
   late FocusNode _focusNode;
   bool _isFocused = false;
 
+  final GlobalKey _containerKey = GlobalKey();
+  double _menuWidth = 0.0;
+
   late TextEditingController _textController;
 
   @override
@@ -300,18 +303,18 @@ class _AppSelectFieldState<T> extends State<AppSelectField<T>> {
       );
     }
 
-    List<Widget> buildMenuChildren(BoxConstraints constraints) {
+    List<Widget> buildMenuChildren(double menuWidth) {
       List<Widget> children = [];
       if (widget.items != null) {
         for (var item in widget.items!) {
-          children.add(buildMenuItem(item, constraints.maxWidth));
+          children.add(buildMenuItem(item, menuWidth));
         }
       } else if (widget.groupedItems != null) {
         for (int index = 0; index < widget.groupedItems!.length; index++) {
           final group = widget.groupedItems![index];
           children.add(
             Container(
-              width: constraints.maxWidth,
+              width: menuWidth,
               padding: const EdgeInsets.only(
                 left: 20,
                 right: 16,
@@ -328,7 +331,7 @@ class _AppSelectFieldState<T> extends State<AppSelectField<T>> {
             ),
           );
           for (var item in group.items) {
-            children.add(buildMenuItem(item, constraints.maxWidth));
+            children.add(buildMenuItem(item, menuWidth));
           }
           if (index < widget.groupedItems!.length - 1) {
             children.add(
@@ -375,67 +378,67 @@ class _AppSelectFieldState<T> extends State<AppSelectField<T>> {
         ],
 
         Container(
+          key: _containerKey,
           decoration: BoxDecoration(
             color: resolvedFillColor,
             borderRadius: BorderRadius.circular(widget.radius),
             boxShadow: resolvedBoxShadow,
           ),
-          child: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              return MenuAnchor(
-                controller: _menuController,
-                style: dropdownMenuStyle,
-                alignmentOffset: const Offset(0, 8),
-                menuChildren: buildMenuChildren(constraints),
-                builder:
-                    (
-                      BuildContext context,
-                      MenuController controller,
-                      Widget? child,
-                    ) {
-                      VoidCallback? handleInputTap;
-                      if (!effectivelyDisabled) {
-                        handleInputTap = () {
-                          if (controller.isOpen) {
-                            controller.close();
-                          } else {
-                            controller.open();
-                          }
-                        };
-                      }
+          child: MenuAnchor(
+            controller: _menuController,
+            style: dropdownMenuStyle,
+            alignmentOffset: const Offset(0, 8),
+            menuChildren: buildMenuChildren(_menuWidth > 0 ? _menuWidth : 200.0),
+            builder: (BuildContext context, MenuController controller, Widget? child) {
+              VoidCallback? handleInputTap;
+              if (!effectivelyDisabled) {
+                handleInputTap = () {
+                  if (controller.isOpen) {
+                    controller.close();
+                  } else {
+                    if (_containerKey.currentContext != null) {
+                      final renderBox = _containerKey.currentContext!.findRenderObject() as RenderBox;
+                      setState(() {
+                        _menuWidth = renderBox.size.width;
+                      });
+                    }
+                    controller.open();
+                  }
+                };
+              }
 
-                      return TextFormField(
-                        controller: _textController,
-                        focusNode: _focusNode,
-                        readOnly: true,
-                        enabled: !effectivelyDisabled,
-                        onTap: handleInputTap,
-                        validator: resolvedValidator,
-                        style: textTheme.bodyLarge?.copyWith(
-                          color: effectivelyDisabled
-                              ? defaultGrey
-                              : colorScheme.onSurface,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: widget.hintText,
-                          hintStyle: textTheme.bodyLarge?.copyWith(
-                            color: defaultGrey,
-                          ),
-                          prefixIcon: resolvedPrefixIcon,
-                          suffixIcon: AnimatedRotation(
-                            turns: controller.isOpen ? 0.5 : 0.0,
-                            duration: const Duration(milliseconds: 250),
-                            curve: Curves.easeInOut,
-                            child: Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: effectivelyDisabled
-                                  ? defaultGrey.withValues(
-                                      alpha: 0.5,
-                                    )
-                                  : defaultGrey,
-                              size: 20,
-                            ),
-                          ),
+              return TextFormField(
+                controller: _textController,
+                focusNode: _focusNode,
+                readOnly: true,
+                enabled: !effectivelyDisabled,
+                onTap: handleInputTap,
+                validator: resolvedValidator,
+                style: textTheme.bodyLarge?.copyWith(
+                  color: effectivelyDisabled
+                      ? defaultGrey
+                      : colorScheme.onSurface,
+                ),
+                decoration: InputDecoration(
+                  hintText: widget.hintText,
+                  hintStyle: textTheme.bodyLarge?.copyWith(
+                    color: defaultGrey,
+                  ),
+                  prefixIcon: resolvedPrefixIcon,
+                  suffixIcon: AnimatedRotation(
+                    turns: controller.isOpen ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: effectivelyDisabled
+                          ? defaultGrey.withValues(
+                              alpha: 0.5,
+                            )
+                          : defaultGrey,
+                      size: 20,
+                    ),
+                  ),
                           enabledBorder: inputBorder,
                           focusedBorder: focusedBorder,
                           errorBorder: errorBorder,
@@ -457,8 +460,6 @@ class _AppSelectFieldState<T> extends State<AppSelectField<T>> {
                         ),
                       );
                     },
-              );
-            },
           ),
         ),
 

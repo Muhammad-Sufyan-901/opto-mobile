@@ -482,7 +482,9 @@ class _AppInputFieldState extends State<AppInputField> {
         boxShadow: _isFocused
             ? [
                 BoxShadow(
-                  color: colorScheme.primary.withValues(alpha: 0.25),
+                  color: colorScheme.primary.withValues(
+                    alpha: 0.25,
+                  ),
                   blurRadius: 0,
                   spreadRadius: 4,
                   offset: const Offset(0, 0),
@@ -503,11 +505,13 @@ class _AppInputFieldState extends State<AppInputField> {
         validator: resolvedValidator,
         maxLines: widget.maxLines,
         textInputAction: widget.textInputAction,
-        style: textTheme.bodyLarge,
+        style: textTheme.bodyMedium,
         decoration: InputDecoration(
           hintText: widget.hintText,
-          hintStyle: textTheme.bodyLarge
-              ?.copyWith(color: resolvedHintColor)
+          hintStyle: textTheme.bodyMedium
+              ?.copyWith(
+                color: resolvedHintColor,
+              )
               .merge(widget.hintTextStyle),
           prefixIcon: resolvedPrefixIcon,
           suffixIcon: resolvedSuffixIcon,
