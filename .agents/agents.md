@@ -75,4 +75,4 @@ The designated agents MUST activate relevant skills from `.agents/skills/` befor
 
 > If a referenced skill folder does not yet exist in `.agents/skills/`, treat its description above as the activation guideline and proceed.
 
-**CRITICAL RULE:** All agents MUST read `.agents/app/product_requirements.md`, `.agents/app/system_architecture.md`, `.agents/app/database_schema.md`, and `.agents/app/design_system.md` before executing any task. For UI work, also read `.agents/app/landing_page_design_breakdown.md` (onboarding/entry) and `.agents/app/dashboard_design_breakdown.md` (in-app Home + module screens).
+**CRITICAL RULE:** All agents MUST read `.agents/app/product_requirements.md`, `.agents/app/system_architecture.md`, `.agents/app/database_schema.md`, and `.agents/app/design_system.md` before executing any task. The consolidated `design_system.md` now contains the full screen-by-screen breakdown for both the onboarding/entry flow and the in-app Home + module screens.
