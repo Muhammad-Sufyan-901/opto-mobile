@@ -14,6 +14,11 @@ import 'package:ids_elder_rehab_app/features/auth/presentation/screens/caregiver
 import 'package:ids_elder_rehab_app/features/dev/presentation/screens/dev_screen.dart';
 import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/splash_screen.dart';
 import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/welcome_screen.dart';
+import 'package:ids_elder_rehab_app/features/setup/presentation/screens/vision_profile_screen.dart';
+import 'package:ids_elder_rehab_app/features/setup/presentation/screens/display_setup_screen.dart';
+import 'package:ids_elder_rehab_app/features/setup/presentation/screens/voice_setup_screen.dart';
+import 'package:ids_elder_rehab_app/features/setup/presentation/screens/permissions_setup_screen.dart';
+import 'package:ids_elder_rehab_app/features/setup/presentation/screens/setup_done_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   debugLogDiagnostics: true,
@@ -100,6 +105,58 @@ final GoRouter appRouter = GoRouter(
           name: AppRoutes.authCaregiver.name,
           builder: (BuildContext context, GoRouterState state) {
             return const CaregiverSetupScreen();
+          },
+        ),
+      ],
+    ),
+
+    // ==========================================
+    // Onboarding & Setup Routes (screens 10–14)
+    // Public while auth is stubbed — add token gating when SetupCubit lands.
+    // ==========================================
+    ShellRoute(
+      builder: (BuildContext context, GoRouterState state, Widget child) {
+        return child;
+      },
+      routes: [
+        // 10 · Vision profile
+        GoRoute(
+          path: AppRoutes.setupVision.path,
+          name: AppRoutes.setupVision.name,
+          builder: (BuildContext context, GoRouterState state) {
+            return const VisionProfileScreen();
+          },
+        ),
+        // 11 · Text size & contrast
+        GoRoute(
+          path: AppRoutes.setupDisplay.path,
+          name: AppRoutes.setupDisplay.name,
+          builder: (BuildContext context, GoRouterState state) {
+            return const DisplaySetupScreen();
+          },
+        ),
+        // 12 · Voice & sound
+        GoRoute(
+          path: AppRoutes.setupVoice.path,
+          name: AppRoutes.setupVoice.name,
+          builder: (BuildContext context, GoRouterState state) {
+            return const VoiceSetupScreen();
+          },
+        ),
+        // 13 · Permissions
+        GoRoute(
+          path: AppRoutes.setupPermissions.path,
+          name: AppRoutes.setupPermissions.name,
+          builder: (BuildContext context, GoRouterState state) {
+            return const PermissionsSetupScreen();
+          },
+        ),
+        // 14 · All set
+        GoRoute(
+          path: AppRoutes.setupDone.path,
+          name: AppRoutes.setupDone.name,
+          builder: (BuildContext context, GoRouterState state) {
+            return const SetupDoneScreen();
           },
         ),
       ],

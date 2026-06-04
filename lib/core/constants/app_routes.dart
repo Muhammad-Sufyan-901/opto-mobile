@@ -63,6 +63,37 @@ abstract class AppRoutes {
     name: 'auth_caregiver',
   );
 
+  // ── Onboarding & Setup routes (post-auth, screens 10–14) ──────────────────
+  /// Step 10 — Vision profile selection.
+  static const AppRoute setupVision = AppRoute(
+    path: '/setup/vision',
+    name: 'setup_vision',
+  );
+
+  /// Step 11 — Text size & contrast.
+  static const AppRoute setupDisplay = AppRoute(
+    path: '/setup/display',
+    name: 'setup_display',
+  );
+
+  /// Step 12 — Voice & sound.
+  static const AppRoute setupVoice = AppRoute(
+    path: '/setup/voice',
+    name: 'setup_voice',
+  );
+
+  /// Step 13 — App permissions.
+  static const AppRoute setupPermissions = AppRoute(
+    path: '/setup/permissions',
+    name: 'setup_permissions',
+  );
+
+  /// Step 14 — All set / setup complete.
+  static const AppRoute setupDone = AppRoute(
+    path: '/setup/done',
+    name: 'setup_done',
+  );
+
   // Lansia routes (Grouped with "/lansia" as parent)
   static const AppRoute lansiaDashboard = AppRoute(
     path: '$lansiaRoutePrefix/dashboard',

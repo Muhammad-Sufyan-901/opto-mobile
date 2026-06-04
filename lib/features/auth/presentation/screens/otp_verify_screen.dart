@@ -79,7 +79,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
       'Code verified. Setting up your account.',
       TextDirection.ltr,
     );
-    context.go(AppRoutes.onboarding.path);
+    context.go(AppRoutes.setupVision.path);
   }
 
   @override

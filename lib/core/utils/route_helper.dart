@@ -10,6 +10,12 @@ class RouteHelper {
     AppRoutes.authPhone.path,
     AppRoutes.authOtp.path,
     AppRoutes.authCaregiver.path,
+    // Onboarding & Setup — public while auth is stubbed (no token saved).
+    AppRoutes.setupVision.path,
+    AppRoutes.setupDisplay.path,
+    AppRoutes.setupVoice.path,
+    AppRoutes.setupPermissions.path,
+    AppRoutes.setupDone.path,
     AppRoutes.lansiaDashboard.path,
     if (AppInfo.isDevelopment) AppRoutes.developer.path,
   };

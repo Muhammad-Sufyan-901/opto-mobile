@@ -43,8 +43,8 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
     await Future.delayed(const Duration(milliseconds: 1500));
     if (!mounted) return;
     setState(() => _isLoading = false);
-    // Navigate to the onboarding/setup flow.
-    context.go(AppRoutes.onboarding.path);
+    // Navigate to the first onboarding/setup step (Vision profile).
+    context.go(AppRoutes.setupVision.path);
   }
 
   @override
