@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
 
 // ==========================================
 // ➔ ✨ DEFAULT CONSTANTS (DRY Principle)
 // ==========================================
-const double _defaultRadius = 12.0;
+const double _defaultRadius = AppDimensions.radiusCard; // 20dp per design system
 const double _defaultBorderWidth = 1.0;
 const EdgeInsetsGeometry _defaultHeaderPadding = EdgeInsets.all(24.0);
 const EdgeInsetsGeometry _defaultContentPadding = EdgeInsets.only(
@@ -84,11 +85,10 @@ class AppCard extends StatelessWidget {
     if (hasShadow) {
       resolvedBoxShadow = [
         BoxShadow(
-          blurRadius: 8,
-          offset: const Offset(0, 2),
-          color: Colors.black.withValues(
-            alpha: 0.05,
-          ),
+          // Cool-tinted shadow: rgba(20, 40, 80, .20) per design system §4.
+          color: const Color(0x33142850),
+          blurRadius: AppDimensions.shadowBlur,
+          offset: Offset(0, AppDimensions.shadowOffsetY),
         ),
       ];
     }

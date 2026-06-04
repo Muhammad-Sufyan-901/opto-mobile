@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:ids_elder_rehab_app/core/config/app_info.dart';
+import 'package:ids_elder_rehab_app/core/di/dependencies_injection_container.dart';
 import 'package:ids_elder_rehab_app/core/router/app_router.dart';
+import 'package:ids_elder_rehab_app/core/theme/theme_cubit.dart';
 import 'package:ids_elder_rehab_app/core/themes/app_themes.dart';
 
 class App extends StatelessWidget {
@@ -9,20 +12,48 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: AppInfo.appName,
-      debugShowCheckedModeBanner: AppInfo.isDevelopment,
-      theme: AppThemes.lightTheme,
-      darkTheme: AppThemes.darkTheme,
-      themeMode: ThemeMode.system,
-      routerConfig: appRouter,
-      builder: (BuildContext context, Widget? child) {
-        return MediaQuery.withClampedTextScaling(
-          maxScaleFactor: 1.5,
-          minScaleFactor: 0.8,
-          child: child!,
-        );
-      },
+    // BlocProvider.value: GetIt owns the lifecycle — BlocProvider just
+    // exposes it to the widget tree without closing it on unmount.
+    return BlocProvider<ThemeCubit>.value(
+      value: sl<ThemeCubit>(),
+      child: BlocBuilder<ThemeCubit, AppThemeMode>(
+        builder: (context, mode) {
+          // Resolve Material theme config from the Opto AppThemeMode.
+          final (ThemeData theme, ThemeData? dark, ThemeMode flutterMode) =
+              switch (mode) {
+            AppThemeMode.system => (
+                AppThemes.lightTheme,
+                AppThemes.darkTheme,
+                ThemeMode.system,
+              ),
+            AppThemeMode.light => (AppThemes.lightTheme, null, ThemeMode.light),
+            AppThemeMode.dark => (AppThemes.darkTheme, null, ThemeMode.dark),
+            AppThemeMode.highContrast => (
+                AppThemes.highContrastTheme,
+                null,
+                ThemeMode.light,
+              ),
+          };
+
+          return MaterialApp.router(
+            title: AppInfo.appName,
+            debugShowCheckedModeBanner: AppInfo.isDevelopment,
+            theme: theme,
+            darkTheme: dark,
+            themeMode: flutterMode,
+            routerConfig: appRouter,
+            builder: (BuildContext context, Widget? child) {
+              // Honor 300% text scaling with reflow (design system §3 / §15.4).
+              // minScaleFactor: 1.0 ensures we never scale below the authored size.
+              return MediaQuery.withClampedTextScaling(
+                minScaleFactor: 1.0,
+                maxScaleFactor: 3.0,
+                child: child!,
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
 import 'package:ids_elder_rehab_app/core/themes/app_custom_colors.dart';
 
 // Button Variants
@@ -14,9 +15,9 @@ enum AppButtonVariant {
 }
 
 const double minimumWidth = 64;
-const double defaultRadius = 12;
-const double defaultIconSize = 20;
-const double defaultHeight = 54;
+const double defaultRadius = AppDimensions.radiusButton; // 16dp per design system
+const double defaultIconSize = AppDimensions.iconMd; // 20dp
+const double defaultHeight = AppDimensions.buttonHeight; // 60dp (≥60dp per design system)
 const double defaultWidth = double.infinity;
 
 class AppButton extends StatelessWidget {

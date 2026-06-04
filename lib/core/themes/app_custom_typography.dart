@@ -2,31 +2,35 @@ import 'package:flutter/material.dart';
 
 import 'package:ids_elder_rehab_app/core/constants/app_typography.dart';
 
+/// Maps [AppTypography] styles to a Material [TextTheme].
+///
+/// Used by [AppThemes] when constructing [ThemeData]. All roles are mapped so
+/// downstream widgets can use `Theme.of(context).textTheme.*` directly.
 class AppCustomTypography {
   static TextTheme get textTheme => TextTheme(
-    // Display (For large point numbers, levels, or hours)
+    // Display — splash / celebration / auth titles
     displayLarge: AppTypography.displayLarge,
     displayMedium: AppTypography.displayMedium,
     displaySmall: AppTypography.displaySmall,
 
-    // Headline (For Screens Titles)
+    // Headline — screen / section titles (H1–H2)
     headlineLarge: AppTypography.headlineLarge,
     headlineMedium: AppTypography.headlineMedium,
     headlineSmall: AppTypography.headlineSmall,
 
-    // Title (For Card Titles / AppBar)
+    // Title — card titles, AppBar, list item headers
     titleLarge: AppTypography.titleLarge,
     titleMedium: AppTypography.titleMedium,
     titleSmall: AppTypography.titleSmall,
 
-    // Body (For long reading text / instructions)
+    // Body — reading text
     bodyLarge: AppTypography.bodyLarge,
     bodyMedium: AppTypography.bodyMedium,
     bodySmall: AppTypography.bodySmall,
 
-    // Label (For Buttons and Tags)
+    // Label — buttons, tags, eyebrow (labelSmall)
     labelLarge: AppTypography.labelLarge,
     labelMedium: AppTypography.labelMedium,
-    labelSmall: AppTypography.labelSmall,
+    labelSmall: AppTypography.labelSmall, // eyebrow style (letter-spaced)
   );
 }
