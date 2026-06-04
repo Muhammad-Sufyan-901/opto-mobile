@@ -3,6 +3,7 @@ import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
 
 class RouteHelper {
   static final Set<String> _publicRoutes = {
+    AppRoutes.splash.path,
     AppRoutes.onboarding.path,
     AppRoutes.login.path,
     AppRoutes.register.path,

@@ -14,6 +14,13 @@ abstract class AppRoutes {
   static const String lansiaRoutePrefix = '/lansia';
 
   // Onboarding routes
+  /// Brand splash — shown on first launch, auto-advances to [onboarding].
+  static const AppRoute splash = AppRoute(
+    path: '/splash',
+    name: 'splash',
+  );
+
+  /// Welcome carousel — 3-slide intro before authentication.
   static const AppRoute onboarding = AppRoute(
     path: '/onboarding',
     name: 'onboarding',

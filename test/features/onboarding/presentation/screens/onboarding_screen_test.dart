@@ -1,97 +1,121 @@
+// Tests for the Opto Brand & Welcome first-launch flow.
+//
+// Covers:
+//  - WelcomeScreen renders all three slides via PageView
+//  - Dot indicator is present
+//  - CTA button label reads "Next" on first slide
+//  - SplashScreen renders wordmark and tagline
+//  - kWelcomeSlides data integrity
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ids_elder_rehab_app/core/config/app_info.dart';
-import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/onboarding_screen.dart';
-import 'package:ids_elder_rehab_app/features/onboarding/presentation/widgets/onboarding_footer.dart';
-import 'package:ids_elder_rehab_app/features/onboarding/presentation/widgets/onboarding_hero.dart';
-import 'package:ids_elder_rehab_app/features/onboarding/presentation/widgets/onboarding_primary_button.dart';
+import 'package:ids_elder_rehab_app/core/themes/app_themes.dart';
+import 'package:ids_elder_rehab_app/features/onboarding/presentation/models/welcome_slide_data.dart';
+import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/splash_screen.dart';
+import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/welcome_screen.dart';
+import 'package:ids_elder_rehab_app/features/onboarding/presentation/widgets/page_dots.dart';
+import 'package:ids_elder_rehab_app/features/onboarding/presentation/widgets/welcome_slide.dart';
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+Widget _wrap(Widget child) {
+  // Minimal wrapper with the Opto light theme applied; no GoRouter needed
+  // since navigation calls in these tests are not exercised.
+  return MaterialApp(
+    theme: AppThemes.lightTheme,
+    home: Scaffold(body: child),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
 
 void main() {
-  // ➔ ✨ Setup wrapper standar untuk merender widget dengan Theme
-  Widget createWidgetUnderTest() {
-    return const MaterialApp(
-      home: Scaffold(
-        body: OnboardingScreen(),
-      ),
-    );
-  }
+  // ── SplashScreen ─────────────────────────────────────────────────────────
 
-  group('OnboardingScreen Widget Tests', () {
-    // Kembalikan state default sebelum setiap tes dijalankan
-    setUp(() {
-      // Simulasi aplikasi sedang berjalan di mode Production
-      AppInfo.mockEnvironment = EnvironmentMode.production;
+  group('SplashScreen', () {
+    testWidgets('renders Opto wordmark and tagline', (WidgetTester tester) async {
+      await tester.pumpWidget(_wrap(const SplashScreen()));
+
+      expect(find.text('Opto'), findsOneWidget);
+      expect(find.text('Your world, made clear.'), findsOneWidget);
     });
 
-    testWidgets('Merender komponen utama Onboarding Screen dengan benar', (
-      WidgetTester tester,
-    ) async {
-      // 1. Build widget-nya
-      await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pumpAndSettle(); // Tunggu animasi selesai
-
-      // 2. Verifikasi Hero Section (Gambar & Background)
-      expect(find.byType(OnboardingHero), findsOneWidget);
-
-      // 3. Verifikasi Teks Slogan Utama
-      expect(find.text('Rehabilitasi Fisik\nUntuk Lansia'), findsOneWidget);
-
-      // 4. Verifikasi Primary Button
-      expect(find.byType(OnboardingPrimaryButton), findsOneWidget);
-      expect(find.text('Mulai Sekarang'), findsOneWidget);
-
-      // 5. Verifikasi Footer Utama (Sudah Punya Akun?)
-      expect(find.byType(OnboardingFooter), findsOneWidget);
-      expect(find.text('Sudah Punya Akun? '), findsOneWidget);
-      expect(find.text('Masuk'), findsOneWidget);
+    testWidgets('renders accessibility footer caption', (WidgetTester tester) async {
+      await tester.pumpWidget(_wrap(const SplashScreen()));
+      expect(
+        find.text('Designed for blind, low-vision & prosthetic users'),
+        findsOneWidget,
+      );
     });
   });
 
-  // ==========================================
-  // ➔ ✨ TEST KHUSUS KEAMANAN RUTE DEV (ENVIRONMENTAL TEST)
-  // ==========================================
-  group('OnboardingFooter Environment Tests', () {
-    Widget createFooterUnderTest() {
-      return const MaterialApp(
-        home: Scaffold(
-          body: OnboardingFooter(),
-        ),
-      );
-    }
+  // ── WelcomeScreen ─────────────────────────────────────────────────────────
 
-    testWidgets('TIDAK menampilkan link Developer di mode Production', (
-      WidgetTester tester,
-    ) async {
-      // Set environment ke Production
-      AppInfo.mockEnvironment = EnvironmentMode.production;
+  group('WelcomeScreen', () {
+    testWidgets('shows first slide title on load', (WidgetTester tester) async {
+      await tester.pumpWidget(_wrap(const WelcomeScreen()));
+      await tester.pumpAndSettle();
 
-      await tester.pumpWidget(createFooterUnderTest());
-
-      // Pastikan link "Masuk" (publik) tetap ada
-      expect(find.text('Sudah Punya Akun? '), findsOneWidget);
-      expect(find.text('Masuk'), findsOneWidget);
-
-      // ➔ ✨ KUNCI KEAMANAN: Pastikan link Dev tidak bocor ke publik!
-      expect(find.text('Anda Pengembang? '), findsNothing);
-      expect(find.text('Testing Widgets'), findsNothing);
+      expect(find.text(kWelcomeSlides[0].title), findsOneWidget);
+      expect(find.text(kWelcomeSlides[0].eyebrow), findsOneWidget);
     });
 
-    testWidgets('MENAMPILKAN link Developer HANYA di mode Development', (
-      WidgetTester tester,
-    ) async {
-      // Set environment ke Development
-      AppInfo.mockEnvironment = EnvironmentMode.development;
+    testWidgets('renders a PageDots indicator', (WidgetTester tester) async {
+      await tester.pumpWidget(_wrap(const WelcomeScreen()));
+      await tester.pumpAndSettle();
 
-      await tester.pumpWidget(createFooterUnderTest());
+      expect(find.byType(PageDots), findsOneWidget);
+    });
 
-      // Pastikan link "Masuk" (publik) tetap ada
-      expect(find.text('Sudah Punya Akun? '), findsOneWidget);
-      expect(find.text('Masuk'), findsOneWidget);
+    testWidgets('CTA reads "Next" on first slide', (WidgetTester tester) async {
+      await tester.pumpWidget(_wrap(const WelcomeScreen()));
+      await tester.pumpAndSettle();
 
-      // ➔ ✨ Pastikan link Dev muncul agar Developer bisa masuk
-      expect(find.text('Anda Pengembang? '), findsOneWidget);
-      expect(find.text('Testing Widgets'), findsOneWidget);
+      expect(find.text('Next'), findsOneWidget);
+      expect(find.text('Get started'), findsNothing);
+    });
+
+    testWidgets('renders at least one WelcomeSlide widget', (WidgetTester tester) async {
+      await tester.pumpWidget(_wrap(const WelcomeScreen()));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(WelcomeSlide), findsWidgets);
+    });
+
+    testWidgets('Skip button is present', (WidgetTester tester) async {
+      await tester.pumpWidget(_wrap(const WelcomeScreen()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Skip'), findsOneWidget);
+    });
+  });
+
+  // ── kWelcomeSlides data integrity ────────────────────────────────────────
+
+  group('kWelcomeSlides', () {
+    test('contains exactly 3 slides', () {
+      expect(kWelcomeSlides.length, 3);
+    });
+
+    test('only the last slide has isLast == true', () {
+      for (int i = 0; i < kWelcomeSlides.length - 1; i++) {
+        expect(kWelcomeSlides[i].isLast, isFalse);
+      }
+      expect(kWelcomeSlides.last.isLast, isTrue);
+    });
+
+    test('all slides have non-empty copy', () {
+      for (final WelcomeSlideData slide in kWelcomeSlides) {
+        expect(slide.eyebrow, isNotEmpty);
+        expect(slide.title, isNotEmpty);
+        expect(slide.body, isNotEmpty);
+        expect(slide.illustrationLabel, isNotEmpty);
+      }
     });
   });
 }

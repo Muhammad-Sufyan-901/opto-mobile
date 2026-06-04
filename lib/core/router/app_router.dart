@@ -10,23 +10,31 @@ import 'package:ids_elder_rehab_app/features/auth/presentation/screens/forgot_pa
 import 'package:ids_elder_rehab_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:ids_elder_rehab_app/features/auth/presentation/screens/register_screen.dart';
 import 'package:ids_elder_rehab_app/features/dev/presentation/screens/dev_screen.dart';
-import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/splash_screen.dart';
+import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/welcome_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   debugLogDiagnostics: true,
-  initialLocation: AppRoutes.onboarding.path,
+  initialLocation: AppRoutes.splash.path,
 
   // Global Guard Middleware to check if user is authenticated
   redirect: AuthenticationMiddleware.guard,
   routes: [
     // ==========================================
-    // Onboarding Routes (Initial Screen that every user seen for the first time)
+    // Brand & Welcome Routes (first-launch flow)
     // ==========================================
+    GoRoute(
+      path: AppRoutes.splash.path,
+      name: AppRoutes.splash.name,
+      builder: (BuildContext context, GoRouterState state) {
+        return const SplashScreen();
+      },
+    ),
     GoRoute(
       path: AppRoutes.onboarding.path,
       name: AppRoutes.onboarding.name,
       builder: (BuildContext context, GoRouterState state) {
-        return const OnboardingScreen();
+        return const WelcomeScreen();
       },
     ),
 
