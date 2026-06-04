@@ -1,157 +1,112 @@
-# AI Agent Instruction Context
+# GEMINI.md
 
-## Project Overview
+This file provides guidance to GEMINI when working with code in this repository.
 
-- **Name:** IDS Elder Rehab App (Digital Physical Rehabilitation)
-- **Architecture:** Feature-First Clean Architecture
-- **Language:** Dart (Strict Null Safety)
-- **Framework:** Flutter (Mobile/Tablet)
+## ⚠️ Read the system briefs first
 
-## Tech Stack
+**Before generating or modifying any code, consult the canonical system briefs in `.agents/app/`.** They are the source of truth and override the legacy `README.md` / `gemini.md` (which still describe the old rehab template):
 
-- **State Management:** Flutter BLoC (`flutter_bloc`)
-- **Routing:** GoRouter (Declarative, URL-based routing)
-- **Dependency Injection:** GetIt (`get_it`)
-- **HTTP Client:** Dio
-- **Local Storage / Offline Sync:** Hive (`hive_flutter`)
-- **Data Modeling:** Freezed & JSON Serializable (`freezed`, `json_serializable`)
-- **AI & AR (Core Features):** Google ML Kit Pose Detection (Offline AI), Model Viewer Plus (AR 3D)
+| Brief | Use it for |
+|-------|-----------|
+| `.agents/app/product_requirements.md` | What to build — the 8 modules, personas, workflows, scope, roadmap |
+| `.agents/app/system_architecture.md` | How it's structured — layering, state mgmt, Supabase backend, **current-vs-target gap + migration backlog (Appendix A)** |
+| `.agents/app/database_schema.md` | Data shapes, enums, and **RLS policies** (Supabase/Postgres) |
+| `.agents/app/design_system.md` | Tokens, typography, components, haptics, voice, screen-reader rules, screen-by-screen anatomy |
 
-## Strict Architecture Rules & Best Practices
+When a task touches a feature, open the relevant brief(s) and follow them. If code and a brief disagree, the brief describes the intended target — check `system_architecture.md` §0 to see whether that area is `✅ Built`, `🟡 Partial`, or `⛔ Planned` before assuming the code is correct.
 
-### 1. Feature-Based Isolation & Clean Architecture
+## What this project actually is
 
-- NEVER place domain-specific logic, pages, or complex UI in `lib/core/`.
-- `lib/core/` is strictly reserved for global configurations, themes, network clients, and globally shared "dumb" UI widgets.
-- Group everything by business domain inside `lib/features/[feature-name]/` (e.g., `auth`, `ar_treatment`).
-- **Clean Architecture Layers:** Every feature folder MUST be subdivided into `data`, `domain`, and `presentation` layers. Never skip layers. UI (`presentation`) can only communicate with `domain` (UseCases), never directly with `data`.
+**Opto** — *"Your world, made clear."* An accessibility-first **super app** (Flutter, Android + iOS) for **blind, low-vision, and ocular-prosthesis users**. Every feature must be completable **without looking at the screen**. Eight modules: Prosthetic Hub, Health & Consultation, Vision AI ("Aura"), Connect (community), Emergency SOS, Accessibility Map, Aura Voice, Profile/Settings.
 
-### 2. STRICT Routing & Middleware Enforcement (GoRouter)
+> **The repo was scaffolded by renaming a different project ("IDS Elder Rehab App") and is mid-migration.** The package is still `ids_elder_rehab_app`, `README.md`/`gemini.md` describe the rehab app, and several dependencies (`google_mlkit_pose_detection`, `model_viewer_plus`, etc.) are rehab leftovers. Treat `README.md`/`gemini.md` as **stale**; defer to `.agents/app/`.
 
-- **CENTRALIZED ROUTING:** All routes MUST be defined inside `lib/core/router/app_router.dart`. Do not define standalone navigations (e.g., `Navigator.push`) inside UI components. Always use `context.go()` or `context.push()`.
-- **ROUTE GUARDS (MIDDLEWARE):** Do not write inline authentication logic inside the UI screens. All route protection (e.g., checking if the user is logged in, or if the user is a Doctor vs. Elder) MUST be handled inside the `redirect` callback of GoRouter.
-- **Example of CORRECT routing guard:**
+## Commands
 
-```dart
-  redirect: (BuildContext context, GoRouterState state) {
-    final isAuthenticated = GetIt.I<AuthBloc>().state is AuthAuthenticated;
-    final isLoginRoute = state.matchedLocation == '/login';
+```bash
+# Install dependencies
+flutter pub get
 
-    if (!isAuthenticated && !isLoginRoute) return '/login';
-    if (isAuthenticated && isLoginRoute) return '/home';
-    return null;
-  }
+# Run code generation (required after creating/modifying Freezed/json_serializable classes)
+flutter pub run build_runner build --delete-conflicting-outputs
 
+# Run the app (real device strongly recommended for camera/Vision AI features)
+flutter run
+
+# Analyze / lint
+flutter analyze
+
+# Run tests
+flutter test
+
+# Run a single test file
+flutter test test/path/to/test_file.dart
 ```
 
-### 3. STRICT State Management Rules (BLoC & Offline-First)
+## Architecture
 
-- **UI State & Business Logic:** MUST use `flutter_bloc`. Never use standard `setState` for complex business logic, API calls, or global states. `setState` is strictly for localized, temporary UI animations/toggles.
-- **Immutable States:** All BLoC States and Events MUST be generated using `freezed` to ensure immutability.
-- **Offline-First Data Handling:** Use `hive_flutter` for local storage. When fetching data, the BLoC should ideally load from Hive first, show to the UI, then silently sync with the Dio API in the background.
+**Feature-First Clean Architecture** on a (target) **Supabase** backend. State management is **BLoC (`flutter_bloc`) + GetIt** service locator — this is the implemented and intended stack. (Note: the PRD mentions Riverpod, but `system_architecture.md` reconciles that to **BLoC + GetIt** as the actual stack — follow the architecture brief.)
 
-### 4. STRICT API & Data Layer
+Every feature under `lib/features/[name]/` splits into three layers:
+- `data/` — DTOs/models, data sources (Supabase; Dio today — legacy), repository implementations
+- `domain/` — pure Dart entities, repository contracts, use cases (single `call()`)
+- `presentation/` — BLoC (events/states via `freezed`), screens, feature-scoped widgets
 
-- **Location:** `lib/features/[feature-name]/data/` and `lib/features/[feature-name]/domain/`.
-- **Pattern:** - `RemoteDataSource`: Handles Dio HTTP calls.
-- `LocalDataSource`: Handles Hive offline storage.
-- `RepositoryImpl`: Implements the Domain repository, decides whether to fetch from local or remote based on network status.
-- `UseCase`: A class with a single `call()` method executing one specific business action.
+`lib/core/` holds cross-cutting concerns only. **Golden rule:** `core/` must not import from `features/`, and features must not import each other directly — cross-feature needs go through `shared/` or an exported `domain` contract.
 
-### 5. STRICT Form Handling & Typing
+### Key files
 
-- **Models & Serialization:** All data models coming from APIs MUST be parsed using `json_serializable` and `freezed`. DO NOT write manual `fromJson` or `toJson` methods.
-- **Form Validation:** Use standard Flutter `Form` and `TextFormField` combined with `GlobalKey<FormState>`.
-- **Validation Logic:** Extract validation logic (e.g., password strength, email format) into reusable mixins or utility classes inside `lib/core/utils/validators.dart`. Do not write complex regex inline inside the UI.
+| File | Purpose |
+|------|---------|
+| `lib/main.dart` | Entry point — loads `.env`, inits Hive, runs GetIt DI, then `runApp` |
+| `lib/app.dart` | Root widget — themes + GoRouter |
+| `lib/core/router/app_router.dart` | **Single source of truth for routes** |
+| `lib/core/constants/app_routes.dart` | Route path/name constants (`AppRoutes`) |
+| `lib/core/di/dependencies_injection_container.dart` | GetIt registrations (`sl`) |
+| `lib/core/middlewares/authentication_middleware.dart` | Global auth guard (token → redirect) |
+| `lib/core/middlewares/roles_middleware.dart` | Role-based route guard |
+| `lib/core/config/api_client.dart` | Dio REST client — **legacy, scheduled for Supabase replacement** |
 
-### 6. STRICT Component Hierarchy & Accessibility (A11y)
+### Routing
 
-- **`lib/core/widgets/`**: Common, globally used UI components (e.g., `PrimaryButton`, `CustomTextField`).
-- **`lib/features/.../presentation/widgets/`**: Feature-specific UI components.
-- **`lib/features/.../presentation/pages/`**: Smart components (Screens) that wrap UI with `BlocBuilder` or `BlocProvider`.
-- **ACCESSIBILITY IS MANDATORY:** Because the target audience is the elderly, you MUST:
-- Use `Semantics` widgets for screen readers.
-- Ensure large tap targets (minimum `48x48`).
-- Use high contrast colors from `lib/core/theme/app_colors.dart`.
-- Avoid complex gestures (no double-taps or complex swipes). Rely on simple, large tap buttons.
+- All routes live in `app_router.dart`. **Never use `Navigator.push`** — use `context.go()` / `context.push()`.
+- Global auth guard runs via GoRouter's top-level `redirect` (`AuthenticationMiddleware.guard`).
+- Role guards apply per `ShellRoute` via `RolesMiddleware.requireRole()`.
+- The `/developer` route is registered only when `AppInfo.isDevelopment`.
+- **Target:** add `opto://` deep links so Aura Voice intents map to routes (e.g. `opto://prosthetic/order`, `opto://sos`).
 
-### 7. TypeScript to Dart Equivalents & Best Practices
+### Global UI component library (`lib/core/widgets/`)
 
-- NO `dynamic` types allowed. Use explicit types for everything.
-- Use `const` constructors for Widgets wherever possible to optimize performance and prevent unnecessary rebuilds.
-- Handle all failures using a functional error handling approach (e.g., returning `Either<Failure, T>` using the `fpdart` or `dartz` package, or custom Result classes).
+A shadcn-style set of accessible primitives — a key asset for building the Opto design system. Existing groups: `accordions`, `alerts`, `badges`, `breadcumbs`, `buttons`, `calendars`, `cards`, `dropdowns`, `forms`, `inputs` (incl. `app_otp_field`), `sliders`, `switches`, `tables`, `tabs`. Feature-specific widgets go in `features/[name]/presentation/widgets/`.
 
-### 8. STRICT Constants & Configuration
+## Non-negotiable rules
 
-- **Assets (`assets/`):** Located in the project root. Separated into `images/`, `sounds/`, and `models/` (for AR .glb files).
-- **Config & Constants (`lib/core/constants/`):** For hardcoded, immutable values.
-- `api_endpoints.dart`: All API URLs.
-- `app_colors.dart` & `app_sizes.dart`: Centralized design system.
-- Do NOT hardcode colors or paddings directly in the widget tree.
+### Accessibility is part of "done" (the whole point of this app)
+Follow `design_system.md` §9, §15.4. Every screen:
+- Wrap interactive elements in `Semantics`/`MergeSemantics`; exclude decorative art with `ExcludeSemantics`.
+- Announce dynamic status (Vision AI result, form errors, "SOS sent") via live regions (`SemanticsService.announce` / `liveRegion: true`).
+- Tap targets ≥ **48×48 dp**; honor `MediaQuery.textScaler` up to **300%** with reflow (no clipping/overflow).
+- Contrast ≥ 4.5:1 text (≥ 3:1 large/borders). **Never encode meaning by color alone** — pair with text + icon + audio + haptic.
+- Drive haptics from the shared catalog (`design_system.md` §6); the long pulsing **danger/SOS** pattern is reserved and never reused.
+- Provide an **Aura Voice** path for the screen's core task. **No visual CAPTCHA anywhere.**
+- Default theme is **Light** (blue-on-white); Dark and High-Contrast are user options. Tokens are authored in OKLCH (see `design_system.md` §2). Primary font: **Atkinson Hyperlegible**.
 
-## Base Features Included
+### Data, security & state
+- **RLS is the authorization source of truth**, not the client. The Flutter app holds only the Supabase anon key; any elevated operation goes through an **Edge Function**. See `database_schema.md`.
+- **Medically sensitive (🔒) tables** (`anthropometric_data`, `eye_photos`, `consultations`, SOS) are owner-only and must **never** appear in community/map/catalog joins, nor be cached beyond session need.
+- Widgets never call `SupabaseClient`/`Dio` directly — depend on a feature **repository** returning domain entities.
+- Use `flutter_bloc` for business logic/state; `setState` only for localized UI toggles.
+- Models/states/events use `freezed` + `json_serializable` — no manual `fromJson`/`toJson`. Run `build_runner` after changes.
+- No `dynamic`; prefer `const` constructors; return typed `Failure`s (`lib/core/error/failures.dart`).
 
-- **Authentication Module:** Multi-role login (Elder, Doctor, Caregiver).
-- **AR Treatment Module:** 3D Instructor viewer using `model_viewer_plus`.
-- **AI Movement Tracker Module:** Offline real-time pose estimation using ML Kit to count reps.
-- **Gamification & Schedule:** XP, Badges, and adaptive local notifications.
+## Current state vs. target (migration in progress)
 
-## Directory Structure
+Before working in an area, check its status in `system_architecture.md` §0 and the **migration backlog (Appendix A)**. Highlights:
 
-```text
-ids_elder_rehab_app/
-├── assets/                             # Static physical files
-│   ├── images/
-│   ├── fonts/                          # Local fonts (e.g., Roboto)
-│   ├── models/                         # AR 3D Models (.glb)
-│   └── sounds/                         # Gamification SFX & Voice Guides
-├── lib/
-│   ├── core/                           # ⚙️ GLOBAL CORE (Shared everywhere)
-│   │   ├── config/                     # app_info.dart, api_client.dart (Dio config)
-│   │   ├── constants/                  # app_colors.dart, app_typography.dart, app_routes.dart
-│   │   ├── di/                         # injection_container.dart (GetIt setup)
-│   │   ├── error/                      # failures.dart, exceptions.dart
-│   │   ├── middlewares/                # auth_middleware.dart, role_guard.dart
-│   │   ├── router/                     # app_router.dart (GoRouter Registry)
-│   │   ├── themes/                     # app_themes.dart, app_custom_colors.dart
-│   │   ├── utils/                      # angle_calculator.dart, date_formatter.dart
-│   │   └── widgets/                    # 🧱 Global Reusable UI (PrimaryButton, CustomDialog)
-│   │
-│   ├── features/                       # 📦 MAIN FEATURE MODULES (Clean Architecture)
-│   │   │
-│   │   ├── auth/                       # 🔐 Authentication & Role Selection (Structure Blueprint)
-│   │   │   ├── data/                   # ➔ DATA LAYER (Handles API / Local DB Interactions)
-│   │   │   │   ├── datasources/        # API Execution (Dio) or Local Storage (Hive)
-│   │   │   │   ├── models/             # DTOs (Data Transfer Objects) with fromJson/toJson
-│   │   │   │   └── repositories/       # Concrete implementation of Domain layer contracts
-│   │   │   ├── domain/                 # ➔ CORE LAYER (Pure Business Logic)
-│   │   │   │   ├── entities/           # Pure Dart Objects (No JSON/external dependencies)
-│   │   │   │   ├── repositories/       # Contracts/Interfaces (Rules the Data layer must follow)
-│   │   │   │   └── usecases/           # Single specific business actions (e.g., LoginUseCase)
-│   │   │   └── presentation/           # ➔ UI LAYER (Screens & State Management)
-│   │   │       ├── bloc/               # BLoC (Manages state transitions like Loading/Success/Error)
-│   │   │       ├── screens/            # Full page views (e.g., LoginScreen)
-│   │   │       └── widgets/            # UI components strictly used ONLY within this feature
-│   │   │
-│   │   ├── ar_treatment/               # AR 3D Instruction Module
-│   │   │   ├── data/
-│   │   │   ├── domain/
-│   │   │   └── presentation/           # ar_viewer_page.dart, ar_instruction_overlay.dart
-│   │   │
-│   │   ├── ai_movement_tracker/        # AI Camera & Pose Detection (Offline)
-│   │   │   ├── domain/                 # detect_pose_usecase.dart, count_reps_usecase.dart
-│   │   │   └── presentation/           # smart_camera_page.dart, pose_painter.dart
-│   │   │
-│   │   ├── rehab_learning/             # 2D Video Micro-learning
-│   │   ├── gamification/               # XP, Badges, Leveling System
-│   │   ├── schedule_reminder/          # Local adaptive scheduling & notifications
-│   │   └── caregiver_feedback/         # Dashboard & monitoring module
-│   │
-│   └── app.dart                        # App Initialization (Routes, Themes)
-│   └── main.dart                       # App Entry Point & Provider Init
-│
-├── .env                                # Environment Variables (App Info, Base URL API)
-├── pubspec.yaml                        # Dependencies (flutter_bloc, dio, hive, get_it, flutter_dotenv)
-├── build.yaml                          # Freezed/Code Generation config
-└── gemini.md                           # 🤖 AI Agent Instructions
-```
+- **Backend:** currently Dio/REST + custom JWT (`core/config/api_client.dart`, `api_endpoints.dart`) → migrating to `supabase_flutter` (A-1).
+- **Roles:** legacy `lansia` role must become `user`; align enum to `user / caregiver / doctor / admin` (A-2).
+- **`dashboard/` feature:** contains rehab leftovers (`lansia_dashboard_screen`, `recovery_progress_card`) to be re-scoped into the Opto home/profile surface (A-3).
+- **Vision AI:** repo ships `google_mlkit_pose_detection` (wrong — body pose from the rehab app); replace with ML Kit Text Recognition + Object Detection + color CV, plus a `scene-describe` Edge Function (A-4).
+- **Built today (`✅`):** `onboarding`, `auth` (REST), `core/router`, `core/widgets`, DI container. **Planned (`⛔`):** `vision_ai`, `prosthetic_hub`, `consultation`, `connect`, `sos`, `map`, `profile`, `core/accessibility/`, `core/voice/`, `core/supabase/`.
+
+When implementing a `⛔ Planned` feature, build the full `presentation/domain/data` stack with a BLoC, follow the matching brief, and use the existing `core/widgets/` primitives.
