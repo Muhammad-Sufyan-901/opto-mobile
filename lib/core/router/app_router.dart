@@ -6,9 +6,11 @@ import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
 import 'package:ids_elder_rehab_app/core/middlewares/authentication_middleware.dart';
 import 'package:ids_elder_rehab_app/core/middlewares/roles_middleware.dart';
 import 'package:ids_elder_rehab_app/features/dashboard/presentation/screens/lansia_dashboard_screen.dart';
-import 'package:ids_elder_rehab_app/features/auth/presentation/screens/forgot_password_screen.dart';
-import 'package:ids_elder_rehab_app/features/auth/presentation/screens/login_screen.dart';
-import 'package:ids_elder_rehab_app/features/auth/presentation/screens/register_screen.dart';
+import 'package:ids_elder_rehab_app/features/auth/presentation/screens/sign_in_hub_screen.dart';
+import 'package:ids_elder_rehab_app/features/auth/presentation/screens/email_auth_screen.dart';
+import 'package:ids_elder_rehab_app/features/auth/presentation/screens/phone_auth_screen.dart';
+import 'package:ids_elder_rehab_app/features/auth/presentation/screens/otp_verify_screen.dart';
+import 'package:ids_elder_rehab_app/features/auth/presentation/screens/caregiver_setup_screen.dart';
 import 'package:ids_elder_rehab_app/features/dev/presentation/screens/dev_screen.dart';
 import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/splash_screen.dart';
 import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/welcome_screen.dart';
@@ -51,34 +53,53 @@ final GoRouter appRouter = GoRouter(
       ),
 
     // ==========================================
-    // Authentication Routes (Public)
+    // Authentication Routes (Public — Opto sign-in hub + sub-flows)
     // ==========================================
     ShellRoute(
       builder: (BuildContext context, GoRouterState state, Widget child) {
         return child;
       },
       routes: [
+        // 05 · Sign-in hub
         GoRoute(
           path: AppRoutes.login.path,
           name: AppRoutes.login.name,
           builder: (BuildContext context, GoRouterState state) {
-            // final String? errorMessage = state.uri.queryParameters['error'];
-
-            return const LoginScreen();
+            return const SignInHubScreen();
           },
         ),
+        // 06 · Email & password
         GoRoute(
-          path: AppRoutes.register.path,
-          name: AppRoutes.register.name,
+          path: AppRoutes.authEmail.path,
+          name: AppRoutes.authEmail.name,
           builder: (BuildContext context, GoRouterState state) {
-            return const RegisterScreen();
+            return const EmailAuthScreen();
           },
         ),
+        // 07 · Phone number
         GoRoute(
-          path: AppRoutes.forgotPassword.path,
-          name: AppRoutes.forgotPassword.name,
+          path: AppRoutes.authPhone.path,
+          name: AppRoutes.authPhone.name,
           builder: (BuildContext context, GoRouterState state) {
-            return const ForgotPasswordScreen();
+            return const PhoneAuthScreen();
+          },
+        ),
+        // 08 · OTP verification
+        GoRoute(
+          path: AppRoutes.authOtp.path,
+          name: AppRoutes.authOtp.name,
+          builder: (BuildContext context, GoRouterState state) {
+            final String phoneNumber =
+                (state.extra is String) ? state.extra as String : '+62 …';
+            return OtpVerifyScreen(phoneNumber: phoneNumber);
+          },
+        ),
+        // 09 · Caregiver / assisted setup
+        GoRoute(
+          path: AppRoutes.authCaregiver.path,
+          name: AppRoutes.authCaregiver.name,
+          builder: (BuildContext context, GoRouterState state) {
+            return const CaregiverSetupScreen();
           },
         ),
       ],

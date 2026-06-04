@@ -1,0 +1,172 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
+import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
+import 'package:ids_elder_rehab_app/core/themes/app_custom_colors.dart';
+import 'package:ids_elder_rehab_app/features/auth/presentation/widgets/auth_scaffold.dart';
+
+/// Screen 07 — Phone number entry.
+///
+/// Spec: `ScreenPhone` / `.scr-form` in `Opto Onboarding.html`.
+///
+/// Layout via [AuthFormScaffold]: back nav, scrollable body, pinned Send code.
+/// Country-code box is static (🇮🇩 +62); only the number field is editable.
+/// Pressing "Send code" pushes [OtpVerifyScreen].
+class PhoneAuthScreen extends StatefulWidget {
+  const PhoneAuthScreen({super.key});
+
+  @override
+  State<PhoneAuthScreen> createState() => _PhoneAuthScreenState();
+}
+
+class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
+  final _phoneController = TextEditingController();
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme cs = theme.colorScheme;
+    final Color ink2 =
+        theme.extension<AppExtendedCustomColors>()?.ink2 ??
+            cs.onSurfaceVariant;
+    final Color ink3 =
+        theme.extension<AppExtendedCustomColors>()?.ink3 ??
+            cs.onSurfaceVariant.withValues(alpha: 0.7);
+
+    return AuthFormScaffold(
+      ctaLabel: 'Send code',
+      ctaSuffixIcon: Icons.arrow_forward,
+      onCta: () => context.push(
+        AppRoutes.authOtp.path,
+        extra: _phoneController.text.trim(),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: AppDimensions.space8),
+
+          // ── Title ────────────────────────────────────
+          Semantics(
+            header: true,
+            child: Text(
+              "What's your number?",
+              style: theme.textTheme.displaySmall?.copyWith(
+                color: cs.onSurface,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: AppDimensions.space8),
+
+          Text(
+            "We'll text a 6-digit code to confirm it's you.",
+            style: theme.textTheme.bodyLarge?.copyWith(color: ink2),
+          ),
+
+          const SizedBox(height: AppDimensions.space24),
+
+          // ── Phone row: country-code + number ─────────
+          Semantics(
+            label: 'Phone number — country code Indonesia +62',
+            child: Row(
+              children: [
+                // Country-code box — static, read-only.
+                Container(
+                  height: AppDimensions.inputHeight,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.space16,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusInput),
+                    border: Border.all(color: cs.outline, width: 2),
+                    color: cs.surface,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🇮🇩', style: TextStyle(fontSize: 22)),
+                      const SizedBox(width: AppDimensions.space8),
+                      Text(
+                        '+62',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: AppDimensions.space12),
+
+                // Number input.
+                Expanded(
+                  child: SizedBox(
+                    height: AppDimensions.inputHeight,
+                    child: TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      textInputAction: TextInputAction.done,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: cs.onSurface,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: '812 3456 7890',
+                        hintStyle: theme.textTheme.titleMedium?.copyWith(
+                          color: ink3,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: AppDimensions.space16,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusInput,
+                          ),
+                          borderSide: BorderSide(
+                            color: cs.outline,
+                            width: 2,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusInput,
+                          ),
+                          borderSide: BorderSide(
+                            color: cs.primary,
+                            width: 2,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: cs.surface,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: AppDimensions.space12),
+
+          // ── Note ──────────────────────────────────────
+          Text(
+            'Standard message rates may apply.',
+            style: theme.textTheme.bodySmall?.copyWith(color: ink3),
+          ),
+
+          const SizedBox(height: AppDimensions.space16),
+        ],
+      ),
+    );
+  }
+}

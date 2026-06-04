@@ -6,8 +6,10 @@ class RouteHelper {
     AppRoutes.splash.path,
     AppRoutes.onboarding.path,
     AppRoutes.login.path,
-    AppRoutes.register.path,
-    AppRoutes.forgotPassword.path,
+    AppRoutes.authEmail.path,
+    AppRoutes.authPhone.path,
+    AppRoutes.authOtp.path,
+    AppRoutes.authCaregiver.path,
     AppRoutes.lansiaDashboard.path,
     if (AppInfo.isDevelopment) AppRoutes.developer.path,
   };

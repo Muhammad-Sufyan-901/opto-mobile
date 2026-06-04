@@ -32,18 +32,35 @@ abstract class AppRoutes {
     name: 'developer',
   );
 
-  // Auth routes (Login, Register, Forgot Password)
+  // Auth routes — Opto sign-in hub + sub-flows
+  /// Sign-in hub — method selection (Google / email / phone / caregiver).
   static const AppRoute login = AppRoute(
     path: '/login',
     name: 'login',
   );
-  static const AppRoute register = AppRoute(
-    path: '/register',
-    name: 'register',
+
+  /// Email & password entry.
+  static const AppRoute authEmail = AppRoute(
+    path: '/auth/email',
+    name: 'auth_email',
   );
-  static const AppRoute forgotPassword = AppRoute(
-    path: '/forgot-password',
-    name: 'forgot-password',
+
+  /// Phone number entry → OTP.
+  static const AppRoute authPhone = AppRoute(
+    path: '/auth/phone',
+    name: 'auth_phone',
+  );
+
+  /// OTP verification.
+  static const AppRoute authOtp = AppRoute(
+    path: '/auth/otp',
+    name: 'auth_otp',
+  );
+
+  /// Caregiver / assisted setup.
+  static const AppRoute authCaregiver = AppRoute(
+    path: '/auth/caregiver',
+    name: 'auth_caregiver',
   );
 
   // Lansia routes (Grouped with "/lansia" as parent)

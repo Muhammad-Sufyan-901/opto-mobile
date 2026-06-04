@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ids_elder_rehab_app/core/themes/app_themes.dart';
-import 'package:ids_elder_rehab_app/features/onboarding/presentation/models/welcome_slide_data.dart';
+import 'package:ids_elder_rehab_app/features/onboarding/data/models/welcome_slide_data.dart';
 import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/splash_screen.dart';
 import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/welcome_screen.dart';
 import 'package:ids_elder_rehab_app/features/onboarding/presentation/widgets/page_dots.dart';

@@ -1,18 +1,32 @@
 import 'package:flutter/material.dart';
 
-/// The Opto brand mark: a rounded square with a semi-transparent white fill
-/// containing an aperture icon (outer stroked circle + filled inner dot).
+/// The Opto brand mark: a rounded square containing an aperture icon.
 ///
-/// Matches the design spec: 104×104dp container, radius 32, background
-/// `rgba(255,255,255,0.15)`, aperture drawn at 52dp in white.
+/// **Splash / blue-surface variant** (defaults): 104×104dp, radius 32,
+/// white foreground at 15% alpha fill, 52dp white aperture.
 ///
-/// Reuse on any blue surface (splash, future loading states, etc.).
+/// **Auth-hub variant**: 60×60dp, radius 18, [backgroundColor] supplied
+/// as `blueTint`, icon [color] as `primary`.
+///
+/// ```dart
+/// // Splash (default):
+/// const OptoBrandMark()
+///
+/// // Auth hub (pass explicit colours from Theme):
+/// OptoBrandMark(
+///   size: 60, iconSize: 30, radius: 18,
+///   backgroundColor: ext.blueTint,
+///   color: cs.primary,
+/// )
+/// ```
 class OptoBrandMark extends StatelessWidget {
   const OptoBrandMark({
     super.key,
     this.size = 104.0,
     this.iconSize = 52.0,
     this.color = Colors.white,
+    this.backgroundColor,
+    this.radius = 32.0,
   });
 
   /// Overall container side length — 104dp per design spec.
@@ -21,11 +35,21 @@ class OptoBrandMark extends StatelessWidget {
   /// Diameter of the aperture icon — 52dp per design spec.
   final double iconSize;
 
-  /// Foreground colour for both the mark container tint and icon strokes.
+  /// Foreground colour for the icon strokes.
+  /// Defaults to white (splash on blue surface).
   final Color color;
+
+  /// Explicit container background colour.
+  /// When null, falls back to `color.withValues(alpha: 0.15)` (splash default).
+  final Color? backgroundColor;
+
+  /// Container corner radius — 32 for splash, 18 for auth hub.
+  final double radius;
 
   @override
   Widget build(BuildContext context) {
+    final Color fill = backgroundColor ?? color.withValues(alpha: 0.15);
+
     return Semantics(
       // Treated as a decorative logo; the adjacent "Opto" wordmark carries
       // the meaningful label so screen readers don't double-announce.
@@ -35,8 +59,8 @@ class OptoBrandMark extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(32),
+          color: fill,
+          borderRadius: BorderRadius.circular(radius),
         ),
         child: Center(
           child: CustomPaint(
