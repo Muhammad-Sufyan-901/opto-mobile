@@ -25,6 +25,7 @@ import 'package:ids_elder_rehab_app/features/connect/presentation/screens/commun
 import 'package:ids_elder_rehab_app/features/profile/presentation/screens/profile_screen.dart';
 import 'package:ids_elder_rehab_app/features/setup/presentation/screens/setup_done_screen.dart';
 import 'package:ids_elder_rehab_app/features/sos/presentation/screens/sos_active_screen.dart';
+import 'package:ids_elder_rehab_app/features/voice/presentation/screens/aura_voice_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   debugLogDiagnostics: true,
@@ -382,6 +383,14 @@ final GoRouter appRouter = GoRouter(
       name: AppRoutes.sos.name,
       builder: (BuildContext context, GoRouterState state) =>
           const SosActiveScreen(),
+    ),
+
+    // Screen 22 — Aura Voice
+    GoRoute(
+      path: AppRoutes.auraVoice.path,
+      name: AppRoutes.auraVoice.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const AuraVoiceScreen(),
     ),
 
     // ==========================================
