@@ -19,6 +19,7 @@ import 'package:ids_elder_rehab_app/features/setup/presentation/screens/vision_p
 import 'package:ids_elder_rehab_app/features/setup/presentation/screens/display_setup_screen.dart';
 import 'package:ids_elder_rehab_app/features/setup/presentation/screens/voice_setup_screen.dart';
 import 'package:ids_elder_rehab_app/features/setup/presentation/screens/permissions_setup_screen.dart';
+import 'package:ids_elder_rehab_app/features/consultation/presentation/screens/consult_screen.dart';
 import 'package:ids_elder_rehab_app/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
 import 'package:ids_elder_rehab_app/features/setup/presentation/screens/setup_done_screen.dart';
 
@@ -346,6 +347,14 @@ final GoRouter appRouter = GoRouter(
       builder: (BuildContext context, GoRouterState state) {
         return const ProstheticHubScreen();
       },
+    ),
+
+    // Screen 18 — Consult
+    GoRoute(
+      path: AppRoutes.consult.path,
+      name: AppRoutes.consult.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const ConsultScreen(),
     ),
 
     // ==========================================
