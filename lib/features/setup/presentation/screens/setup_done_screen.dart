@@ -171,11 +171,8 @@ class _SetupDoneScreenState extends State<SetupDoneScreen> {
                   foregroundColor: cs.primary,
                 ),
                 onPressed: () {
-                  // Navigate to the current home (lansia dashboard is the
-                  // only built landing; replace with the Opto home once
-                  // the home/dashboard module is complete — see A-3 in
-                  // system_architecture.md).
-                  context.go(AppRoutes.lansiaDashboard.path);
+                  // Navigate to the Opto Home Dashboard (screen 15).
+                  context.go(AppRoutes.home.path);
                 },
               ),
             ),

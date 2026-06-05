@@ -16,6 +16,10 @@ class RouteHelper {
     AppRoutes.setupVoice.path,
     AppRoutes.setupPermissions.path,
     AppRoutes.setupDone.path,
+    // Home dashboard is public while auth is stubbed so the post-setup
+    // redirect from SetupDoneScreen is not blocked by the auth guard.
+    // Remove once SetupCubit persists a session token (A-1 migration).
+    AppRoutes.home.path,
     AppRoutes.lansiaDashboard.path,
     if (AppInfo.isDevelopment) AppRoutes.developer.path,
   };
@@ -32,10 +36,13 @@ class RouteHelper {
     final Map<String, String> roleDashboards = {
       'doctor': AppRoutes.doctorDashboard.path,
       'caregiver': AppRoutes.caregiverDashboard.path,
-      'lansia': AppRoutes.lansiaDashboard.path,
+      // Legacy role kept until A-2 migration renames it to 'user'.
+      'lansia': AppRoutes.home.path,
+      // Opto primary role → Home Dashboard.
+      'user': AppRoutes.home.path,
     };
 
-    // Return dashboard route based on role
-    return roleDashboards[lowerRole] ?? AppRoutes.lansiaDashboard.path;
+    // Default: fall back to the Opto Home Dashboard.
+    return roleDashboards[lowerRole] ?? AppRoutes.home.path;
   }
 }

@@ -6,6 +6,7 @@ import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
 import 'package:ids_elder_rehab_app/core/middlewares/authentication_middleware.dart';
 import 'package:ids_elder_rehab_app/core/middlewares/roles_middleware.dart';
 import 'package:ids_elder_rehab_app/features/dashboard/presentation/screens/lansia_dashboard_screen.dart';
+import 'package:ids_elder_rehab_app/features/home/presentation/screens/home_screen.dart';
 import 'package:ids_elder_rehab_app/features/auth/presentation/screens/sign_in_hub_screen.dart';
 import 'package:ids_elder_rehab_app/features/auth/presentation/screens/email_auth_screen.dart';
 import 'package:ids_elder_rehab_app/features/auth/presentation/screens/phone_auth_screen.dart';
@@ -299,16 +300,31 @@ final GoRouter appRouter = GoRouter(
         ),
       ],
     ),
-    // Handle direct access to lansia route prefix (e.g. /lansia)
+    // Handle direct access to lansia route prefix (e.g. /lansia) →
+    // redirect to the new Opto Home screen (A-3 migration).
     GoRoute(
       path: AppRoutes.lansiaRoutePrefix,
       redirect: (BuildContext context, GoRouterState state) {
-        return AppRoutes.lansiaDashboard.path;
+        return AppRoutes.home.path;
       },
     ),
 
     // ==========================================
-    // Lansia Dashboard (Temporary Public Route)
+    // Opto Home Dashboard (Screen 15)
+    // Replaces the rehab-leftover LansiaDashboardScreen as the main
+    // post-setup landing screen. See system_architecture.md A-3.
+    // ==========================================
+    GoRoute(
+      path: AppRoutes.home.path,
+      name: AppRoutes.home.name,
+      builder: (BuildContext context, GoRouterState state) {
+        return const HomeScreen();
+      },
+    ),
+
+    // ==========================================
+    // Lansia Dashboard (Legacy — kept to avoid dangling references.
+    // Unreachable from the main navigation flow. Remove as part of A-3.)
     // ==========================================
     GoRoute(
       path: AppRoutes.lansiaDashboard.path,

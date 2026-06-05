@@ -13,6 +13,13 @@ abstract class AppRoutes {
   static const String caregiverRoutePrefix = '/caregiver';
   static const String lansiaRoutePrefix = '/lansia';
 
+  // ── Home / Dashboard ──────────────────────────────────────────────────────
+  /// Main Opto Home Dashboard — reached after setup completes (screen 15).
+  static const AppRoute home = AppRoute(
+    path: '/home',
+    name: 'home',
+  );
+
   // Onboarding routes
   /// Brand splash — shown on first launch, auto-advances to [onboarding].
   static const AppRoute splash = AppRoute(
