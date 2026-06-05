@@ -24,6 +24,7 @@ import 'package:ids_elder_rehab_app/features/prosthetic_hub/presentation/screens
 import 'package:ids_elder_rehab_app/features/connect/presentation/screens/community_screen.dart';
 import 'package:ids_elder_rehab_app/features/profile/presentation/screens/profile_screen.dart';
 import 'package:ids_elder_rehab_app/features/setup/presentation/screens/setup_done_screen.dart';
+import 'package:ids_elder_rehab_app/features/sos/presentation/screens/sos_active_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   debugLogDiagnostics: true,
@@ -373,6 +374,14 @@ final GoRouter appRouter = GoRouter(
       name: AppRoutes.profile.name,
       builder: (BuildContext context, GoRouterState state) =>
           const ProfileScreen(),
+    ),
+
+    // Screen 21 — Emergency SOS
+    GoRoute(
+      path: AppRoutes.sos.path,
+      name: AppRoutes.sos.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const SosActiveScreen(),
     ),
 
     // ==========================================
