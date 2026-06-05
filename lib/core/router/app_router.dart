@@ -25,6 +25,7 @@ import 'package:ids_elder_rehab_app/features/connect/presentation/screens/commun
 import 'package:ids_elder_rehab_app/features/profile/presentation/screens/profile_screen.dart';
 import 'package:ids_elder_rehab_app/features/setup/presentation/screens/setup_done_screen.dart';
 import 'package:ids_elder_rehab_app/features/sos/presentation/screens/sos_active_screen.dart';
+import 'package:ids_elder_rehab_app/features/vision_ai/presentation/screens/vision_ai_screen.dart';
 import 'package:ids_elder_rehab_app/features/voice/presentation/screens/aura_voice_screen.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -343,6 +344,15 @@ final GoRouter appRouter = GoRouter(
     // ==========================================
     // Module Destination Routes (Screens 16–22)
     // ==========================================
+
+    // Screen 16 — Vision AI
+    GoRoute(
+      path: AppRoutes.visionAi.path,
+      name: AppRoutes.visionAi.name,
+      builder: (BuildContext context, GoRouterState state) {
+        return const VisionAiScreen();
+      },
+    ),
 
     // Screen 17 — Prosthetic Hub
     GoRoute(

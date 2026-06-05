@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
+import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
 import 'package:ids_elder_rehab_app/features/home/presentation/widgets/aura_voice_card.dart';
 import 'package:ids_elder_rehab_app/features/home/presentation/widgets/home_bottom_nav.dart';
 import 'package:ids_elder_rehab_app/features/home/presentation/widgets/home_info_row.dart';
@@ -88,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: AppDimensions.sectionGap),
 
               // ── 2. Aura Voice pill ─────────────────────────────────
-              const AuraVoiceCard(),
+              AuraVoiceCard(onTap: () => context.go(AppRoutes.auraVoice.path)),
 
               const SizedBox(height: AppDimensions.sectionGap),
 
@@ -98,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: AppDimensions.sectionGap),
 
               // ── 4. Emergency SOS card ──────────────────────────────
-              const SosCard(),
+              SosCard(onTap: () => context.go(AppRoutes.sos.path)),
 
               const SizedBox(height: AppDimensions.sectionGap),
 

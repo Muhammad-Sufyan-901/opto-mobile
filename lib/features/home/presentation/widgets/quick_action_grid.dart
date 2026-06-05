@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
 import 'package:ids_elder_rehab_app/core/themes/app_custom_colors.dart';
@@ -25,24 +26,28 @@ class QuickActionGrid extends StatelessWidget {
       label: 'Vision AI',
       sub: 'See & read for me',
       semanticLabel: 'Vision AI. See and read for me.',
+      route: '/vision-ai',
     ),
     _QuickAction(
       icon: Icons.accessibility_new,
       label: 'Prosthetic Hub',
       sub: 'Care & fitting',
       semanticLabel: 'Prosthetic Hub. Care and fitting.',
+      route: '/prosthetic-hub',
     ),
     _QuickAction(
       icon: Icons.medical_services_outlined,
       label: 'Consult Doctor',
       sub: 'Book or call',
       semanticLabel: 'Consult Doctor. Book or call.',
+      route: '/consult',
     ),
     _QuickAction(
       icon: Icons.forum_outlined,
       label: 'Community',
       sub: 'Talk & share',
       semanticLabel: 'Community. Talk and share.',
+      route: '/community',
     ),
   ];
 
@@ -111,9 +116,7 @@ class _QuickActionTile extends StatelessWidget {
       button: true,
       label: action.semanticLabel,
       child: GestureDetector(
-        onTap: () {
-          // TODO: navigate to respective feature module (⛔ Planned).
-        },
+        onTap: () => context.go(action.route),
         child: Container(
           constraints: const BoxConstraints(minHeight: 120),
           padding: const EdgeInsets.all(AppDimensions.cardPadding),
@@ -193,11 +196,13 @@ class _QuickAction {
   final String label;
   final String sub;
   final String semanticLabel;
+  final String route;
 
   const _QuickAction({
     required this.icon,
     required this.label,
     required this.sub,
     required this.semanticLabel,
+    required this.route,
   });
 }

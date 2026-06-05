@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:ids_elder_rehab_app/core/themes/app_custom_colors.dart';
 
@@ -18,6 +19,14 @@ class HomeBottomNav extends StatelessWidget {
 
   /// Zero-based index of the currently active tab.
   final int activeTab;
+
+  static const List<String> _routes = [
+    '/home',
+    '/vision-ai',
+    '/community',
+    '/consult',
+    '/profile',
+  ];
 
   static const List<_TabItem> _tabs = [
     _TabItem(
@@ -74,10 +83,9 @@ class HomeBottomNav extends StatelessWidget {
               button: true,
               selected: active,
               child: GestureDetector(
-                // TODO: wire tab navigation once ⛔ Planned modules are built.
-                // Tab switch should call SemanticsService.announce + selectionClick
-                // haptic per design_system.md §12.
-                onTap: () {},
+                // TODO: add SemanticsService.announce + selectionClick haptic
+                // per design_system.md §12.
+                onTap: () => context.go(_routes[i]),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
