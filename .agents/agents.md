@@ -55,24 +55,23 @@ Use these shortcuts to trigger specific workflows:
 
 ## Skills Activation (CRITICAL)
 
-The designated agents MUST activate relevant skills from `.agents/skills/` before execution:
+The designated agents MUST activate relevant skills from `.agents/skills/` before execution.
+Only the skills listed below exist in the folder — activate by exact folder name.
 
-- `skills/accessibility` — **@frontend** MUST ACTIVATE for WCAG 2.2 AA, TalkBack/VoiceOver semantics, focus order, and live regions.
-- `skills/flutter-clean-architecture` — **@frontend** MUST ACTIVATE for feature-first layering (presentation/domain/data).
-- `skills/flutter-accessibility-widgets` — **@frontend** MUST ACTIVATE for `Semantics`, `MergeSemantics`, `ExcludeSemantics`, `HapticFeedback`, and `MediaQuery.textScaler`.
-- `skills/riverpod-state` — **@frontend** MUST ACTIVATE for Riverpod providers, DI, and testable state.
-- `skills/go-router-deeplinks` — **@frontend** MUST ACTIVATE for named routes and Aura Voice intent deep-links.
-- `skills/aura-voice-intents` — **@frontend** MUST ACTIVATE for STT + natural-language intent → route mapping.
-- `skills/supabase-postgres-rls` — **@backend** MUST ACTIVATE for migrations and Row Level Security policies.
-- `skills/supabase-auth` — **@backend** MUST ACTIVATE for OTP/biometric auth flows (no visual CAPTCHA).
-- `skills/supabase-storage` — **@backend** MUST ACTIVATE for buckets and private/medical-sensitive object policies.
-- `skills/supabase-realtime` — **@backend** MUST ACTIVATE for Connect, SOS, and consultation signaling channels.
-- `skills/supabase-edge-functions` — **@backend** MUST ACTIVATE for Deno/TypeScript server-only logic (scene-describe, sos-dispatch, notifications, payments).
-- `skills/ml-kit-on-device` — **@frontend** MUST ACTIVATE for on-device OCR / object detection / color ID.
-- `skills/webrtc-telemedicine` — **@frontend** & **@backend** MUST ACTIVATE for video consultation + Realtime signaling.
-- `skills/flutter-testing` — **@qa** MUST ACTIVATE for `flutter_test`, widget/golden tests, and Accessibility Guidelines API checks.
-- `skills/frontend-design` — **@frontend** MUST ACTIVATE for the accessibility-first design system (tokens, contrast, layout).
+### @frontend
+- `skills/flutter-expert` — MUST ACTIVATE for Flutter 3+ widget development, BLoC state management, GoRouter navigation, platform-specific code, and performance optimization.
+- `skills/accessibility` — MUST ACTIVATE for WCAG 2.2 AA, TalkBack/VoiceOver semantics, screen-reader support, focus order, keyboard navigation, and live regions.
+- `skills/frontend-design` — MUST ACTIVATE for the accessibility-first design system (tokens, contrast, typography, layout).
+- `skills/flutter-animations` — MUST ACTIVATE for implicit/explicit animations, transitions, and motion effects (respect reduced-motion preferences).
+- `skills/dart-best-practices` — MUST ACTIVATE for Dart code style, Effective Dart, and language features.
 
-> If a referenced skill folder does not yet exist in `.agents/skills/`, treat its description above as the activation guideline and proceed.
+### @backend
+- `skills/supabase` — MUST ACTIVATE for ANY Supabase work: Database, Auth (OTP/biometric, JWT, sessions), Row Level Security, Edge Functions, Realtime, Storage, migrations, CLI/MCP, and security audits.
+- `skills/supabase-postgres-best-practices` — MUST ACTIVATE for Postgres query, schema, and index performance optimization.
+
+### @qa
+- `skills/flutter-testing` — MUST ACTIVATE for `flutter_test` unit/widget/integration tests, golden tests, Accessibility Guidelines API checks, Mockito/mocktail doubles, and `build_runner` mock generation.
+
+> If a task needs a capability not covered by an existing skill folder (e.g. ML Kit on-device CV, WebRTC telemedicine, Aura Voice intents), proceed using the relevant `.agents/app/` brief as the guideline rather than referencing a non-existent skill.
 
 **CRITICAL RULE:** All agents MUST read `.agents/app/product_requirements.md`, `.agents/app/system_architecture.md`, `.agents/app/database_schema.md`, and `.agents/app/design_system.md` before executing any task. The consolidated `design_system.md` now contains the full screen-by-screen breakdown for both the onboarding/entry flow and the in-app Home + module screens.

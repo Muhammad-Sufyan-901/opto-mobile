@@ -15,6 +15,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 When a task touches a feature, open the relevant brief(s) and follow them. If code and a brief disagree, the brief describes the intended target — check `system_architecture.md` §0 to see whether that area is `✅ Built`, `🟡 Partial`, or `⛔ Planned` before assuming the code is correct.
 
+## ⚙️ Activate skills before generating any response
+
+**Before writing or modifying any code, activate the relevant skills from `.agents/skills/`.** The full activation rules live in `.agents/agents.md` → "Skills Activation (CRITICAL)". Summary:
+
+| Role | Skills to activate |
+|------|--------------------|
+| Frontend work | `flutter-expert` · `accessibility` · `frontend-design` · `flutter-animations` · `dart-best-practices` |
+| Backend / Supabase work | `supabase` · `supabase-postgres-best-practices` |
+| Testing / QA | `flutter-testing` |
+
+Activate by exact folder name (e.g. `skills/flutter-expert`). For capabilities not covered by an existing skill (ML Kit, WebRTC, Aura Voice intents), use the relevant `.agents/app/` brief as the guideline instead.
+
 ## What this project actually is
 
 **Opto** — *"Your world, made clear."* An accessibility-first **super app** (Flutter, Android + iOS) for **blind, low-vision, and ocular-prosthesis users**. Every feature must be completable **without looking at the screen**. Eight modules: Prosthetic Hub, Health & Consultation, Vision AI ("Aura"), Connect (community), Emergency SOS, Accessibility Map, Aura Voice, Profile/Settings.
