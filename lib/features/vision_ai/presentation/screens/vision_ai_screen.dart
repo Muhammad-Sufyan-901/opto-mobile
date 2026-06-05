@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
 import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
 
 /// Screen 16 — Vision AI Camera Viewfinder.
@@ -113,8 +114,8 @@ class _VisionAiScreenState extends State<VisionAiScreen> {
 
                     // ── 3. Readout pill ──────────────────────────────────
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18)
-                          .copyWith(bottom: 18),
+                      padding: const EdgeInsets.symmetric(horizontal: 18) // design spec: 18dp
+                          .copyWith(bottom: AppDimensions.space16),
                       child: _ReadoutPill(primaryColor: cs.primary),
                     ),
 
@@ -151,7 +152,7 @@ class _TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: AppDimensions.space12), // design spec: 18dp horizontal
       child: Row(
         children: [
           // Close button.
@@ -341,7 +342,7 @@ class _ReadoutPill extends StatelessWidget {
       liveRegion: true,
       label: 'Read aloud: $_readoutText',
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space12, vertical: AppDimensions.space12),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.10),
           border: Border.all(
@@ -402,7 +403,7 @@ class _ModeChipRow extends StatelessWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 18).copyWith(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 18).copyWith(bottom: AppDimensions.space16), // design spec: 18dp horizontal
       child: Row(
         children: [
           for (int i = 0; i < modes.length; i++) ...[
@@ -443,7 +444,7 @@ class _ModeChip extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space12, vertical: AppDimensions.space8),
           decoration: BoxDecoration(
             color: isActive ? primaryColor : Colors.white.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(11),
@@ -469,7 +470,7 @@ class _ShutterRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 26),
+      padding: const EdgeInsets.symmetric(horizontal: 36, vertical: AppDimensions.space24), // design spec: 36dp horizontal shutter padding
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -498,7 +499,7 @@ class _ShutterRow extends StatelessWidget {
           // Center: shutter button (white bordered ring → white filled disc).
           Semantics(
             button: true,
-            label: 'Capture',
+            label: 'Capture photo',
             child: GestureDetector(
               onTap: () {
                 // TODO(vision-ai): trigger camera capture via CameraController.
@@ -526,7 +527,7 @@ class _ShutterRow extends StatelessWidget {
           // Right: mic button.
           Semantics(
             button: true,
-            label: 'Voice command',
+            label: 'Open voice commands',
             child: GestureDetector(
               onTap: () {
                 // TODO(vision-ai): open Aura Voice command sheet.
