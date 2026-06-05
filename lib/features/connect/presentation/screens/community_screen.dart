@@ -91,76 +91,66 @@ class _CommunityScreenState extends State<CommunityScreen> {
     return Scaffold(
       backgroundColor: cs.surface,
       bottomNavigationBar: const HomeBottomNav(activeTab: 2),
+      floatingActionButton: _ComposeFab(cs: cs),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: SafeArea(
-        child: Stack(
-          children: [
-            // ── Scrollable content ────────────────────────────────────────
-            SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  left: 22,
-                  right: 22,
-                  top: 14,
-                  bottom: 96,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // ── Header row ─────────────────────────────────────────
-                    _HeaderRow(
-                      cs: cs,
-                      blueTint: blueTint,
-                      blueStrong: blueStrong,
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    // ── Topic chip row ─────────────────────────────────────
-                    _TopicChipRow(
-                      topics: _topics,
-                      activeIndex: _activeChip,
-                      cs: cs,
-                      line: line,
-                      ink2: ink2,
-                      onChanged: (i) => setState(() => _activeChip = i),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    // ── Post list ──────────────────────────────────────────
-                    Column(
-                      children: List.generate(_posts.length, (i) {
-                        final post = _posts[i];
-                        final bool liked = _liked[i] ?? false;
-
-                        return Padding(
-                          padding: EdgeInsets.only(
-                            bottom: i < _posts.length - 1 ? 14 : 0,
-                          ),
-                          child: _PostCard(
-                            post: post,
-                            liked: liked,
-                            cs: cs,
-                            line: line,
-                            ink2: ink2,
-                            ink3: ink3,
-                            onLike: () => _toggleLike(i),
-                          ),
-                        );
-                      }),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // ── Compose FAB ────────────────────────────────────────────────
-            Positioned(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.only(
+              left: 22,
+              right: 22,
+              top: 14,
               bottom: 96,
-              right: 20,
-              child: _ComposeFab(cs: cs),
             ),
-          ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Header row ─────────────────────────────────────────
+                _HeaderRow(
+                  cs: cs,
+                  blueTint: blueTint,
+                  blueStrong: blueStrong,
+                ),
+
+                const SizedBox(height: 14),
+
+                // ── Topic chip row ─────────────────────────────────────
+                _TopicChipRow(
+                  topics: _topics,
+                  activeIndex: _activeChip,
+                  cs: cs,
+                  line: line,
+                  ink2: ink2,
+                  onChanged: (i) => setState(() => _activeChip = i),
+                ),
+
+                const SizedBox(height: 18),
+
+                // ── Post list ──────────────────────────────────────────
+                Column(
+                  children: List.generate(_posts.length, (i) {
+                    final post = _posts[i];
+                    final bool liked = _liked[i] ?? false;
+
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: i < _posts.length - 1 ? 14 : 0,
+                      ),
+                      child: _PostCard(
+                        post: post,
+                        liked: liked,
+                        cs: cs,
+                        line: line,
+                        ink2: ink2,
+                        ink3: ink3,
+                        onLike: () => _toggleLike(i),
+                      ),
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -361,7 +351,12 @@ class _PostCard extends StatelessWidget {
     // _isInitiallyLiked == true  → seed already included +1; un-liking removes it.
     // _isInitiallyLiked == false → seed did not include +1; liking adds it.
     final int displayLikes =
-        post.likes + (liked == _isInitiallyLiked ? 0 : liked ? 1 : -1);
+        post.likes +
+        (liked == _isInitiallyLiked
+            ? 0
+            : liked
+            ? 1
+            : -1);
 
     return Semantics(
       container: true,
