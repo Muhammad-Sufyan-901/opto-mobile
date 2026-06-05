@@ -100,6 +100,7 @@ class _CaregiverSetupScreenState extends State<CaregiverSetupScreen> {
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: cs.onSurface,
                         height: 1.45,
+                        fontSize: 15.5,
                       ),
                     ),
                   ),

@@ -68,7 +68,10 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
 
           Text(
             "We'll text a 6-digit code to confirm it's you.",
-            style: theme.textTheme.bodyLarge?.copyWith(color: ink2),
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: ink2,
+              fontSize: 16.5,
+            ),
           ),
 
           const SizedBox(height: AppDimensions.space24),
@@ -161,7 +164,10 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
           // ── Note ──────────────────────────────────────
           Text(
             'Standard message rates may apply.',
-            style: theme.textTheme.bodySmall?.copyWith(color: ink3),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: ink3,
+              fontSize: 14,
+            ),
           ),
 
           const SizedBox(height: AppDimensions.space16),

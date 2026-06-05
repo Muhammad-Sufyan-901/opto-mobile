@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
 import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
 import 'package:ids_elder_rehab_app/core/themes/app_custom_colors.dart';
-import 'package:ids_elder_rehab_app/core/widgets/buttons/app_button.dart';
 import 'package:ids_elder_rehab_app/core/widgets/forms/app_form_field.dart';
 import 'package:ids_elder_rehab_app/core/widgets/inputs/app_input_field.dart';
 import 'package:ids_elder_rehab_app/features/auth/presentation/widgets/auth_scaffold.dart';
@@ -81,7 +80,10 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
 
             Text(
               "We'll keep your account safe and synced.",
-              style: theme.textTheme.bodyLarge?.copyWith(color: ink2),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: ink2,
+                fontSize: 16.5,
+              ),
             ),
 
             const SizedBox(height: AppDimensions.space24),
@@ -113,16 +115,35 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
             const SizedBox(height: AppDimensions.space8),
 
             // ── Forgot password link ───────────────────────
-            AppButton.link(
-              text: 'Forgot password?',
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Password reset — coming soon'),
-                    behavior: SnackBarBehavior.floating,
+            // Matches design's `.form-link`: 16px bold blue, no underline,
+            // left-aligned inline text. Min-height padded to meet ≥48dp tap target.
+            Semantics(
+              button: true,
+              label: 'Forgot password?',
+              child: GestureDetector(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Password reset — coming soon'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppDimensions.space12,
                   ),
-                );
-              },
+                  child: Text(
+                    'Forgot password?',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: theme.colorScheme.primary,
+                      fontFamily: 'Atkinson Hyperlegible',
+                    ),
+                  ),
+                ),
+              ),
             ),
 
             const SizedBox(height: AppDimensions.space16),

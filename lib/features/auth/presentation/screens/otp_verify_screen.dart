@@ -122,7 +122,10 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
 
           Text(
             'Sent to ${widget.phoneNumber}. It may take a moment.',
-            style: theme.textTheme.bodyLarge?.copyWith(color: ink2),
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: ink2,
+              fontSize: 16.5,
+            ),
           ),
 
           const SizedBox(height: AppDimensions.space24),
@@ -146,7 +149,10 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
               children: [
                 Text(
                   "Didn't get it? ",
-                  style: theme.textTheme.bodyMedium?.copyWith(color: ink2),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: ink2,
+                    fontSize: 15.5,
+                  ),
                 ),
                 GestureDetector(
                   onTap: _resendCountdown == 0 ? _startResendCountdown : null,
@@ -158,6 +164,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                           ? TextDecoration.underline
                           : null,
                       fontWeight: FontWeight.w700,
+                      fontSize: 15.5,
                     ),
                   ),
                 ),

@@ -84,10 +84,13 @@ class SignInHubScreen extends StatelessWidget {
               // ── Subtitle ─────────────────────────────────
               Text(
                 'Sign in or create your account to begin.',
-                style: theme.textTheme.bodyLarge?.copyWith(color: ink2),
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: ink2,
+                  fontSize: 17,
+                ),
               ),
 
-              const SizedBox(height: AppDimensions.space24),
+              const SizedBox(height: 26), // .auth-methods margin-top 26
 
               // ── Method buttons ────────────────────────────
               AuthMethodButton(
@@ -112,7 +115,7 @@ class SignInHubScreen extends StatelessWidget {
                 onPressed: () => context.push(AppRoutes.authPhone.path),
               ),
 
-              const SizedBox(height: AppDimensions.space16),
+              const SizedBox(height: 18), // .auth-or margin 18 (before divider)
 
               // ── "or" divider ─────────────────────────────
               Row(
@@ -143,7 +146,7 @@ class SignInHubScreen extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: AppDimensions.space16),
+              const SizedBox(height: 18), // .auth-or margin 18 (after divider)
 
               // ── Assisted-setup card ───────────────────────
               Semantics(
@@ -191,6 +194,7 @@ class SignInHubScreen extends StatelessWidget {
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   color: cs.onSurface,
                                   fontWeight: FontWeight.w700,
+                                  fontSize: 17,
                                 ),
                               ),
                               const SizedBox(height: AppDimensions.space4),
@@ -198,6 +202,7 @@ class SignInHubScreen extends StatelessWidget {
                                 'Assisted setup for a family member or friend',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: ink2,
+                                  fontSize: 14,
                                 ),
                               ),
                             ],
@@ -223,7 +228,10 @@ class SignInHubScreen extends StatelessWidget {
                     "By continuing you agree to Opto's Terms and Privacy Policy.",
                 child: Text.rich(
                   TextSpan(
-                    style: theme.textTheme.bodySmall?.copyWith(color: ink3),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: ink3,
+                      fontSize: 13.5,
+                    ),
                     children: [
                       const TextSpan(
                         text: "By continuing you agree to Opto's ",
