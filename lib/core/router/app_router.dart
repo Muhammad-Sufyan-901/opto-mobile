@@ -22,6 +22,7 @@ import 'package:ids_elder_rehab_app/features/setup/presentation/screens/permissi
 import 'package:ids_elder_rehab_app/features/consultation/presentation/screens/consult_screen.dart';
 import 'package:ids_elder_rehab_app/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
 import 'package:ids_elder_rehab_app/features/connect/presentation/screens/community_screen.dart';
+import 'package:ids_elder_rehab_app/features/profile/presentation/screens/profile_screen.dart';
 import 'package:ids_elder_rehab_app/features/setup/presentation/screens/setup_done_screen.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -364,6 +365,14 @@ final GoRouter appRouter = GoRouter(
       name: AppRoutes.community.name,
       builder: (BuildContext context, GoRouterState state) =>
           const CommunityScreen(),
+    ),
+
+    // Screen 20 — Profile
+    GoRoute(
+      path: AppRoutes.profile.path,
+      name: AppRoutes.profile.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const ProfileScreen(),
     ),
 
     // ==========================================
