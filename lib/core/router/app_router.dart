@@ -19,6 +19,7 @@ import 'package:ids_elder_rehab_app/features/setup/presentation/screens/vision_p
 import 'package:ids_elder_rehab_app/features/setup/presentation/screens/display_setup_screen.dart';
 import 'package:ids_elder_rehab_app/features/setup/presentation/screens/voice_setup_screen.dart';
 import 'package:ids_elder_rehab_app/features/setup/presentation/screens/permissions_setup_screen.dart';
+import 'package:ids_elder_rehab_app/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
 import 'package:ids_elder_rehab_app/features/setup/presentation/screens/setup_done_screen.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -331,6 +332,19 @@ final GoRouter appRouter = GoRouter(
       name: AppRoutes.lansiaDashboard.name,
       builder: (BuildContext context, GoRouterState state) {
         return const LansiaDashboardScreen();
+      },
+    ),
+
+    // ==========================================
+    // Module Destination Routes (Screens 16–22)
+    // ==========================================
+
+    // Screen 17 — Prosthetic Hub
+    GoRoute(
+      path: AppRoutes.prostheticHub.path,
+      name: AppRoutes.prostheticHub.name,
+      builder: (BuildContext context, GoRouterState state) {
+        return const ProstheticHubScreen();
       },
     ),
 
