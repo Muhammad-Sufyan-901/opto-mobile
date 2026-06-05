@@ -21,6 +21,7 @@ import 'package:ids_elder_rehab_app/features/setup/presentation/screens/voice_se
 import 'package:ids_elder_rehab_app/features/setup/presentation/screens/permissions_setup_screen.dart';
 import 'package:ids_elder_rehab_app/features/consultation/presentation/screens/consult_screen.dart';
 import 'package:ids_elder_rehab_app/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
+import 'package:ids_elder_rehab_app/features/connect/presentation/screens/community_screen.dart';
 import 'package:ids_elder_rehab_app/features/setup/presentation/screens/setup_done_screen.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -355,6 +356,14 @@ final GoRouter appRouter = GoRouter(
       name: AppRoutes.consult.name,
       builder: (BuildContext context, GoRouterState state) =>
           const ConsultScreen(),
+    ),
+
+    // Screen 19 — Community
+    GoRoute(
+      path: AppRoutes.community.path,
+      name: AppRoutes.community.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const CommunityScreen(),
     ),
 
     // ==========================================
