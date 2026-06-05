@@ -20,6 +20,49 @@ abstract class AppRoutes {
     name: 'home',
   );
 
+  // ── Module destination routes (Screens 16–22) ───────────────────────────────
+  /// Screen 16 — Vision AI camera (destinations section).
+  static const AppRoute visionAi = AppRoute(
+    path: '/vision-ai',
+    name: 'vision_ai',
+  );
+
+  /// Screen 17 — Prosthetic Hub (catalog & ordering).
+  static const AppRoute prostheticHub = AppRoute(
+    path: '/prosthetic-hub',
+    name: 'prosthetic_hub',
+  );
+
+  /// Screen 18 — Health & Consultation (booking & history).
+  static const AppRoute consult = AppRoute(
+    path: '/consult',
+    name: 'consult',
+  );
+
+  /// Screen 19 — Community (peer connections & events).
+  static const AppRoute community = AppRoute(
+    path: '/community',
+    name: 'community',
+  );
+
+  /// Screen 20 — Profile & Settings (account + preferences).
+  static const AppRoute profile = AppRoute(
+    path: '/profile',
+    name: 'profile',
+  );
+
+  /// Screen 21 — Emergency SOS (panic button + alert).
+  static const AppRoute sos = AppRoute(
+    path: '/sos',
+    name: 'sos',
+  );
+
+  /// Screen 22 — Aura Voice (voice intents & control).
+  static const AppRoute auraVoice = AppRoute(
+    path: '/aura',
+    name: 'aura_voice',
+  );
+
   // Onboarding routes
   /// Brand splash — shown on first launch, auto-advances to [onboarding].
   static const AppRoute splash = AppRoute(
