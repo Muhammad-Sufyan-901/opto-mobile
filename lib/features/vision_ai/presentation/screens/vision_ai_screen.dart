@@ -224,10 +224,6 @@ class _DarkCircleButton extends StatelessWidget {
 class _ViewfinderReticle extends StatelessWidget {
   const _ViewfinderReticle();
 
-  static const Color _bracketColor = Color(0xFF78AAFF);
-  static const double _bracketSize = 30;
-  static const double _bracketWidth = 3;
-
   @override
   Widget build(BuildContext context) {
     return ExcludeSemantics(
