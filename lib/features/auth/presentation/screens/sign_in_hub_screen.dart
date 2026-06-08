@@ -37,13 +37,12 @@ class SignInHubScreen extends StatelessWidget {
     final ColorScheme cs = theme.colorScheme;
     final Color blueTint =
         theme.extension<AppExtendedCustomColors>()?.blueTint ??
-            cs.primaryContainer;
+        cs.primaryContainer;
     final Color ink2 =
-        theme.extension<AppExtendedCustomColors>()?.ink2 ??
-            cs.onSurfaceVariant;
+        theme.extension<AppExtendedCustomColors>()?.ink2 ?? cs.onSurfaceVariant;
     final Color ink3 =
         theme.extension<AppExtendedCustomColors>()?.ink3 ??
-            cs.onSurfaceVariant.withValues(alpha: 0.7);
+        cs.onSurfaceVariant.withValues(alpha: 0.7);
 
     return Scaffold(
       backgroundColor: cs.surface,
@@ -53,7 +52,7 @@ class SignInHubScreen extends StatelessWidget {
             horizontal: AppDimensions.screenPadding,
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: AppDimensions.space24),
 
@@ -91,7 +90,6 @@ class SignInHubScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 26), // .auth-methods margin-top 26
-
               // ── Method buttons ────────────────────────────
               AuthMethodButton(
                 label: 'Continue with Google',
@@ -116,7 +114,6 @@ class SignInHubScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 18), // .auth-or margin 18 (before divider)
-
               // ── "or" divider ─────────────────────────────
               Row(
                 children: [
@@ -147,19 +144,20 @@ class SignInHubScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 18), // .auth-or margin 18 (after divider)
-
               // ── Assisted-setup card ───────────────────────
               Semantics(
                 button: true,
-                label: "I'm helping someone set up. Assisted setup for a family member or friend.",
+                label:
+                    "I'm helping someone set up. Assisted setup for a family member or friend.",
                 child: GestureDetector(
                   onTap: () => context.push(AppRoutes.authCaregiver.path),
                   child: Container(
                     padding: const EdgeInsets.all(AppDimensions.space16),
                     decoration: BoxDecoration(
                       color: blueTint,
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.radiusRow),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusRow,
+                      ),
                     ),
                     child: Row(
                       children: [
