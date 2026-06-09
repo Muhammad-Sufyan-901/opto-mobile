@@ -5,6 +5,7 @@
 //
 // SECURITY NOTE: Owner-only data — never expose caregiver IDs in community
 // or map surfaces.
+import 'package:collection/collection.dart';
 import 'package:opto/core/constants/identity_enums.dart';
 
 /// Immutable domain representation of the `caregiver_links` table row.
@@ -64,10 +65,10 @@ class CaregiverLinkEntity {
           userId == other.userId &&
           caregiverId == other.caregiverId &&
           status == other.status &&
-          permissions == other.permissions &&
+          const ListEquality<String>().equals(permissions, other.permissions) &&
           createdAt == other.createdAt;
 
   @override
   int get hashCode =>
-      Object.hash(id, userId, caregiverId, status, permissions, createdAt);
+      Object.hash(id, userId, caregiverId, status, const ListEquality<String>().hash(permissions), createdAt);
 }

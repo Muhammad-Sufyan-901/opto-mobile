@@ -22,7 +22,12 @@ class _AppThemeModeConverter implements JsonConverter<AppThemeMode, String?> {
   AppThemeMode fromJson(String? json) => AppThemeMode.fromDbValue(json);
 
   @override
-  String toJson(AppThemeMode mode) => mode.dbValue;
+  String toJson(AppThemeMode mode) {
+    // AppThemeMode.system is a Flutter/UI-only concept (follow OS setting) and
+    // has no Postgres enum literal — persist as 'light' (the Opto default).
+    if (mode == AppThemeMode.system) return AppThemeMode.light.dbValue;
+    return mode.dbValue;
+  }
 }
 
 /// Converts between [HapticLevel] and the lowercase string stored in Postgres.

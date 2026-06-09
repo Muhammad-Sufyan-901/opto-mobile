@@ -22,7 +22,7 @@ class _UserRoleConverter implements JsonConverter<UserRole, String?> {
   UserRole fromJson(String? json) => UserRole.fromString(json);
 
   @override
-  String toJson(UserRole role) => role.value;
+  String toJson(UserRole role) => role.dbValue;
 }
 
 /// Converts between nullable [VisionProfile] and the snake_case Postgres string.
