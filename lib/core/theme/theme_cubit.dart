@@ -22,6 +22,10 @@ export 'package:opto/core/constants/app_theme_mode.dart' show AppThemeMode;
 ///
 /// Registered as a lazy singleton in [GetIt] — provided via [BlocProvider.value]
 /// at the root of the widget tree (see `app.dart`).
+///
+/// @deprecated Will be superseded by [AccessibilitySettingsCubit] once
+/// app.dart (Step H) provides it to the root. Retained for backward compatibility
+/// during the Phase 1 migration.
 class ThemeCubit extends Cubit<AppThemeMode> {
   final Box _settingsBox;
 

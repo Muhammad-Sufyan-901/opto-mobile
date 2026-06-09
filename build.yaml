@@ -1,0 +1,15 @@
+targets:
+  $default:
+    builders:
+      json_serializable:
+        # Exclude BLoC event/state and Cubit files — these use freezed
+        # for immutable classes but do NOT need JSON serialization.
+        # Without this exclusion, json_serializable tries to process
+        # generated *.freezed.dart files and fails on underscore-prefixed
+        # private constructors (e.g. _AuthStateChanged).
+        generate_for:
+          exclude:
+            - lib/features/**/presentation/bloc/*.dart
+            - lib/features/**/presentation/bloc/*.freezed.dart
+            - lib/features/**/presentation/cubit/*.dart
+            - lib/features/**/presentation/cubit/*.freezed.dart
