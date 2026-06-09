@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
+import 'package:opto/core/constants/app_dimensions.dart';
 
 /// A full-width outline button with a leading icon and left-aligned label.
 ///

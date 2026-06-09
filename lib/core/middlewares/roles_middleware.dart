@@ -2,37 +2,39 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:ids_elder_rehab_app/core/di/dependencies_injection_container.dart';
-import 'package:ids_elder_rehab_app/core/utils/route_helper.dart';
-import 'package:ids_elder_rehab_app/core/utils/secure_storage_helper.dart';
+import 'package:opto/core/constants/user_role.dart';
+import 'package:opto/core/di/dependencies_injection_container.dart';
+import 'package:opto/core/utils/route_helper.dart';
+import 'package:opto/core/utils/secure_storage_helper.dart';
 
 class RolesMiddleware {
-  /// Dynamic middleware to protect specific routes based on user role
+  /// Dynamic middleware to protect specific routes based on user role.
+  ///
+  /// Pass a [UserRole] value instead of a bare string to stay type-safe.
   static Future<String?> requireRole(
     BuildContext context,
     GoRouterState state, {
-    required String allowedRole,
+    required UserRole allowedRole,
   }) async {
     final storageHelper = sl<SecureStorageHelper>();
-    final String? currentRole = await storageHelper.getRole();
+    final String? rawRole = await storageHelper.getRole();
+    final UserRole currentRole = UserRole.fromString(rawRole);
 
-    // if role is not allowed, redirect to login with message
+    // if role is not allowed, redirect to dashboard with error message
     if (currentRole != allowedRole) {
       debugPrint(
-        '⛔ Access Denied: Need role "$allowedRole" to access this page, but user is "$currentRole"',
+        '⛔ Access Denied: Need role "${allowedRole.value}" to access this page, '
+        'but user is "${currentRole.value}"',
       );
 
-      final String fallbackRoute = RouteHelper.getDashboardRouteByRole(
-        currentRole,
-      );
-      final String errorMessage =
+      final String fallbackRoute = RouteHelper.getDashboardRouteByRole(rawRole);
+      const String errorMessage =
           'Anda tidak memiliki izin untuk mengakses halaman ini.';
 
-      // Redirect to dashboard based on their roles with error message
       return '$fallbackRoute?error=$errorMessage';
     }
 
-    // if role is allowed, return null to allow access
+    // Role is allowed — proceed
     return null;
   }
 }

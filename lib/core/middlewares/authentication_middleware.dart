@@ -2,10 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
-import 'package:ids_elder_rehab_app/core/di/dependencies_injection_container.dart';
-import 'package:ids_elder_rehab_app/core/utils/secure_storage_helper.dart';
-import 'package:ids_elder_rehab_app/core/utils/route_helper.dart';
+import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/di/dependencies_injection_container.dart';
+import 'package:opto/core/utils/secure_storage_helper.dart';
+import 'package:opto/core/utils/route_helper.dart';
 
 class AuthenticationMiddleware {
   static FutureOr<String?> guard(

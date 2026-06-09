@@ -5,8 +5,8 @@ class HiveClient {
     // 1. Inisialisasi Hive agar mengenali direktori penyimpanan di HP
     await Hive.initFlutter();
 
-    // 2. Registrasi Adapter (Nanti kita isi saat sudah membuat model data)
-    // Contoh: Hive.registerAdapter(LansiaProfileAdapter());
+    // 2. Registrasi Adapter — tambahkan saat model Hive/Freezed sudah dibuat.
+    // Contoh: Hive.registerAdapter(CacheTutorialAdapter());
 
     // 3. Buka Box (Tabel) yang selalu dibutuhkan sejak awal
     // Contoh untuk menyimpan pengaturan tema atau status pertama kali buka aplikasi

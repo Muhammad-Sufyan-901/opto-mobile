@@ -4,7 +4,7 @@ This file provides guidance to GEMINI when working with code in this repository.
 
 ## ⚠️ Read the system briefs first
 
-**Before generating or modifying any code, consult the canonical system briefs in `.agents/app/`.** They are the source of truth and override the legacy `README.md` / `gemini.md` (which still describe the old rehab template):
+**Before generating or modifying any code, consult the canonical system briefs in `.agents/app/`.** They are the source of truth:
 
 | Brief | Use it for |
 |-------|-----------|
@@ -31,7 +31,7 @@ Activate by exact folder name (e.g. `skills/flutter-expert`). For capabilities n
 
 **Opto** — *"Your world, made clear."* An accessibility-first **super app** (Flutter, Android + iOS) for **blind, low-vision, and ocular-prosthesis users**. Every feature must be completable **without looking at the screen**. Eight modules: Prosthetic Hub, Health & Consultation, Vision AI ("Aura"), Connect (community), Emergency SOS, Accessibility Map, Aura Voice, Profile/Settings.
 
-> **The repo was scaffolded by renaming a different project ("IDS Elder Rehab App") and is mid-migration.** The package is still `ids_elder_rehab_app`, `README.md`/`gemini.md` describe the rehab app, and several dependencies (`google_mlkit_pose_detection`, `model_viewer_plus`, etc.) are rehab leftovers. Treat `README.md`/`gemini.md` as **stale**; defer to `.agents/app/`.
+> **Phase 0 complete:** package renamed to `opto`, Supabase client wired, rehab dependencies/artifacts removed. See `.agents/app/system_architecture.md` §0 for the current implementation snapshot.
 
 ## Commands
 
@@ -60,7 +60,7 @@ flutter test test/path/to/test_file.dart
 **Feature-First Clean Architecture** on a (target) **Supabase** backend. State management is **BLoC (`flutter_bloc`) + GetIt** service locator — this is the implemented and intended stack. (Note: the PRD mentions Riverpod, but `system_architecture.md` reconciles that to **BLoC + GetIt** as the actual stack — follow the architecture brief.)
 
 Every feature under `lib/features/[name]/` splits into three layers:
-- `data/` — DTOs/models, data sources (Supabase; Dio today — legacy), repository implementations
+- `data/` — DTOs/models, data sources (Supabase), repository implementations
 - `domain/` — pure Dart entities, repository contracts, use cases (single `call()`)
 - `presentation/` — BLoC (events/states via `freezed`), screens, feature-scoped widgets
 
@@ -77,7 +77,7 @@ Every feature under `lib/features/[name]/` splits into three layers:
 | `lib/core/di/dependencies_injection_container.dart` | GetIt registrations (`sl`) |
 | `lib/core/middlewares/authentication_middleware.dart` | Global auth guard (token → redirect) |
 | `lib/core/middlewares/roles_middleware.dart` | Role-based route guard |
-| `lib/core/config/api_client.dart` | Dio REST client — **legacy, scheduled for Supabase replacement** |
+| `lib/core/supabase/supabase_client_provider.dart` | Supabase client accessor + error mapper |
 
 ### Routing
 
@@ -113,12 +113,16 @@ Follow `design_system.md` §9, §15.4. Every screen:
 
 ## Current state vs. target (migration in progress)
 
-Before working in an area, check its status in `system_architecture.md` §0 and the **migration backlog (Appendix A)**. Highlights:
+Before working in an area, check its status in `system_architecture.md` §0 and the **migration backlog (Appendix A)**. Phase 0 highlights (complete):
 
-- **Backend:** currently Dio/REST + custom JWT (`core/config/api_client.dart`, `api_endpoints.dart`) → migrating to `supabase_flutter` (A-1).
-- **Roles:** legacy `lansia` role must become `user`; align enum to `user / caregiver / doctor / admin` (A-2).
-- **`dashboard/` feature:** contains rehab leftovers (`lansia_dashboard_screen`, `recovery_progress_card`) to be re-scoped into the Opto home/profile surface (A-3).
-- **Vision AI:** repo ships `google_mlkit_pose_detection` (wrong — body pose from the rehab app); replace with ML Kit Text Recognition + Object Detection + color CV, plus a `scene-describe` Edge Function (A-4).
-- **Built today (`✅`):** `onboarding`, `auth` (REST), `core/router`, `core/widgets`, DI container. **Planned (`⛔`):** `vision_ai`, `prosthetic_hub`, `consultation`, `connect`, `sos`, `map`, `profile`, `core/accessibility/`, `core/voice/`, `core/supabase/`.
+- **A-1 ✅** `core/supabase/` wired; `Supabase.initialize` in `main.dart`; Dio/REST layer removed.
+- **A-2 ✅** `lansia` role removed; typed `UserRole` enum (`user / caregiver / doctor / admin`) in place.
+- **A-3 ✅** `dashboard/` rehab artifacts deleted; Opto Home screen is the canonical post-setup landing.
+- **A-4 ✅** `google_mlkit_pose_detection` / `model_viewer_plus` removed.
+- **A-5 ✅** Package renamed `ids_elder_rehab_app` → `opto`.
+
+Next: **Phase 1 — Auth & Identity** (migrate `auth` feature to Supabase Auth + build `profile/` domain layer).
+
+**Planned (`⛔`):** `vision_ai`, `prosthetic_hub`, `consultation`, `connect`, `sos`, `map`, `profile` domain/data, `core/accessibility/`, `core/voice/`.
 
 When implementing a `⛔ Planned` feature, build the full `presentation/domain/data` stack with a BLoC, follow the matching brief, and use the existing `core/widgets/` primitives.

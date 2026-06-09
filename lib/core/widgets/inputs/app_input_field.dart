@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 
-import 'package:ids_elder_rehab_app/core/utils/input_validator.dart';
+import 'package:opto/core/utils/input_validator.dart';
 
 enum AppInputFieldType {
   text,

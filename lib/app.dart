@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:ids_elder_rehab_app/core/config/app_info.dart';
-import 'package:ids_elder_rehab_app/core/di/dependencies_injection_container.dart';
-import 'package:ids_elder_rehab_app/core/router/app_router.dart';
-import 'package:ids_elder_rehab_app/core/theme/theme_cubit.dart';
-import 'package:ids_elder_rehab_app/core/themes/app_themes.dart';
+import 'package:opto/core/config/app_info.dart';
+import 'package:opto/core/di/dependencies_injection_container.dart';
+import 'package:opto/core/router/app_router.dart';
+import 'package:opto/core/theme/theme_cubit.dart';
+import 'package:opto/core/themes/app_themes.dart';
 
 class App extends StatelessWidget {
   const App({super.key});

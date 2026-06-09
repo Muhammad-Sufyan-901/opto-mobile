@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
-import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
-import 'package:ids_elder_rehab_app/core/themes/app_custom_colors.dart';
-import 'package:ids_elder_rehab_app/features/auth/presentation/widgets/auth_method_button.dart';
-import 'package:ids_elder_rehab_app/features/onboarding/presentation/widgets/opto_brand_mark.dart';
+import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/features/auth/presentation/widgets/auth_method_button.dart';
+import 'package:opto/features/onboarding/presentation/widgets/opto_brand_mark.dart';
 
 /// Screen 05 — Sign-in hub.
 ///

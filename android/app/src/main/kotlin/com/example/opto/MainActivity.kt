@@ -1,4 +1,4 @@
-package com.example.ids_elder_rehab_app
+package com.example.opto
 
 import io.flutter.embedding.android.FlutterActivity
 

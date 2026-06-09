@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:go_router/go_router.dart';
-import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
-import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
+import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/constants/app_routes.dart';
 
 // =============================================================================
 // AuraVoiceScreen — Screen 22

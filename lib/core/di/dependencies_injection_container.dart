@@ -1,9 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
-import 'package:ids_elder_rehab_app/core/config/api_client.dart';
-import 'package:ids_elder_rehab_app/core/config/secure_storage_config.dart';
-import 'package:ids_elder_rehab_app/core/theme/theme_cubit.dart';
-import 'package:ids_elder_rehab_app/core/utils/secure_storage_helper.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:opto/core/config/secure_storage_config.dart';
+import 'package:opto/core/theme/theme_cubit.dart';
+import 'package:opto/core/utils/secure_storage_helper.dart';
 
 // Service Locator
 final sl = GetIt.instance;
@@ -18,22 +19,19 @@ Future<void> init() async {
     () => ThemeCubit(Hive.box('settings_box')),
   );
 
-  // Register ApiClient as LazySingleton
-  sl.registerLazySingleton<ApiClient>(
-    () => ApiClient(sl()),
+  // Supabase client — initialized in main.dart before this runs.
+  // Repositories depend on this; widgets must never call it directly.
+  sl.registerLazySingleton<SupabaseClient>(
+    () => Supabase.instance.client,
   );
 
-  // Register Dio as LazySingleton
-  sl.registerLazySingleton(
-    () => sl<ApiClient>().dio,
-  );
-
-  // Register FlutterSecureStorage
+  // FlutterSecureStorage — biometric/session gate (kept post-Supabase migration
+  // to store the local biometric-unlock flag alongside Supabase's own session).
   sl.registerLazySingleton(
     () => SecureStorageConfig.instance,
   );
 
-  // Register SecureStorage Helper
+  // SecureStorage Helper
   sl.registerLazySingleton<SecureStorageHelper>(
     () => SecureStorageHelper(sl()),
   );

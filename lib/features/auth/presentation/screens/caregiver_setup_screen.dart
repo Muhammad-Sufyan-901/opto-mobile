@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
-import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
-import 'package:ids_elder_rehab_app/core/themes/app_custom_colors.dart';
-import 'package:ids_elder_rehab_app/core/widgets/inputs/app_input_field.dart';
-import 'package:ids_elder_rehab_app/features/auth/presentation/widgets/auth_scaffold.dart';
-import 'package:ids_elder_rehab_app/features/auth/presentation/widgets/relationship_chip.dart';
+import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/core/widgets/inputs/app_input_field.dart';
+import 'package:opto/features/auth/presentation/widgets/auth_scaffold.dart';
+import 'package:opto/features/auth/presentation/widgets/relationship_chip.dart';
 
 /// Screen 09 — Caregiver / assisted setup.
 ///

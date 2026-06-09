@@ -1,5 +1,5 @@
-import 'package:ids_elder_rehab_app/core/config/app_info.dart';
-import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
+import 'package:opto/core/config/app_info.dart';
+import 'package:opto/core/constants/app_routes.dart';
 
 class RouteHelper {
   static final Set<String> _publicRoutes = {
@@ -28,7 +28,6 @@ class RouteHelper {
     AppRoutes.profile.path,
     AppRoutes.sos.path,
     AppRoutes.auraVoice.path,
-    AppRoutes.lansiaDashboard.path,
     if (AppInfo.isDevelopment) AppRoutes.developer.path,
   };
 
@@ -44,10 +43,9 @@ class RouteHelper {
     final Map<String, String> roleDashboards = {
       'doctor': AppRoutes.doctorDashboard.path,
       'caregiver': AppRoutes.caregiverDashboard.path,
-      // Legacy role kept until A-2 migration renames it to 'user'.
-      'lansia': AppRoutes.home.path,
       // Opto primary role → Home Dashboard.
       'user': AppRoutes.home.path,
+      'admin': AppRoutes.home.path,
     };
 
     // Default: fall back to the Opto Home Dashboard.

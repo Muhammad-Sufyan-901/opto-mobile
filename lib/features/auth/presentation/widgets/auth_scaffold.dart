@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
-import 'package:ids_elder_rehab_app/core/widgets/buttons/app_button.dart';
+import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/widgets/buttons/app_button.dart';
 
 /// Shared scaffold for auth form screens (Email, Phone, OTP, Caregiver).
 ///
