@@ -32,10 +32,10 @@ sealed class AuthEvent with _$AuthEvent {
   /// Sign out the current user and clear the local session.
   const factory AuthEvent.signOut() = SignOut;
 
-  /// Emitted internally by [AuthBloc] when the Supabase auth state changes.
+  /// Internal event emitted by [AuthBloc] when the Supabase session changes.
   ///
-  /// Not intended to be dispatched by UI code directly — the BLoC subscribes
-  /// to [AuthRepository.isAuthenticated] and adds this event automatically.
+  /// Do NOT dispatch this event from UI code. It is dispatched only by the
+  /// [AuthBloc] constructor's auth-state stream subscription.
   // ignore: library_private_types_in_public_api
   const factory AuthEvent.authStateChanged({
     required bool isAuthenticated,

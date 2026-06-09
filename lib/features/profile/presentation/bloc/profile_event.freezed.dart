@@ -150,11 +150,11 @@ return updateProfile(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String userId)?  loadProfile,TResult Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile)?  updateProfile,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String userId)?  loadProfile,TResult Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl)?  updateProfile,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case LoadProfile() when loadProfile != null:
 return loadProfile(_that.userId);case UpdateProfile() when updateProfile != null:
-return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile);case _:
+return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl);case _:
   return orElse();
 
 }
@@ -172,11 +172,11 @@ return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String userId)  loadProfile,required TResult Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile)  updateProfile,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String userId)  loadProfile,required TResult Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl)  updateProfile,}) {final _that = this;
 switch (_that) {
 case LoadProfile():
 return loadProfile(_that.userId);case UpdateProfile():
-return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile);}
+return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -190,11 +190,11 @@ return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String userId)?  loadProfile,TResult? Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile)?  updateProfile,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String userId)?  loadProfile,TResult? Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl)?  updateProfile,}) {final _that = this;
 switch (_that) {
 case LoadProfile() when loadProfile != null:
 return loadProfile(_that.userId);case UpdateProfile() when updateProfile != null:
-return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile);case _:
+return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl);case _:
   return null;
 
 }
@@ -272,13 +272,14 @@ as String,
 
 
 class UpdateProfile implements ProfileEvent {
-  const UpdateProfile({required this.userId, this.fullName, this.phone, this.visionProfile});
+  const UpdateProfile({required this.userId, this.fullName, this.phone, this.visionProfile, this.avatarUrl});
   
 
 @override final  String userId;
  final  String? fullName;
  final  String? phone;
  final  VisionProfile? visionProfile;
+ final  String? avatarUrl;
 
 /// Create a copy of ProfileEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -290,16 +291,16 @@ $UpdateProfileCopyWith<UpdateProfile> get copyWith => _$UpdateProfileCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UpdateProfile&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.visionProfile, visionProfile) || other.visionProfile == visionProfile));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UpdateProfile&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.visionProfile, visionProfile) || other.visionProfile == visionProfile)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,userId,fullName,phone,visionProfile);
+int get hashCode => Object.hash(runtimeType,userId,fullName,phone,visionProfile,avatarUrl);
 
 @override
 String toString() {
-  return 'ProfileEvent.updateProfile(userId: $userId, fullName: $fullName, phone: $phone, visionProfile: $visionProfile)';
+  return 'ProfileEvent.updateProfile(userId: $userId, fullName: $fullName, phone: $phone, visionProfile: $visionProfile, avatarUrl: $avatarUrl)';
 }
 
 
@@ -310,7 +311,7 @@ abstract mixin class $UpdateProfileCopyWith<$Res> implements $ProfileEventCopyWi
   factory $UpdateProfileCopyWith(UpdateProfile value, $Res Function(UpdateProfile) _then) = _$UpdateProfileCopyWithImpl;
 @override @useResult
 $Res call({
- String userId, String? fullName, String? phone, VisionProfile? visionProfile
+ String userId, String? fullName, String? phone, VisionProfile? visionProfile, String? avatarUrl
 });
 
 
@@ -327,13 +328,14 @@ class _$UpdateProfileCopyWithImpl<$Res>
 
 /// Create a copy of ProfileEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? fullName = freezed,Object? phone = freezed,Object? visionProfile = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? fullName = freezed,Object? phone = freezed,Object? visionProfile = freezed,Object? avatarUrl = freezed,}) {
   return _then(UpdateProfile(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,fullName: freezed == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
 as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
 as String?,visionProfile: freezed == visionProfile ? _self.visionProfile : visionProfile // ignore: cast_nullable_to_non_nullable
-as VisionProfile?,
+as VisionProfile?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

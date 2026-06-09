@@ -57,14 +57,11 @@ class AccessibilitySettingsCubit extends Cubit<AccessibilitySettingsEntity> {
   Future<void> loadForUser(String userId) async {
     try {
       final settings = await _repo.getSettings(userId);
-      // upsertSettings triggers the cache write via the repository impl.
-      await _repo.upsertSettings(settings);
+      _repo.cacheSettings(settings); // local Hive cache only, not a Supabase write
       emit(settings);
     } on Failure catch (f) {
       // Don't clear cached/default state — degraded mode keeps the app usable.
       debugPrint('AccessibilitySettingsCubit: failed to load — ${f.message}');
-    } catch (e) {
-      debugPrint('AccessibilitySettingsCubit: unexpected error loading — $e');
     }
   }
 
@@ -105,6 +102,11 @@ class AccessibilitySettingsCubit extends Cubit<AccessibilitySettingsEntity> {
   Future<void> _updateField(
     AccessibilitySettingsEntity Function(AccessibilitySettingsEntity) updater,
   ) async {
+    // Don't write to DB if we don't yet have a real user ID (pre-login state).
+    if (state.userId.isEmpty) {
+      emit(updater(state)); // optimistic local only
+      return;
+    }
     final previous = state;
     final updated = updater(state);
     emit(updated); // optimistic update

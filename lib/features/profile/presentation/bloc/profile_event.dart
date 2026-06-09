@@ -23,5 +23,6 @@ sealed class ProfileEvent with _$ProfileEvent {
     String? fullName,
     String? phone,
     VisionProfile? visionProfile,
+    String? avatarUrl,
   }) = UpdateProfile;
 }

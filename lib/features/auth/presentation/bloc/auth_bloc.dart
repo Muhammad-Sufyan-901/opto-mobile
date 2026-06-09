@@ -25,7 +25,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     // deep-link sign-ins and token-expiry sign-outs are handled automatically.
     _authSub = _auth.isAuthenticated.listen(
       (isAuthenticated) {
-        add(AuthEvent.authStateChanged(isAuthenticated: isAuthenticated));
+        if (!isClosed) {
+          add(AuthEvent.authStateChanged(isAuthenticated: isAuthenticated));
+        }
       },
       onError: (Object error) {
         debugPrint('AuthBloc: auth stream error — $error');

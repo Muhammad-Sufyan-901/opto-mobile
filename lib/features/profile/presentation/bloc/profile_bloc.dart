@@ -51,6 +51,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         fullName: event.fullName,
         phone: event.phone,
         visionProfile: event.visionProfile,
+        avatarUrl: event.avatarUrl,
       );
       // Reload the updated profile to get the server-confirmed state.
       final updated = await _profile.getProfile(event.userId);
