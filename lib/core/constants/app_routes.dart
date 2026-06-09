@@ -112,6 +112,12 @@ abstract class AppRoutes {
     name: 'auth_caregiver',
   );
 
+  /// Email register — create a new account.
+  static const AppRoute authRegister = AppRoute(
+    path: '/auth/register',
+    name: 'auth_register',
+  );
+
   // ── Onboarding & Setup routes (post-auth, screens 10–14) ──────────────────
   /// Step 10 — Vision profile selection.
   static const AppRoute setupVision = AppRoute(

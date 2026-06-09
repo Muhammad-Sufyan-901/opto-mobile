@@ -12,6 +12,7 @@ import 'package:opto/features/auth/presentation/screens/email_auth_screen.dart';
 import 'package:opto/features/auth/presentation/screens/phone_auth_screen.dart';
 import 'package:opto/features/auth/presentation/screens/otp_verify_screen.dart';
 import 'package:opto/features/auth/presentation/screens/caregiver_setup_screen.dart';
+import 'package:opto/features/auth/presentation/screens/email_register_screen.dart';
 import 'package:opto/features/dev/presentation/screens/dev_screen.dart';
 import 'package:opto/features/onboarding/presentation/screens/splash_screen.dart';
 import 'package:opto/features/onboarding/presentation/screens/welcome_screen.dart';
@@ -113,6 +114,14 @@ final GoRouter appRouter = GoRouter(
           name: AppRoutes.authCaregiver.name,
           builder: (BuildContext context, GoRouterState state) {
             return const CaregiverSetupScreen();
+          },
+        ),
+        // 06b · Email register — create a new account
+        GoRoute(
+          path: AppRoutes.authRegister.path,
+          name: AppRoutes.authRegister.name,
+          builder: (BuildContext context, GoRouterState state) {
+            return const EmailRegisterScreen();
           },
         ),
       ],

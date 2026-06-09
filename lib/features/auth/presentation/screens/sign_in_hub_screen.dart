@@ -131,6 +131,32 @@ class SignInHubScreen extends StatelessWidget {
                         onPressed: () => ctx.push(AppRoutes.authPhone.path),
                       ),
 
+                      const SizedBox(height: AppDimensions.space12),
+
+                      // ── Create account link ───────────────────────
+                      Semantics(
+                        button: true,
+                        label: 'Create account',
+                        child: GestureDetector(
+                          onTap: () =>
+                              ctx.push(AppRoutes.authRegister.path),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: AppDimensions.space12,
+                            ),
+                            child: Text(
+                              'Create account',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: cs.primary,
+                                fontFamily: 'Atkinson Hyperlegible',
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
                       const SizedBox(height: 18), // .auth-or margin 18 (before divider)
                       // ── "or" divider ─────────────────────────────
                       Row(

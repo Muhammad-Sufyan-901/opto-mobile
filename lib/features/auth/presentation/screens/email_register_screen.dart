@@ -7,43 +7,52 @@ import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/core/utils/input_validator.dart';
 import 'package:opto/core/widgets/forms/app_form_field.dart';
 import 'package:opto/core/widgets/inputs/app_input_field.dart';
 import 'package:opto/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:opto/features/auth/presentation/widgets/auth_scaffold.dart';
 
-/// Screen 06 — Email & password auth.
+/// Screen — Email register / sign-up.
 ///
-/// Spec: `ScreenEmail` / `.scr-form` in `Opto Onboarding.html`.
+/// Mirrors [EmailAuthScreen] in layout and BLoC wiring, with two extra fields:
+/// **Full name** and **Confirm password**.
 ///
-/// Layout via [AuthFormScaffold]: back nav, scrollable body, pinned Continue.
-/// "Forgot password?" → TODO snackbar (no Opto design for that screen).
-/// Submit dispatches [AuthEvent.signInWithEmailPassword] to [AuthBloc].
-class EmailAuthScreen extends StatefulWidget {
-  const EmailAuthScreen({super.key});
+/// Submit dispatches [AuthEvent.signUp] to [AuthBloc].
+/// On [AuthAuthenticated]: navigates to [AppRoutes.home].
+/// On [AuthError]: floating SnackBar + screen-reader live-region announcement.
+class EmailRegisterScreen extends StatefulWidget {
+  const EmailRegisterScreen({super.key});
 
   @override
-  State<EmailAuthScreen> createState() => _EmailAuthScreenState();
+  State<EmailRegisterScreen> createState() => _EmailRegisterScreenState();
 }
 
-class _EmailAuthScreenState extends State<EmailAuthScreen> {
+class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
   void _handleSubmit() {
     if (!_formKey.currentState!.validate()) return;
-    context.read<AuthBloc>().add(AuthEvent.signInWithEmailPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        ));
+    context.read<AuthBloc>().add(
+          AuthEvent.signUp(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+            fullName: _nameController.text.trim(),
+          ),
+        );
   }
 
   @override
@@ -84,7 +93,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                   theme.colorScheme.onSurfaceVariant;
 
           return AuthFormScaffold(
-            ctaLabel: 'Continue',
+            ctaLabel: 'Create account',
             ctaSuffixIcon: Icons.arrow_forward,
             onCta: isLoading ? null : _handleSubmit,
             isCtaLoading: isLoading,
@@ -99,7 +108,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                   Semantics(
                     header: true,
                     child: Text(
-                      'Your email & password',
+                      'Create your account',
                       style: theme.textTheme.displaySmall?.copyWith(
                         color: theme.colorScheme.onSurface,
                       ),
@@ -109,7 +118,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                   const SizedBox(height: AppDimensions.space8),
 
                   Text(
-                    "We'll keep your account safe and synced.",
+                    "It only takes a moment to get started.",
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: ink2,
                       fontSize: 16.5,
@@ -117,6 +126,21 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                   ),
 
                   const SizedBox(height: AppDimensions.space24),
+
+                  // ── Full name field ────────────────────────────
+                  AppFormField(
+                    label: 'Full name',
+                    isRequired: true,
+                    child: AppInputField(
+                      controller: _nameController,
+                      hintText: 'Your full name',
+                      prefixIcon: Icons.person_outline,
+                      textInputAction: TextInputAction.next,
+                      validator: InputValidator.name,
+                    ),
+                  ),
+
+                  const SizedBox(height: AppDimensions.space16),
 
                   // ── Email field ────────────────────────────────
                   AppFormField(
@@ -126,6 +150,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                       controller: _emailController,
                       hintText: 'you@example.com',
                       textInputAction: TextInputAction.next,
+                      validator: InputValidator.email,
                     ),
                   ),
 
@@ -138,56 +163,42 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                     child: AppInputField.password(
                       controller: _passwordController,
                       hintText: 'At least 8 characters',
-                      textInputAction: TextInputAction.done,
+                      textInputAction: TextInputAction.next,
+                      validator: InputValidator.password,
                     ),
                   ),
 
-                  const SizedBox(height: AppDimensions.space8),
+                  const SizedBox(height: AppDimensions.space16),
 
-                  // ── Forgot password link ───────────────────────
-                  // Matches design's `.form-link`: 16px bold blue, no underline,
-                  // left-aligned inline text. Min-height padded to meet ≥48dp tap target.
-                  Semantics(
-                    button: true,
-                    label: 'Forgot password?',
-                    child: GestureDetector(
-                      onTap: () {
-                        ScaffoldMessenger.of(ctx).showSnackBar(
-                          const SnackBar(
-                            content: Text('Password reset — coming soon'),
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppDimensions.space12,
-                        ),
-                        child: Text(
-                          'Forgot password?',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: theme.colorScheme.primary,
-                            fontFamily: 'Atkinson Hyperlegible',
-                          ),
-                        ),
+                  // ── Confirm password field ─────────────────────
+                  AppFormField(
+                    label: 'Confirm password',
+                    isRequired: true,
+                    child: AppInputField.password(
+                      controller: _confirmPasswordController,
+                      hintText: 'Re-enter your password',
+                      textInputAction: TextInputAction.done,
+                      validator: (v) => InputValidator.confirmPassword(
+                        v,
+                        _passwordController.text,
                       ),
                     ),
                   ),
 
-                  // ── Create account link ────────────────────────
+                  const SizedBox(height: AppDimensions.space16),
+
+                  // ── Already have an account link ───────────────
                   Semantics(
                     button: true,
-                    label: 'New to Opto? Create an account',
+                    label: 'Already have an account? Sign in',
                     child: GestureDetector(
-                      onTap: () => ctx.push(AppRoutes.authRegister.path),
+                      onTap: () => ctx.pop(),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           vertical: AppDimensions.space12,
                         ),
                         child: Text(
-                          'New to Opto? Create an account',
+                          'Already have an account? Sign in',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,

@@ -10,6 +10,7 @@ class RouteHelper {
     AppRoutes.authPhone.path,
     AppRoutes.authOtp.path,
     AppRoutes.authCaregiver.path,
+    AppRoutes.authRegister.path,
     if (AppInfo.isDevelopment) AppRoutes.developer.path,
   };
 
