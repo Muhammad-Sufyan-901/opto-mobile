@@ -37,6 +37,7 @@ dependencies:
  flutter_bloc: ^9.1.1
  get_it: ^9.2.1
  freezed_annotation: ^3.1.0
+ json_annotation: ^4.11.0
  go_router: ^17.1.0
  hive: ^2.2.3
  hive_flutter: ^1.1.0
@@ -70,6 +71,7 @@ dev_dependencies:
  flutter_lints: ^6.0.0
  build_runner: ^2.11.1
  freezed: ^3.2.5
+ json_serializable: ^6.9.5
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
