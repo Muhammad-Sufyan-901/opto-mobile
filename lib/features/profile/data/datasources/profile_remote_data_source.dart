@@ -27,7 +27,7 @@ abstract class ProfileRemoteDataSource {
 
   // ── accessibility_settings ─────────────────────────────────────────────────
   Future<AccessibilitySettingsModel> getSettings(String userId);
-  Future<void> upsertSettings(Map<String, dynamic> json);
+  Future<void> upsertSettings(AccessibilitySettingsModel model);
 
   // ── emergency_contacts ─────────────────────────────────────────────────────
   Future<List<EmergencyContactModel>> getEmergencyContacts(String userId);
@@ -40,7 +40,14 @@ abstract class ProfileRemoteDataSource {
 
   // ── caregiver_links ────────────────────────────────────────────────────────
   Future<List<CaregiverLinkModel>> getCaregiverLinks(String userId);
-  Future<void> requestLink(Map<String, dynamic> json);
+
+  /// Inserts a pending caregiver-link row.
+  ///
+  /// The signed-in user's [SupabaseClient.auth.currentUser] id is used as
+  /// `caregiver_id` to satisfy the RLS policy `cl_insert_caregiver`
+  /// (`auth.uid() = caregiver_id`).
+  Future<void> requestCaregiverLinkFor(String userId);
+
   Future<void> updateLinkStatus(String linkId, String status);
 }
 
@@ -99,6 +106,11 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           .single();
       return AccessibilitySettingsModel.fromJson(row);
     } on PostgrestException catch (e) {
+      // IMPORTANT 2: PGRST116 = no row yet (new user, trigger hasn't committed).
+      // Return sensible defaults rather than throwing.
+      if (e.code == 'PGRST116') {
+        return AccessibilitySettingsModel(userId: userId);
+      }
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
       throw ServerFailure(e.toString());
@@ -106,9 +118,15 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }
 
   @override
-  Future<void> upsertSettings(Map<String, dynamic> json) async {
+  Future<void> upsertSettings(AccessibilitySettingsModel model) async {
+    // IMPORTANT 3: strip 'updated_at' from the payload — it is managed by a
+    // DB trigger and sending it risks overwriting the trigger's value or
+    // causing a permissions error on restricted columns.
     try {
-      await _client.from('accessibility_settings').upsert(json);
+      final payload = model.toJson()..remove('updated_at');
+      await _client
+          .from('accessibility_settings')
+          .upsert(payload, onConflict: 'user_id');
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
@@ -128,9 +146,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           .select()
           .eq('user_id', userId)
           .order('priority');
-      return (rows as List)
-          .map((r) => EmergencyContactModel.fromJson(r as Map<String, dynamic>))
-          .toList();
+      return rows.map(EmergencyContactModel.fromJson).toList();
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
@@ -189,9 +205,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           .from('caregiver_links')
           .select()
           .or('user_id.eq.$userId,caregiver_id.eq.$userId');
-      return (rows as List)
-          .map((r) => CaregiverLinkModel.fromJson(r as Map<String, dynamic>))
-          .toList();
+      return rows.map(CaregiverLinkModel.fromJson).toList();
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
@@ -200,9 +214,18 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }
 
   @override
-  Future<void> requestLink(Map<String, dynamic> json) async {
+  Future<void> requestCaregiverLinkFor(String userId) async {
+    // IMPORTANT 5: RLS policy cl_insert_caregiver requires auth.uid() == caregiver_id.
+    // Obtain the current user's id from the session and pass it explicitly
+    // so the RLS check passes while keeping the server as the ultimate authority.
+    final caregiverId = _client.auth.currentUser?.id;
+    if (caregiverId == null) throw const AuthFailure('Not authenticated');
     try {
-      await _client.from('caregiver_links').insert(json);
+      await _client.from('caregiver_links').insert({
+        'user_id': userId,
+        'caregiver_id': caregiverId,
+        'status': 'pending',
+      });
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {

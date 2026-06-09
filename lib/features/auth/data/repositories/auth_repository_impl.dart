@@ -1,15 +1,15 @@
 // Concrete implementation of [AuthRepository].
 //
-// Delegates to [AuthRemoteDataSource] for all Supabase Auth calls.
-// After a successful sign-in or OTP verification it persists the user's
-// role string to [SecureStorageHelper] so that [RolesMiddleware] can
+// Delegates to [AuthRemoteDataSource] for all Supabase Auth and profiles
+// calls.  After a successful sign-in or OTP verification it persists the
+// user's role string to [SecureStorageHelper] so that [RolesMiddleware] can
 // read it from local storage without an extra round-trip.
-import 'package:opto/core/error/failures.dart';
-import 'package:opto/core/supabase/supabase_client_provider.dart';
-import 'package:opto/core/supabase/supabase_error_mapper.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
+
 import 'package:opto/core/utils/secure_storage_helper.dart';
 import 'package:opto/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:opto/features/auth/domain/repositories/auth_repository.dart';
+import 'package:opto/features/profile/domain/repositories/accessibility_settings_repository.dart';
 
 /// Production implementation of [AuthRepository].
 ///
@@ -20,11 +20,14 @@ class AuthRepositoryImpl implements AuthRepository {
   const AuthRepositoryImpl({
     required AuthRemoteDataSource remoteDataSource,
     required SecureStorageHelper secureStorage,
+    required AccessibilitySettingsRepository settingsRepository,
   })  : _remote = remoteDataSource,
-        _storage = secureStorage;
+        _storage = secureStorage,
+        _settingsRepo = settingsRepository;
 
   final AuthRemoteDataSource _remote;
   final SecureStorageHelper _storage;
+  final AccessibilitySettingsRepository _settingsRepo;
 
   // ── sign in ────────────────────────────────────────────────────────────────
 
@@ -60,17 +63,15 @@ class AuthRepositoryImpl implements AuthRepository {
     final user = response.user;
     if (user != null) {
       try {
-        await SupabaseClientProvider.client.from('profiles').upsert({
-          'id': user.id,
-          'role': 'user',
-          'full_name': ?fullName,
-        });
+        // CRITICAL 1 & 2: delegate to data source; 'role' is NOT in the payload.
+        await _remote.upsertMinimalProfile(
+          userId: user.id,
+          fullName: fullName,
+        );
         await _storage.saveRole('user');
       } on Object catch (e) {
         // Profile upsert failure should not block sign-up — the auth succeeded.
-        // Surface as a non-fatal concern (log in production, swallow here).
-        // ignore: avoid_print
-        print('[AuthRepositoryImpl] profile upsert warning: $e');
+        debugPrint('[AuthRepositoryImpl] profile upsert warning: $e');
       }
     }
   }
@@ -94,6 +95,8 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> signOut() async {
     await _remote.signOut();
     await _storage.clearAll();
+    // CRITICAL 3: clear Hive accessibility settings cache on sign-out.
+    await _settingsRepo.clearCache();
   }
 
   // ── stream ────────────────────────────────────────────────────────────────
@@ -110,20 +113,13 @@ class AuthRepositoryImpl implements AuthRepository {
       final userId = _remote.currentUser?.id;
       if (userId == null) return;
 
-      final row = await SupabaseClientProvider.client
-          .from('profiles')
-          .select('role')
-          .eq('id', userId)
-          .single();
-
-      final role = (row['role'] as String?) ?? 'user';
+      // CRITICAL 1: delegate to data source instead of calling Supabase directly.
+      final role = await _remote.getRoleForCurrentUser(userId) ?? 'user';
       await _storage.saveRole(role);
     } on Object catch (e) {
       // Role persistence is a best-effort optimisation — don't let it fail
       // the primary sign-in flow.
-      final failure = SupabaseErrorMapper.fromException(e);
-      // ignore: avoid_print
-      print('[AuthRepositoryImpl] role persistence warning: $failure');
+      debugPrint('[AuthRepositoryImpl] role persistence warning: $e');
     }
   }
 }

@@ -11,28 +11,28 @@ import 'package:opto/features/profile/domain/entities/emergency_contact_entity.d
 
 /// Abstract contract for `emergency_contacts` table operations.
 ///
-/// Methods throw [Failure] subclasses on error; the BLoC catches and maps
+/// Methods throw `Failure` subclasses on error; the BLoC catches and maps
 /// them to error states.
 abstract class EmergencyContactRepository {
   /// Returns all emergency contacts for [userId] ordered by [priority]
   /// ascending (lowest number = highest priority = contacted first).
   ///
-  /// Throws [ServerFailure] on network or RLS error.
+  /// Throws `ServerFailure` on network or RLS error.
   Future<List<EmergencyContactEntity>> getContacts(String userId);
 
   /// Inserts a new emergency contact row.
   ///
   /// The [contact] id field is ignored by the server (Postgres generates it).
-  /// Throws [ServerFailure] on unique-constraint or RLS violation.
+  /// Throws `ServerFailure` on unique-constraint or RLS violation.
   Future<void> addContact(EmergencyContactEntity contact);
 
   /// Updates an existing emergency contact row identified by [contact.id].
   ///
-  /// Throws [ServerFailure] if the row does not exist or on RLS violation.
+  /// Throws `ServerFailure` if the row does not exist or on RLS violation.
   Future<void> updateContact(EmergencyContactEntity contact);
 
   /// Deletes the emergency contact row identified by [contactId].
   ///
-  /// Throws [ServerFailure] if the row does not exist or on RLS violation.
+  /// Throws `ServerFailure` if the row does not exist or on RLS violation.
   Future<void> deleteContact(String contactId);
 }

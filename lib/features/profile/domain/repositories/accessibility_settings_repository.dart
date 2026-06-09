@@ -11,19 +11,19 @@ import 'package:opto/features/profile/domain/entities/accessibility_settings_ent
 /// The implementation adds a Hive cache layer so the app can read the last
 /// known settings instantly at boot before any network request completes.
 ///
-/// Methods throw [Failure] subclasses on error; the BLoC catches and maps
+/// Methods throw `Failure` subclasses on error; the BLoC catches and maps
 /// them to error states.
 abstract class AccessibilitySettingsRepository {
   /// Fetches the settings row for [userId] from Supabase.
   ///
-  /// Throws [ServerFailure] when the row does not exist or on network / RLS
+  /// Throws `ServerFailure` when the row does not exist or on network / RLS
   /// error.  Consider calling [getCachedSettings] first for instant reads.
   Future<AccessibilitySettingsEntity> getSettings(String userId);
 
   /// Upserts (insert-or-update) the settings row in Supabase and caches the
   /// result locally via [cacheSettings].
   ///
-  /// Throws [ServerFailure] on RLS violation or network error.
+  /// Throws `ServerFailure` on RLS violation or network error.
   Future<void> upsertSettings(AccessibilitySettingsEntity settings);
 
   /// Returns the most recently cached settings from Hive without a network
@@ -39,4 +39,10 @@ abstract class AccessibilitySettingsRepository {
   /// cache current.  May also be called directly if the app needs to persist
   /// an optimistic update before the server confirms.
   void cacheSettings(AccessibilitySettingsEntity settings);
+
+  /// Removes the cached accessibility settings from local storage.
+  ///
+  /// Must be called during sign-out so a subsequent sign-in for a different
+  /// user does not see stale settings from the previous session.
+  Future<void> clearCache();
 }

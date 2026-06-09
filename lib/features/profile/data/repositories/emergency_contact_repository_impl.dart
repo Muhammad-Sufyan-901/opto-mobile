@@ -45,8 +45,9 @@ class EmergencyContactRepositoryImpl implements EmergencyContactRepository {
 
   @override
   Future<void> updateContact(EmergencyContactEntity contact) async {
+    // IMPORTANT 1: omit 'user_id' — it is immutable and must not appear in
+    // an UPDATE payload (prevents accidental ownership transfer and RLS issues).
     final json = <String, dynamic>{
-      'user_id': contact.userId,
       'name': contact.name,
       'phone': contact.phone,
       'relationship': contact.relationship,

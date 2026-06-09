@@ -57,7 +57,7 @@ class AccessibilitySettingsRepositoryImpl
       hotwordEnabled: settings.hotwordEnabled,
       updatedAt: settings.updatedAt,
     );
-    await _remote.upsertSettings(model.toJson());
+    await _remote.upsertSettings(model);
     cacheSettings(settings); // keep cache in sync after successful write
   }
 
@@ -89,5 +89,10 @@ class AccessibilitySettingsRepositoryImpl
       updatedAt: settings.updatedAt,
     );
     _box.put(_cacheKey, model.toJson());
+  }
+
+  @override
+  Future<void> clearCache() async {
+    await _box.delete(_cacheKey);
   }
 }

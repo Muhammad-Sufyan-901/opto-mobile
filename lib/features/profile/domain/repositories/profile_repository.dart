@@ -9,12 +9,12 @@ import 'package:opto/features/profile/domain/entities/profile_entity.dart';
 
 /// Abstract contract for `profiles` table operations.
 ///
-/// Methods throw [Failure] subclasses on error; the BLoC catches and maps
+/// Methods throw `Failure` subclasses on error; the BLoC catches and maps
 /// them to error states.
 abstract class ProfileRepository {
   /// Fetches the profile row for the given [userId].
   ///
-  /// Throws [ServerFailure] when the row does not exist or when an RLS /
+  /// Throws `ServerFailure` when the row does not exist or when an RLS /
   /// network error occurs.
   Future<ProfileEntity> getProfile(String userId);
 
@@ -23,7 +23,7 @@ abstract class ProfileRepository {
   /// Only non-null parameters are written to the database — passing `null`
   /// for a field leaves it unchanged.
   ///
-  /// Throws [ServerFailure] on RLS violation or network error.
+  /// Throws `ServerFailure` on RLS violation or network error.
   Future<void> updateProfile(
     String userId, {
     String? fullName,

@@ -31,16 +31,10 @@ class CaregiverLinkRepositoryImpl implements CaregiverLinkRepository {
   }
 
   @override
-  Future<void> requestLink({
-    required String userId,
-    required String caregiverId,
-  }) async {
-    final json = <String, dynamic>{
-      'user_id': userId,
-      'caregiver_id': caregiverId,
-      'status': LinkStatus.pending.dbValue,
-    };
-    await _remote.requestLink(json);
+  Future<void> requestLinkAsCaregiver({required String userId}) async {
+    // The caregiver_id is resolved from auth.uid() inside the data source
+    // to satisfy the RLS policy cl_insert_caregiver.
+    await _remote.requestCaregiverLinkFor(userId);
   }
 
   @override
