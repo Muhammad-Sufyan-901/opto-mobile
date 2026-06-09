@@ -4,8 +4,8 @@
 // §Identity.accessibility_settings.
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'package:opto/core/constants/app_theme_mode.dart';
 import 'package:opto/core/constants/identity_enums.dart';
-import 'package:opto/core/theme/theme_cubit.dart';
 
 part 'accessibility_settings_model.freezed.dart';
 part 'accessibility_settings_model.g.dart';
@@ -19,15 +19,10 @@ class _AppThemeModeConverter implements JsonConverter<AppThemeMode, String?> {
   const _AppThemeModeConverter();
 
   @override
-  AppThemeMode fromJson(String? json) {
-    return AppThemeMode.values.firstWhere(
-      (m) => m.name == json,
-      orElse: () => AppThemeMode.light,
-    );
-  }
+  AppThemeMode fromJson(String? json) => AppThemeMode.fromDbValue(json);
 
   @override
-  String toJson(AppThemeMode mode) => mode.name;
+  String toJson(AppThemeMode mode) => mode.dbValue;
 }
 
 /// Converts between [HapticLevel] and the lowercase string stored in Postgres.

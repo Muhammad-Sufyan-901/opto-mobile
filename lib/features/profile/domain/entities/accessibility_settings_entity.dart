@@ -2,8 +2,8 @@
 //
 // Pure-Dart representation used in use-cases and BLoC states.
 // Mirrors [AccessibilitySettingsModel] without serialisation dependencies.
+import 'package:opto/core/constants/app_theme_mode.dart';
 import 'package:opto/core/constants/identity_enums.dart';
-import 'package:opto/core/theme/theme_cubit.dart';
 
 /// Immutable domain representation of the `accessibility_settings` table row.
 class AccessibilitySettingsEntity {
@@ -43,6 +43,10 @@ class AccessibilitySettingsEntity {
   final DateTime? updatedAt;
 
   /// Creates a copy with the given fields replaced.
+  ///
+  /// Note: passing `null` for a nullable field leaves it unchanged (does not
+  /// clear it). To explicitly clear a nullable field, create a new instance
+  /// with `AccessibilitySettingsEntity(...)`.
   AccessibilitySettingsEntity copyWith({
     String? userId,
     AppThemeMode? theme,

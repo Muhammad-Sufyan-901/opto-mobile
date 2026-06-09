@@ -26,4 +26,7 @@ enum UserRole {
 
   /// Returns the canonical lowercase string used in RLS policies and storage.
   String get value => name; // e.g. UserRole.doctor.value == 'doctor'
+
+  /// Canonical DB string — alias for [value] for consistency with other DB-mapped enums.
+  String get dbValue => value;
 }

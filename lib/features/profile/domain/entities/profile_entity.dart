@@ -40,6 +40,10 @@ class ProfileEntity {
   final DateTime createdAt;
 
   /// Creates a copy with the given fields replaced.
+  ///
+  /// Note: passing `null` for a nullable field leaves it unchanged (does not
+  /// clear it). To explicitly clear a nullable field, create a new instance
+  /// with `ProfileEntity(...)`.
   ProfileEntity copyWith({
     String? id,
     UserRole? role,

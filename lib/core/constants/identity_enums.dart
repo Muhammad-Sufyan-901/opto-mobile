@@ -4,7 +4,7 @@
 // column) to avoid one mega-file and to allow independent evolution.
 //
 // NOTE: [UserRole] lives in `lib/core/constants/user_role.dart`.
-//       [AppThemeMode] lives in `lib/core/theme/theme_cubit.dart`.
+//       [AppThemeMode] lives in `lib/core/constants/app_theme_mode.dart`.
 //       Neither is duplicated here.
 // =============================================================================
 // VISION PROFILE
@@ -83,14 +83,13 @@ enum LinkStatus {
 
   /// Parses a raw string to [LinkStatus]. Falls back to [pending].
   static LinkStatus fromString(String? value) {
-    switch (value) {
-      case 'active':
-        return LinkStatus.active;
-      case 'revoked':
-        return LinkStatus.revoked;
-      default:
+    return LinkStatus.values.firstWhere(
+      (s) => s.dbValue == value,
+      orElse: () {
+        assert(false, 'Unknown LinkStatus: "$value" — falling back to pending');
         return LinkStatus.pending;
-    }
+      },
+    );
   }
 
   /// Canonical lowercase string written to Postgres.
