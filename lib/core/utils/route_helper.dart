@@ -10,24 +10,6 @@ class RouteHelper {
     AppRoutes.authPhone.path,
     AppRoutes.authOtp.path,
     AppRoutes.authCaregiver.path,
-    // Onboarding & Setup — public while auth is stubbed (no token saved).
-    AppRoutes.setupVision.path,
-    AppRoutes.setupDisplay.path,
-    AppRoutes.setupVoice.path,
-    AppRoutes.setupPermissions.path,
-    AppRoutes.setupDone.path,
-    // Home dashboard is public while auth is stubbed so the post-setup
-    // redirect from SetupDoneScreen is not blocked by the auth guard.
-    // Remove once SetupCubit persists a session token (A-1 migration).
-    AppRoutes.home.path,
-    // Module destinations — public while auth is stubbed.
-    AppRoutes.visionAi.path,
-    AppRoutes.prostheticHub.path,
-    AppRoutes.consult.path,
-    AppRoutes.community.path,
-    AppRoutes.profile.path,
-    AppRoutes.sos.path,
-    AppRoutes.auraVoice.path,
     if (AppInfo.isDevelopment) AppRoutes.developer.path,
   };
 

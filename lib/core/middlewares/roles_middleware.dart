@@ -23,13 +23,13 @@ class RolesMiddleware {
     // if role is not allowed, redirect to dashboard with error message
     if (currentRole != allowedRole) {
       debugPrint(
-        '⛔ Access Denied: Need role "${allowedRole.value}" to access this page, '
-        'but user is "${currentRole.value}"',
+        '⛔ Access Denied: Need role "${allowedRole.name}" to access this page, '
+        'but user is "${currentRole.name}"',
       );
 
       final String fallbackRoute = RouteHelper.getDashboardRouteByRole(rawRole);
       const String errorMessage =
-          'Anda tidak memiliki izin untuk mengakses halaman ini.';
+          'You do not have permission to access this page.';
 
       return '$fallbackRoute?error=$errorMessage';
     }
