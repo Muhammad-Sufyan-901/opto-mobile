@@ -27,6 +27,7 @@ import 'package:opto/features/prosthetic_hub/data/datasources/prosthetic_remote_
 import 'package:opto/features/prosthetic_hub/data/repositories/catalog_repository_impl.dart';
 import 'package:opto/features/prosthetic_hub/domain/repositories/catalog_repository.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/catalog/catalog_bloc.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/product_detail/product_detail_bloc.dart';
 
 // Service Locator
 final sl = GetIt.instance;
@@ -147,5 +148,9 @@ Future<void> init() async {
 
   sl.registerFactory<CatalogBloc>(
     () => CatalogBloc(sl<CatalogRepository>()),
+  );
+
+  sl.registerFactory<ProductDetailBloc>(
+    () => ProductDetailBloc(sl<CatalogRepository>()),
   );
 }

@@ -14,12 +14,12 @@ import 'package:opto/core/constants/prosthetic_enums.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/prosthetic_hub/domain/entities/prosthetic_product_entity.dart';
 import 'package:opto/features/prosthetic_hub/domain/entities/vendor_entity.dart';
-import 'package:opto/features/prosthetic_hub/presentation/bloc/catalog/catalog_bloc.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/product_detail/product_detail_bloc.dart';
 
 /// Screen — Prosthetic Hub product detail view.
 ///
-/// Receives [productId] from GoRouter path parameters and adds [LoadProduct]
-/// to the [CatalogBloc] on init.
+/// Receives [productId] from GoRouter path parameters and adds
+/// [ProductDetailLoad] to the [ProductDetailBloc] on init.
 class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen({
     super.key,
@@ -37,32 +37,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void initState() {
     super.initState();
     context
-        .read<CatalogBloc>()
-        .add(CatalogEvent.loadProduct(widget.productId));
+        .read<ProductDetailBloc>()
+        .add(ProductDetailEvent.load(widget.productId));
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CatalogBloc, CatalogState>(
+    return BlocBuilder<ProductDetailBloc, ProductDetailState>(
       builder: (context, state) {
         return switch (state) {
-          CatalogLoading() || CatalogInitial() => const Scaffold(
+          ProductDetailLoading() ||
+          ProductDetailInitial() =>
+            const Scaffold(
               body: Center(child: CircularProgressIndicator()),
             ),
-          ProductLoaded(:final product, :final vendor) =>
+          ProductDetailLoaded(:final product, :final vendor) =>
             _DetailContent(product: product, vendor: vendor),
-          CatalogError(:final message) =>
+          ProductDetailError(:final message) =>
             _ErrorScaffold(message: message, productId: widget.productId),
-          _ => const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            ),
         };
       },
       buildWhen: (prev, curr) =>
-          curr is ProductLoaded ||
-          curr is CatalogLoading ||
-          curr is CatalogError ||
-          curr is CatalogInitial,
+          curr is ProductDetailLoaded ||
+          curr is ProductDetailLoading ||
+          curr is ProductDetailError ||
+          curr is ProductDetailInitial,
     );
   }
 }
@@ -143,7 +142,7 @@ class _DetailContentState extends State<_DetailContent> {
                     if (context.canPop()) {
                       context.pop();
                     } else {
-                      context.go(AppRoutes.prostheticCatalog.path);
+                      context.goNamed(AppRoutes.prostheticCatalog.name);
                     }
                   },
                   child: const SizedBox(
@@ -263,7 +262,7 @@ class _DetailContentState extends State<_DetailContent> {
                         _DetailRow(
                           label: 'Vendor',
                           value: vendor.isVerified
-                              ? '${vendor.name} ✓'
+                              ? '${vendor.name} (Verified)'
                               : vendor.name,
                           ink2: ink2,
                         ),
@@ -349,8 +348,9 @@ class _DetailContentState extends State<_DetailContent> {
                             ),
                           ),
                         ),
-                        onPressed: () =>
-                            context.go(AppRoutes.prostheticOrders.path),
+                        onPressed: () => context.goNamed(
+                          AppRoutes.prostheticOrders.name,
+                        ),
                         child: const ExcludeSemantics(
                           child: Text(
                             'Order',
@@ -489,7 +489,7 @@ class _ErrorScaffold extends StatelessWidget {
               if (context.canPop()) {
                 context.pop();
               } else {
-                context.go(AppRoutes.prostheticCatalog.path);
+                context.goNamed(AppRoutes.prostheticCatalog.name);
               }
             },
             child: const SizedBox(
@@ -530,8 +530,8 @@ class _ErrorScaffold extends StatelessWidget {
                     height: AppDimensions.minTapTarget,
                     child: ElevatedButton(
                       onPressed: () => context
-                          .read<CatalogBloc>()
-                          .add(CatalogEvent.loadProduct(productId)),
+                          .read<ProductDetailBloc>()
+                          .add(ProductDetailEvent.load(productId)),
                       child: const ExcludeSemantics(
                         child: Text('Retry'),
                       ),

@@ -1,5 +1,7 @@
-// BLoC for catalog operations — sits between [CatalogRepository] and the
-// catalog screens.
+// BLoC for catalog listing operations — sits between [CatalogRepository] and
+// the catalog screen.
+//
+// Single-product operations are handled by [ProductDetailBloc].
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:opto/core/error/failures.dart';
@@ -10,7 +12,7 @@ import 'package:opto/features/prosthetic_hub/presentation/bloc/catalog/catalog_s
 export 'catalog_event.dart';
 export 'catalog_state.dart';
 
-/// BLoC that drives the catalog listing and product detail screens.
+/// BLoC that drives the catalog listing screen.
 ///
 /// Inject by the abstract [CatalogRepository] contract — never by the impl.
 class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
@@ -18,7 +20,6 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
 
   CatalogBloc(this._repo) : super(const CatalogState.initial()) {
     on<LoadCatalog>(_onLoadCatalog);
-    on<LoadProduct>(_onLoadProduct);
   }
 
   // ---------------------------------------------------------------------------
@@ -37,28 +38,6 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
         sizeFilter: event.sizeFilter,
       );
       emit(CatalogState.loaded(products));
-    } on Failure catch (f) {
-      emit(CatalogState.error(_toMessage(f)));
-    } catch (e) {
-      emit(const CatalogState.error('An unexpected error occurred.'));
-    }
-  }
-
-  Future<void> _onLoadProduct(
-    LoadProduct event,
-    Emitter<CatalogState> emit,
-  ) async {
-    emit(const CatalogState.loading());
-    try {
-      final product = await _repo.getProductById(event.productId);
-
-      // Fetch product first; vendor fetch must follow because vendorId is unknown until product loads.
-      final vendorFuture = product.vendorId != null
-          ? _repo.getVendor(product.vendorId!)
-          : Future.value(null);
-
-      final vendor = await vendorFuture;
-      emit(CatalogState.productLoaded(product: product, vendor: vendor));
     } on Failure catch (f) {
       emit(CatalogState.error(_toMessage(f)));
     } catch (e) {

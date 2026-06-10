@@ -55,14 +55,13 @@ extension CatalogStatePatterns on CatalogState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CatalogInitial value)?  initial,TResult Function( CatalogLoading value)?  loading,TResult Function( CatalogLoaded value)?  loaded,TResult Function( ProductLoaded value)?  productLoaded,TResult Function( CatalogError value)?  error,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CatalogInitial value)?  initial,TResult Function( CatalogLoading value)?  loading,TResult Function( CatalogLoaded value)?  loaded,TResult Function( CatalogError value)?  error,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case CatalogInitial() when initial != null:
 return initial(_that);case CatalogLoading() when loading != null:
 return loading(_that);case CatalogLoaded() when loaded != null:
-return loaded(_that);case ProductLoaded() when productLoaded != null:
-return productLoaded(_that);case CatalogError() when error != null:
+return loaded(_that);case CatalogError() when error != null:
 return error(_that);case _:
   return orElse();
 
@@ -81,14 +80,13 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CatalogInitial value)  initial,required TResult Function( CatalogLoading value)  loading,required TResult Function( CatalogLoaded value)  loaded,required TResult Function( ProductLoaded value)  productLoaded,required TResult Function( CatalogError value)  error,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CatalogInitial value)  initial,required TResult Function( CatalogLoading value)  loading,required TResult Function( CatalogLoaded value)  loaded,required TResult Function( CatalogError value)  error,}){
 final _that = this;
 switch (_that) {
 case CatalogInitial():
 return initial(_that);case CatalogLoading():
 return loading(_that);case CatalogLoaded():
-return loaded(_that);case ProductLoaded():
-return productLoaded(_that);case CatalogError():
+return loaded(_that);case CatalogError():
 return error(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -103,14 +101,13 @@ return error(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CatalogInitial value)?  initial,TResult? Function( CatalogLoading value)?  loading,TResult? Function( CatalogLoaded value)?  loaded,TResult? Function( ProductLoaded value)?  productLoaded,TResult? Function( CatalogError value)?  error,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CatalogInitial value)?  initial,TResult? Function( CatalogLoading value)?  loading,TResult? Function( CatalogLoaded value)?  loaded,TResult? Function( CatalogError value)?  error,}){
 final _that = this;
 switch (_that) {
 case CatalogInitial() when initial != null:
 return initial(_that);case CatalogLoading() when loading != null:
 return loading(_that);case CatalogLoaded() when loaded != null:
-return loaded(_that);case ProductLoaded() when productLoaded != null:
-return productLoaded(_that);case CatalogError() when error != null:
+return loaded(_that);case CatalogError() when error != null:
 return error(_that);case _:
   return null;
 
@@ -128,13 +125,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<ProstheticProductEntity> products)?  loaded,TResult Function( ProstheticProductEntity product,  VendorEntity? vendor)?  productLoaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<ProstheticProductEntity> products)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case CatalogInitial() when initial != null:
 return initial();case CatalogLoading() when loading != null:
 return loading();case CatalogLoaded() when loaded != null:
-return loaded(_that.products);case ProductLoaded() when productLoaded != null:
-return productLoaded(_that.product,_that.vendor);case CatalogError() when error != null:
+return loaded(_that.products);case CatalogError() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -153,13 +149,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<ProstheticProductEntity> products)  loaded,required TResult Function( ProstheticProductEntity product,  VendorEntity? vendor)  productLoaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<ProstheticProductEntity> products)  loaded,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case CatalogInitial():
 return initial();case CatalogLoading():
 return loading();case CatalogLoaded():
-return loaded(_that.products);case ProductLoaded():
-return productLoaded(_that.product,_that.vendor);case CatalogError():
+return loaded(_that.products);case CatalogError():
 return error(_that.message);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -174,13 +169,12 @@ return error(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<ProstheticProductEntity> products)?  loaded,TResult? Function( ProstheticProductEntity product,  VendorEntity? vendor)?  productLoaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<ProstheticProductEntity> products)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case CatalogInitial() when initial != null:
 return initial();case CatalogLoading() when loading != null:
 return loading();case CatalogLoaded() when loaded != null:
-return loaded(_that.products);case ProductLoaded() when productLoaded != null:
-return productLoaded(_that.product,_that.vendor);case CatalogError() when error != null:
+return loaded(_that.products);case CatalogError() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -319,74 +313,6 @@ class _$CatalogLoadedCopyWithImpl<$Res>
   return _then(CatalogLoaded(
 null == products ? _self._products : products // ignore: cast_nullable_to_non_nullable
 as List<ProstheticProductEntity>,
-  ));
-}
-
-
-}
-
-/// @nodoc
-
-
-class ProductLoaded implements CatalogState {
-  const ProductLoaded({required this.product, this.vendor});
-  
-
- final  ProstheticProductEntity product;
- final  VendorEntity? vendor;
-
-/// Create a copy of CatalogState
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$ProductLoadedCopyWith<ProductLoaded> get copyWith => _$ProductLoadedCopyWithImpl<ProductLoaded>(this, _$identity);
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductLoaded&&(identical(other.product, product) || other.product == product)&&(identical(other.vendor, vendor) || other.vendor == vendor));
-}
-
-
-@override
-int get hashCode => Object.hash(runtimeType,product,vendor);
-
-@override
-String toString() {
-  return 'CatalogState.productLoaded(product: $product, vendor: $vendor)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class $ProductLoadedCopyWith<$Res> implements $CatalogStateCopyWith<$Res> {
-  factory $ProductLoadedCopyWith(ProductLoaded value, $Res Function(ProductLoaded) _then) = _$ProductLoadedCopyWithImpl;
-@useResult
-$Res call({
- ProstheticProductEntity product, VendorEntity? vendor
-});
-
-
-
-
-}
-/// @nodoc
-class _$ProductLoadedCopyWithImpl<$Res>
-    implements $ProductLoadedCopyWith<$Res> {
-  _$ProductLoadedCopyWithImpl(this._self, this._then);
-
-  final ProductLoaded _self;
-  final $Res Function(ProductLoaded) _then;
-
-/// Create a copy of CatalogState
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? product = null,Object? vendor = freezed,}) {
-  return _then(ProductLoaded(
-product: null == product ? _self.product : product // ignore: cast_nullable_to_non_nullable
-as ProstheticProductEntity,vendor: freezed == vendor ? _self.vendor : vendor // ignore: cast_nullable_to_non_nullable
-as VendorEntity?,
   ));
 }
 

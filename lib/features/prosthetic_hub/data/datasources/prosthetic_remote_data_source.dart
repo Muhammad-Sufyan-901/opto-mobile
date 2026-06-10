@@ -109,6 +109,7 @@ class ProstheticRemoteDataSourceImpl implements ProstheticRemoteDataSource {
       final row = await _client
           .from('prosthetic_products')
           .select(_productColumns)
+          .eq('is_active', true)
           .eq('id', id)
           .single();
       return ProstheticProductModel.fromJson(row);

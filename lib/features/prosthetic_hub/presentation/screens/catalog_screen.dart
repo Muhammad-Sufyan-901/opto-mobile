@@ -94,7 +94,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
                       CatalogLoaded(:final products) => products.isEmpty
                           ? _EmptyState(cs: cs)
                           : _ProductList(products: products),
-                      ProductLoaded() => const SizedBox.shrink(),
                       CatalogError(:final message) => _ErrorState(
                           message: message,
                           onRetry: _loadCatalog,
@@ -141,7 +140,7 @@ class _CatalogHeader extends StatelessWidget {
                 if (context.canPop()) {
                   context.pop();
                 } else {
-                  context.go(AppRoutes.prostheticHub.path);
+                  context.goNamed(AppRoutes.prostheticHub.name);
                 }
               },
               child: const SizedBox(

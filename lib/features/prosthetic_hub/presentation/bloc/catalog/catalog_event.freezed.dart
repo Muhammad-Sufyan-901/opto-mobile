@@ -14,30 +14,63 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CatalogEvent {
 
-
+ ProductType? get typeFilter; String? get irisColorFilter; String? get sizeFilter;
+/// Create a copy of CatalogEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CatalogEventCopyWith<CatalogEvent> get copyWith => _$CatalogEventCopyWithImpl<CatalogEvent>(this as CatalogEvent, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CatalogEvent);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CatalogEvent&&(identical(other.typeFilter, typeFilter) || other.typeFilter == typeFilter)&&(identical(other.irisColorFilter, irisColorFilter) || other.irisColorFilter == irisColorFilter)&&(identical(other.sizeFilter, sizeFilter) || other.sizeFilter == sizeFilter));
 }
 
 
 @override
-int get hashCode => runtimeType.hashCode;
+int get hashCode => Object.hash(runtimeType,typeFilter,irisColorFilter,sizeFilter);
 
 @override
 String toString() {
-  return 'CatalogEvent()';
+  return 'CatalogEvent(typeFilter: $typeFilter, irisColorFilter: $irisColorFilter, sizeFilter: $sizeFilter)';
 }
 
 
 }
 
 /// @nodoc
-class $CatalogEventCopyWith<$Res>  {
-$CatalogEventCopyWith(CatalogEvent _, $Res Function(CatalogEvent) __);
+abstract mixin class $CatalogEventCopyWith<$Res>  {
+  factory $CatalogEventCopyWith(CatalogEvent value, $Res Function(CatalogEvent) _then) = _$CatalogEventCopyWithImpl;
+@useResult
+$Res call({
+ ProductType? typeFilter, String? irisColorFilter, String? sizeFilter
+});
+
+
+
+
+}
+/// @nodoc
+class _$CatalogEventCopyWithImpl<$Res>
+    implements $CatalogEventCopyWith<$Res> {
+  _$CatalogEventCopyWithImpl(this._self, this._then);
+
+  final CatalogEvent _self;
+  final $Res Function(CatalogEvent) _then;
+
+/// Create a copy of CatalogEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? typeFilter = freezed,Object? irisColorFilter = freezed,Object? sizeFilter = freezed,}) {
+  return _then(_self.copyWith(
+typeFilter: freezed == typeFilter ? _self.typeFilter : typeFilter // ignore: cast_nullable_to_non_nullable
+as ProductType?,irisColorFilter: freezed == irisColorFilter ? _self.irisColorFilter : irisColorFilter // ignore: cast_nullable_to_non_nullable
+as String?,sizeFilter: freezed == sizeFilter ? _self.sizeFilter : sizeFilter // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
 }
 
 
@@ -55,12 +88,11 @@ extension CatalogEventPatterns on CatalogEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LoadCatalog value)?  loadCatalog,TResult Function( LoadProduct value)?  loadProduct,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LoadCatalog value)?  loadCatalog,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case LoadCatalog() when loadCatalog != null:
-return loadCatalog(_that);case LoadProduct() when loadProduct != null:
-return loadProduct(_that);case _:
+return loadCatalog(_that);case _:
   return orElse();
 
 }
@@ -78,12 +110,11 @@ return loadProduct(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LoadCatalog value)  loadCatalog,required TResult Function( LoadProduct value)  loadProduct,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LoadCatalog value)  loadCatalog,}){
 final _that = this;
 switch (_that) {
 case LoadCatalog():
-return loadCatalog(_that);case LoadProduct():
-return loadProduct(_that);}
+return loadCatalog(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -97,12 +128,11 @@ return loadProduct(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LoadCatalog value)?  loadCatalog,TResult? Function( LoadProduct value)?  loadProduct,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LoadCatalog value)?  loadCatalog,}){
 final _that = this;
 switch (_that) {
 case LoadCatalog() when loadCatalog != null:
-return loadCatalog(_that);case LoadProduct() when loadProduct != null:
-return loadProduct(_that);case _:
+return loadCatalog(_that);case _:
   return null;
 
 }
@@ -119,11 +149,10 @@ return loadProduct(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ProductType? typeFilter,  String? irisColorFilter,  String? sizeFilter)?  loadCatalog,TResult Function( String productId)?  loadProduct,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ProductType? typeFilter,  String? irisColorFilter,  String? sizeFilter)?  loadCatalog,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case LoadCatalog() when loadCatalog != null:
-return loadCatalog(_that.typeFilter,_that.irisColorFilter,_that.sizeFilter);case LoadProduct() when loadProduct != null:
-return loadProduct(_that.productId);case _:
+return loadCatalog(_that.typeFilter,_that.irisColorFilter,_that.sizeFilter);case _:
   return orElse();
 
 }
@@ -141,11 +170,10 @@ return loadProduct(_that.productId);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ProductType? typeFilter,  String? irisColorFilter,  String? sizeFilter)  loadCatalog,required TResult Function( String productId)  loadProduct,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ProductType? typeFilter,  String? irisColorFilter,  String? sizeFilter)  loadCatalog,}) {final _that = this;
 switch (_that) {
 case LoadCatalog():
-return loadCatalog(_that.typeFilter,_that.irisColorFilter,_that.sizeFilter);case LoadProduct():
-return loadProduct(_that.productId);}
+return loadCatalog(_that.typeFilter,_that.irisColorFilter,_that.sizeFilter);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -159,11 +187,10 @@ return loadProduct(_that.productId);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ProductType? typeFilter,  String? irisColorFilter,  String? sizeFilter)?  loadCatalog,TResult? Function( String productId)?  loadProduct,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ProductType? typeFilter,  String? irisColorFilter,  String? sizeFilter)?  loadCatalog,}) {final _that = this;
 switch (_that) {
 case LoadCatalog() when loadCatalog != null:
-return loadCatalog(_that.typeFilter,_that.irisColorFilter,_that.sizeFilter);case LoadProduct() when loadProduct != null:
-return loadProduct(_that.productId);case _:
+return loadCatalog(_that.typeFilter,_that.irisColorFilter,_that.sizeFilter);case _:
   return null;
 
 }
@@ -178,13 +205,13 @@ class LoadCatalog implements CatalogEvent {
   const LoadCatalog({this.typeFilter, this.irisColorFilter, this.sizeFilter});
   
 
- final  ProductType? typeFilter;
- final  String? irisColorFilter;
- final  String? sizeFilter;
+@override final  ProductType? typeFilter;
+@override final  String? irisColorFilter;
+@override final  String? sizeFilter;
 
 /// Create a copy of CatalogEvent
 /// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
+@override @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $LoadCatalogCopyWith<LoadCatalog> get copyWith => _$LoadCatalogCopyWithImpl<LoadCatalog>(this, _$identity);
 
@@ -210,7 +237,7 @@ String toString() {
 /// @nodoc
 abstract mixin class $LoadCatalogCopyWith<$Res> implements $CatalogEventCopyWith<$Res> {
   factory $LoadCatalogCopyWith(LoadCatalog value, $Res Function(LoadCatalog) _then) = _$LoadCatalogCopyWithImpl;
-@useResult
+@override @useResult
 $Res call({
  ProductType? typeFilter, String? irisColorFilter, String? sizeFilter
 });
@@ -229,78 +256,12 @@ class _$LoadCatalogCopyWithImpl<$Res>
 
 /// Create a copy of CatalogEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? typeFilter = freezed,Object? irisColorFilter = freezed,Object? sizeFilter = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? typeFilter = freezed,Object? irisColorFilter = freezed,Object? sizeFilter = freezed,}) {
   return _then(LoadCatalog(
 typeFilter: freezed == typeFilter ? _self.typeFilter : typeFilter // ignore: cast_nullable_to_non_nullable
 as ProductType?,irisColorFilter: freezed == irisColorFilter ? _self.irisColorFilter : irisColorFilter // ignore: cast_nullable_to_non_nullable
 as String?,sizeFilter: freezed == sizeFilter ? _self.sizeFilter : sizeFilter // ignore: cast_nullable_to_non_nullable
 as String?,
-  ));
-}
-
-
-}
-
-/// @nodoc
-
-
-class LoadProduct implements CatalogEvent {
-  const LoadProduct(this.productId);
-  
-
- final  String productId;
-
-/// Create a copy of CatalogEvent
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$LoadProductCopyWith<LoadProduct> get copyWith => _$LoadProductCopyWithImpl<LoadProduct>(this, _$identity);
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LoadProduct&&(identical(other.productId, productId) || other.productId == productId));
-}
-
-
-@override
-int get hashCode => Object.hash(runtimeType,productId);
-
-@override
-String toString() {
-  return 'CatalogEvent.loadProduct(productId: $productId)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class $LoadProductCopyWith<$Res> implements $CatalogEventCopyWith<$Res> {
-  factory $LoadProductCopyWith(LoadProduct value, $Res Function(LoadProduct) _then) = _$LoadProductCopyWithImpl;
-@useResult
-$Res call({
- String productId
-});
-
-
-
-
-}
-/// @nodoc
-class _$LoadProductCopyWithImpl<$Res>
-    implements $LoadProductCopyWith<$Res> {
-  _$LoadProductCopyWithImpl(this._self, this._then);
-
-  final LoadProduct _self;
-  final $Res Function(LoadProduct) _then;
-
-/// Create a copy of CatalogEvent
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? productId = null,}) {
-  return _then(LoadProduct(
-null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
-as String,
   ));
 }
 

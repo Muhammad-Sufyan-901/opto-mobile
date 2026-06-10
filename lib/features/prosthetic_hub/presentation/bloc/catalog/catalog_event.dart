@@ -17,7 +17,4 @@ sealed class CatalogEvent with _$CatalogEvent {
     String? irisColorFilter,
     String? sizeFilter,
   }) = LoadCatalog;
-
-  /// Load a single product and its vendor by [productId].
-  const factory CatalogEvent.loadProduct(String productId) = LoadProduct;
 }

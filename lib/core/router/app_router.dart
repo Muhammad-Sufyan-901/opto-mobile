@@ -28,6 +28,7 @@ import 'package:opto/features/prosthetic_hub/presentation/screens/catalog_screen
 import 'package:opto/features/prosthetic_hub/presentation/screens/product_detail_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/catalog/catalog_bloc.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/product_detail/product_detail_bloc.dart';
 import 'package:opto/features/connect/presentation/screens/community_screen.dart';
 import 'package:opto/features/profile/presentation/screens/profile_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
@@ -324,8 +325,8 @@ final GoRouter appRouter = GoRouter(
               name: AppRoutes.prostheticProductDetail.name,
               builder: (context, state) {
                 final productId = state.pathParameters['productId']!;
-                return BlocProvider<CatalogBloc>(
-                  create: (_) => sl<CatalogBloc>(),
+                return BlocProvider<ProductDetailBloc>(
+                  create: (_) => sl<ProductDetailBloc>(),
                   child: ProductDetailScreen(productId: productId),
                 );
               },
