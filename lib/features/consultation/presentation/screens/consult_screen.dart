@@ -127,6 +127,7 @@ class _ScreenHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     final Color blueTint = ext?.blueTint ?? cs.primaryContainer;
     final Color blueStrong = cs.secondary;
 
@@ -166,8 +167,7 @@ class _ScreenHeader extends StatelessWidget {
             child: Text(
               'Consult',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 21,
+              style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: cs.onSurface,
               ),
@@ -240,15 +240,17 @@ class _AppointmentCard extends StatelessWidget {
         children: [
           // ── Eyebrow text ───────────────────────────────────────────────
           ExcludeSemantics(
-            child: Text(
-              'NEXT APPOINTMENT · IN 2 HOURS',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.8,
-                color: blueStrong,
-              ),
-            ),
+            child: Builder(builder: (context) {
+              final theme = Theme.of(context);
+              return Text(
+                'NEXT APPOINTMENT · IN 2 HOURS',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.6,
+                  color: blueStrong,
+                ),
+              );
+            }),
           ),
 
           const SizedBox(height: 14),
@@ -266,15 +268,17 @@ class _AppointmentCard extends StatelessWidget {
                     color: cs.primary,
                     shape: BoxShape.circle,
                   ),
-                  child: const Center(
-                    child: Text(
-                      'AA',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
+                  child: Center(
+                    child: Builder(builder: (context) {
+                      final theme = Theme.of(context);
+                      return Text(
+                        'AA',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      );
+                    }),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -282,22 +286,26 @@ class _AppointmentCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Dr. Anwar Anggara',
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                        color: cs.onSurface,
-                      ),
-                    ),
+                    Builder(builder: (context) {
+                      final theme = Theme.of(context);
+                      return Text(
+                        'Dr. Anwar Anggara',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: cs.onSurface,
+                        ),
+                      );
+                    }),
                     const SizedBox(height: 2),
-                    Text(
-                      'Ophthalmologist · Video visit',
-                      style: TextStyle(
-                        fontSize: 14.5,
-                        color: ink2,
-                      ),
-                    ),
+                    Builder(builder: (context) {
+                      final theme = Theme.of(context);
+                      return Text(
+                        'Ophthalmologist · Video visit',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: ink2,
+                        ),
+                      );
+                    }),
                   ],
                 ),
               ],
@@ -327,21 +335,23 @@ class _AppointmentCard extends StatelessWidget {
                       child: ExcludeSemantics(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(
+                          children: [
+                            const Icon(
                               Icons.video_call_outlined,
                               size: 22,
                               color: Colors.white,
                             ),
-                            SizedBox(width: 8),
-                            Text(
-                              'Join call',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
+                            const SizedBox(width: 8),
+                            Builder(builder: (context) {
+                              final theme = Theme.of(context);
+                              return Text(
+                                'Join call',
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              );
+                            }),
                           ],
                         ),
                       ),
@@ -378,14 +388,16 @@ class _AppointmentCard extends StatelessWidget {
                               color: cs.onSurface,
                             ),
                             const SizedBox(width: 8),
-                            Text(
-                              'Message',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: cs.onSurface,
-                              ),
-                            ),
+                            Builder(builder: (context) {
+                              final theme = Theme.of(context);
+                              return Text(
+                                'Message',
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: cs.onSurface,
+                                ),
+                              );
+                            }),
                           ],
                         ),
                       ),
@@ -409,23 +421,22 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     return ExcludeSemantics(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             'AVAILABLE NOW',
-            style: TextStyle(
-              fontSize: 14,
+            style: theme.textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.w700,
-              letterSpacing: 1.1,
+              letterSpacing: 1.6,
               color: cs.onSurfaceVariant,
             ),
           ),
           Text(
             'See all',
-            style: TextStyle(
-              fontSize: 15,
+            style: theme.textTheme.labelMedium?.copyWith(
               fontWeight: FontWeight.w700,
               color: cs.primary,
             ),
@@ -490,14 +501,16 @@ class _DoctorRow extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Center(
-                    child: Text(
-                      initials,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child: Builder(builder: (context) {
+                      final theme = Theme.of(context);
+                      return Text(
+                        initials,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      );
+                    }),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -506,22 +519,26 @@ class _DoctorRow extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        name,
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                          color: cs.onSurface,
-                        ),
-                      ),
+                      Builder(builder: (context) {
+                        final theme = Theme.of(context);
+                        return Text(
+                          name,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: cs.onSurface,
+                          ),
+                        );
+                      }),
                       const SizedBox(height: 2),
-                      Text(
-                        role,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: ink2,
-                        ),
-                      ),
+                      Builder(builder: (context) {
+                        final theme = Theme.of(context);
+                        return Text(
+                          role,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: ink2,
+                          ),
+                        );
+                      }),
                     ],
                   ),
                 ),
@@ -567,14 +584,16 @@ class _StatusPill extends StatelessWidget {
         color: bgColor,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(
-        status,
-        style: TextStyle(
-          fontSize: 13.5,
-          fontWeight: FontWeight.w700,
-          color: textColor,
-        ),
-      ),
+      child: Builder(builder: (context) {
+        final theme = Theme.of(context);
+        return Text(
+          status,
+          style: theme.textTheme.labelSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: textColor,
+          ),
+        );
+      }),
     );
   }
 }
@@ -614,14 +633,16 @@ class _BookCta extends StatelessWidget {
                   color: cs.secondary,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'Book a new appointment',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: cs.secondary,
-                  ),
-                ),
+                Builder(builder: (context) {
+                  final theme = Theme.of(context);
+                  return Text(
+                    'Book a new appointment',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: cs.secondary,
+                    ),
+                  );
+                }),
               ],
             ),
           ),

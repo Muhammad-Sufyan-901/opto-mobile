@@ -68,10 +68,9 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
                   children: [
                     Text(
                       'CARE & SUPPORT',
-                      style: TextStyle(
-                        fontSize: 14,
+                      style: theme.textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.w700,
-                        letterSpacing: 1.3,
+                        letterSpacing: 1.6,
                         color: ext?.ink3 ?? cs.onSurfaceVariant,
                       ),
                     ),
@@ -138,6 +137,7 @@ class _ScreenHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     return Row(
       children: [
         // ── Back button ────────────────────────────────────────────────────
@@ -174,8 +174,7 @@ class _ScreenHeader extends StatelessWidget {
             child: Text(
               'Prosthetic Hub',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 21,
+              style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: cs.onSurface,
               ),
@@ -201,6 +200,7 @@ class _StatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     return Semantics(
       button: true,
       label:
@@ -243,17 +243,16 @@ class _StatusCard extends StatelessWidget {
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(
+                      children: [
+                        const Icon(
                           Icons.verified_outlined,
                           size: 18,
                           color: Colors.white,
                         ),
-                        SizedBox(width: 4),
+                        const SizedBox(width: 4),
                         Text(
                           'Healthy',
-                          style: TextStyle(
-                            fontSize: 13,
+                          style: theme.textTheme.labelSmall?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),
@@ -264,8 +263,7 @@ class _StatusCard extends StatelessWidget {
                   // Prosthesis type
                   Text(
                     'Right eye prosthesis',
-                    style: TextStyle(
-                      fontSize: 13.5,
+                    style: theme.textTheme.labelSmall?.copyWith(
                       color: Colors.white.withValues(alpha: 0.85),
                     ),
                   ),
@@ -275,10 +273,9 @@ class _StatusCard extends StatelessWidget {
               const SizedBox(height: 18),
 
               // ── Title ──────────────────────────────────────────────────
-              const Text(
+              Text(
                 'Next cleaning in 1 day',
-                style: TextStyle(
-                  fontSize: 24,
+                style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
@@ -289,8 +286,7 @@ class _StatusCard extends StatelessWidget {
               // ── Subtitle ───────────────────────────────────────────────
               Text(
                 'Last cleaned 6 days ago. Tap to log today\'s care.',
-                style: TextStyle(
-                  fontSize: 15,
+                style: theme.textTheme.bodyMedium?.copyWith(
                   color: Colors.white.withValues(alpha: 0.90),
                   height: 1.4,
                 ),
@@ -324,8 +320,7 @@ class _StatusCard extends StatelessWidget {
                           children: [
                             Text(
                               'Log care',
-                              style: TextStyle(
-                                fontSize: 17,
+                              style: theme.textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.w700,
                                 color: cs.secondary,
                               ),
@@ -420,8 +415,7 @@ class _HubLink extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: TextStyle(
-                          fontSize: 17,
+                        style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                           color: cs.onSurface,
                         ),
@@ -429,8 +423,7 @@ class _HubLink extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: TextStyle(
-                          fontSize: 14,
+                        style: theme.textTheme.bodySmall?.copyWith(
                           color: ink2,
                         ),
                       ),

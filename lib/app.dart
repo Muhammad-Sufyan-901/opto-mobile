@@ -65,11 +65,17 @@ class App extends StatelessWidget {
               themeMode: flutterMode,
               routerConfig: appRouter,
               builder: (BuildContext context, Widget? child) {
-                // Apply user text-scale (1.0–3.0) per design_system.md §3 / §15.4.
-                final double scale = settings.textScale.clamp(1.0, 3.0);
+                // Compose OS font-size with the user's in-app preference so
+                // that neither is discarded. design_system.md §3 / §15.4:
+                // honor MediaQuery.textScaler in the range 1.0–3.0.
+                final double osScale =
+                    MediaQuery.of(context).textScaler.scale(1.0);
+                final double userScale = settings.textScale.clamp(1.0, 3.0);
+                final double effectiveScale =
+                    (osScale > userScale ? osScale : userScale).clamp(1.0, 3.0);
                 return MediaQuery(
                   data: MediaQuery.of(context).copyWith(
-                    textScaler: TextScaler.linear(scale),
+                    textScaler: TextScaler.linear(effectiveScale),
                   ),
                   child: child!,
                 );
