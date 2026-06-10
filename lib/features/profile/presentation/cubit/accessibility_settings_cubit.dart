@@ -44,6 +44,8 @@ class AccessibilitySettingsCubit extends Cubit<AccessibilitySettingsEntity> {
         hapticIntensity: HapticLevel.full,
         voiceEnabled: true,
         hotwordEnabled: false,
+        spokenGuidanceEnabled: true,
+        speakingRate: 0.45,
       );
 
   // ---------------------------------------------------------------------------
@@ -88,6 +90,14 @@ class AccessibilitySettingsCubit extends Cubit<AccessibilitySettingsEntity> {
   /// Enable or disable the always-on hotword listener and persist.
   Future<void> updateHotword({required bool enabled}) async =>
       _updateField((s) => s.copyWith(hotwordEnabled: enabled));
+
+  /// Enable or disable spoken guidance (TTS feedback) and persist.
+  Future<void> updateSpokenGuidance({required bool enabled}) async =>
+      _updateField((s) => s.copyWith(spokenGuidanceEnabled: enabled));
+
+  /// Change the TTS speaking rate (0.0–1.0) immediately and persist.
+  Future<void> updateSpeakingRate(double rate) async =>
+      _updateField((s) => s.copyWith(speakingRate: rate));
 
   /// Reset all settings to the Opto defaults.
   ///

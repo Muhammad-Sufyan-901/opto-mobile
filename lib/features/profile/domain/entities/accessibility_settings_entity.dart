@@ -15,6 +15,8 @@ class AccessibilitySettingsEntity {
     this.hapticIntensity = HapticLevel.full,
     this.voiceEnabled = true,
     this.hotwordEnabled = false,
+    this.spokenGuidanceEnabled = true,
+    this.speakingRate = 0.45,
     this.updatedAt,
   });
 
@@ -39,6 +41,12 @@ class AccessibilitySettingsEntity {
   /// Whether the always-on hotword listener is active.
   final bool hotwordEnabled;
 
+  /// Whether spoken guidance (TTS feedback) is enabled; defaults to true.
+  final bool spokenGuidanceEnabled;
+
+  /// TTS speaking rate multiplier — 0.0 (slowest) to 1.0 (fastest); default 0.45.
+  final double speakingRate;
+
   /// Timestamp of the last settings update (null if never explicitly saved).
   final DateTime? updatedAt;
 
@@ -55,6 +63,8 @@ class AccessibilitySettingsEntity {
     HapticLevel? hapticIntensity,
     bool? voiceEnabled,
     bool? hotwordEnabled,
+    bool? spokenGuidanceEnabled,
+    double? speakingRate,
     DateTime? updatedAt,
   }) {
     return AccessibilitySettingsEntity(
@@ -65,6 +75,9 @@ class AccessibilitySettingsEntity {
       hapticIntensity: hapticIntensity ?? this.hapticIntensity,
       voiceEnabled: voiceEnabled ?? this.voiceEnabled,
       hotwordEnabled: hotwordEnabled ?? this.hotwordEnabled,
+      spokenGuidanceEnabled:
+          spokenGuidanceEnabled ?? this.spokenGuidanceEnabled,
+      speakingRate: speakingRate ?? this.speakingRate,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
@@ -81,6 +94,8 @@ class AccessibilitySettingsEntity {
           hapticIntensity == other.hapticIntensity &&
           voiceEnabled == other.voiceEnabled &&
           hotwordEnabled == other.hotwordEnabled &&
+          spokenGuidanceEnabled == other.spokenGuidanceEnabled &&
+          speakingRate == other.speakingRate &&
           updatedAt == other.updatedAt;
 
   @override
@@ -92,6 +107,8 @@ class AccessibilitySettingsEntity {
         hapticIntensity,
         voiceEnabled,
         hotwordEnabled,
+        spokenGuidanceEnabled,
+        speakingRate,
         updatedAt,
       );
 }

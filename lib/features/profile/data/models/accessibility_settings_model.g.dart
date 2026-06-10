@@ -22,6 +22,8 @@ _AccessibilitySettingsModel _$AccessibilitySettingsModelFromJson(
         ),
   voiceEnabled: json['voice_enabled'] as bool? ?? true,
   hotwordEnabled: json['hotword_enabled'] as bool? ?? false,
+  spokenGuidanceEnabled: json['spoken_guidance_enabled'] as bool? ?? true,
+  speakingRate: (json['speaking_rate'] as num?)?.toDouble() ?? 0.45,
   updatedAt: json['updated_at'] == null
       ? null
       : DateTime.parse(json['updated_at'] as String),
@@ -39,5 +41,7 @@ Map<String, dynamic> _$AccessibilitySettingsModelToJson(
   ),
   'voice_enabled': instance.voiceEnabled,
   'hotword_enabled': instance.hotwordEnabled,
+  'spoken_guidance_enabled': instance.spokenGuidanceEnabled,
+  'speaking_rate': instance.speakingRate,
   'updated_at': instance.updatedAt?.toIso8601String(),
 };
