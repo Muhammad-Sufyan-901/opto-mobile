@@ -41,6 +41,7 @@ import 'package:opto/features/prosthetic_hub/presentation/bloc/eye_photos/eye_ph
 import 'package:opto/features/prosthetic_hub/presentation/bloc/orders/orders_bloc.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/product_detail/product_detail_bloc.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/anthropometric/anthropometric_cubit.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/hub/hub_cubit.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/reminders/reminders_cubit.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/tutorials/tutorials_cubit.dart';
 
@@ -221,5 +222,14 @@ Future<void> init() async {
 
   sl.registerFactory<RemindersCubit>(
     () => RemindersCubit(sl<RemindersRepository>()),
+  );
+
+  // ── Prosthetic Hub — Hub overview ─────────────────────────────────────────
+
+  sl.registerFactory<HubCubit>(
+    () => HubCubit(
+      ordersRepository: sl<OrdersRepository>(),
+      remindersRepository: sl<RemindersRepository>(),
+    ),
   );
 }

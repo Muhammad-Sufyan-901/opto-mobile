@@ -41,6 +41,7 @@ import 'package:opto/features/prosthetic_hub/presentation/screens/order_detail_s
 import 'package:opto/features/prosthetic_hub/presentation/bloc/orders/orders_bloc.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/care_reminders_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/reminders/reminders_cubit.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/hub/hub_cubit.dart';
 import 'package:opto/features/connect/presentation/screens/community_screen.dart';
 import 'package:opto/features/profile/presentation/screens/profile_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
@@ -319,7 +320,10 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.prostheticHub.path,
       name: AppRoutes.prostheticHub.name,
       builder: (BuildContext context, GoRouterState state) {
-        return const ProstheticHubScreen();
+        return BlocProvider(
+          create: (_) => sl<HubCubit>(),
+          child: const ProstheticHubScreen(),
+        );
       },
       routes: [
         // Catalog listing

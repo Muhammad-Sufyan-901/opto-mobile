@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/hub/hub_cubit.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/hub/hub_state.dart';
 
 /// Screen 17 — Prosthetic Hub
 ///
 /// Accessibility-first overview of the user's ocular prosthesis care status,
-/// with quick links to fitting appointments, care guides, supply ordering, and
-/// specialist messaging.
+/// with quick links to care guides, supply ordering, measurements, eye photos,
+/// and specialist messaging.
 ///
-/// Layout: white Scaffold, SafeArea + SingleChildScrollView, no bottom nav.
+/// Status card is driven by live data (latest order + next active reminder)
+/// via [HubCubit].
 class ProstheticHubScreen extends StatefulWidget {
   const ProstheticHubScreen({super.key});
 
@@ -26,6 +30,7 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       announce(context, 'Prosthetic Hub.');
+      context.read<HubCubit>().loadStatus();
     });
   }
 
@@ -53,8 +58,23 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
 
               const SizedBox(height: 14),
 
-              // ── Status card ───────────────────────────────────────────────
-              _StatusCard(cs: cs),
+              // ── Live Status card ──────────────────────────────────────────
+              BlocBuilder<HubCubit, HubState>(
+                builder: (context, state) {
+                  final orderStatus = state is HubLoaded
+                      ? state.latestOrderStatus
+                      : null;
+                  final nextReminder = state is HubLoaded
+                      ? state.nextReminderLabel
+                      : null;
+                  return _StatusCard(
+                    cs: cs,
+                    latestOrderStatus: orderStatus,
+                    nextReminderLabel: nextReminder,
+                    isLoading: state is HubLoading,
+                  );
+                },
+              ),
 
               const SizedBox(height: AppDimensions.sectionGap),
 
@@ -77,40 +97,84 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
               const SizedBox(height: AppDimensions.space12),
 
               // ── Hub link rows ─────────────────────────────────────────────
-              _HubLink(
-                icon: Icons.calendar_today_outlined,
-                title: 'Fitting appointments',
-                subtitle: '1 upcoming · Apr 18',
-                onTap: () {
-                  // TODO(prosthetic-hub): navigate to sub-screen
-                },
-              ),
-              const SizedBox(height: AppDimensions.space12),
+
+              // Care guides → tutorials ✅
               _HubLink(
                 icon: Icons.menu_book_outlined,
                 title: 'Care guides',
                 subtitle: 'Cleaning, handling, sleep',
-                onTap: () {
-                  // TODO(prosthetic-hub): navigate to sub-screen
-                },
+                onTap: () =>
+                    context.goNamed(AppRoutes.careTutorials.name),
               ),
               const SizedBox(height: AppDimensions.space12),
+
+              // Order supplies → catalog ✅
               _HubLink(
                 icon: Icons.inventory_2_outlined,
                 title: 'Order supplies',
-                subtitle: 'Solution, cases & cloths',
-                onTap: () {
-                  // TODO(prosthetic-hub): navigate to sub-screen
-                },
+                subtitle: 'Prosthetics, cases & care kits',
+                onTap: () =>
+                    context.goNamed(AppRoutes.prostheticCatalog.name),
               ),
               const SizedBox(height: AppDimensions.space12),
+
+              // My orders → orders list ✅
+              _HubLink(
+                icon: Icons.shopping_bag_outlined,
+                title: 'My orders',
+                subtitle: 'Track and manage your orders',
+                onTap: () =>
+                    context.goNamed(AppRoutes.prostheticOrders.name),
+              ),
+              const SizedBox(height: AppDimensions.space12),
+
+              // My measurements → anthropometric ✅
+              _HubLink(
+                icon: Icons.straighten_outlined,
+                title: 'My measurements',
+                subtitle: 'Socket size, iris diameter',
+                onTap: () =>
+                    context.goNamed(AppRoutes.anthropometric.name),
+              ),
+              const SizedBox(height: AppDimensions.space12),
+
+              // Eye photos → eye_photos ✅
+              _HubLink(
+                icon: Icons.photo_camera_outlined,
+                title: 'Eye photos',
+                subtitle: 'Reference photos for matching',
+                onTap: () =>
+                    context.goNamed(AppRoutes.eyePhotos.name),
+              ),
+              const SizedBox(height: AppDimensions.space12),
+
+              // Care reminders → reminders ✅
+              _HubLink(
+                icon: Icons.alarm_outlined,
+                title: 'Care reminders',
+                subtitle: 'Schedule cleaning & check-ups',
+                onTap: () =>
+                    context.goNamed(AppRoutes.careReminders.name),
+              ),
+              const SizedBox(height: AppDimensions.space12),
+
+              // Fitting appointments — Phase 3D consultation (coming soon)
+              _HubLink(
+                icon: Icons.calendar_today_outlined,
+                title: 'Fitting appointments',
+                subtitle: 'Coming in a future update',
+                enabled: false,
+                onTap: () {},
+              ),
+              const SizedBox(height: AppDimensions.space12),
+
+              // Message specialist — Phase 3D (coming soon)
               _HubLink(
                 icon: Icons.message_outlined,
                 title: 'Message my specialist',
-                subtitle: 'Dr. Anwar · usually replies same day',
-                onTap: () {
-                  // TODO(prosthetic-hub): navigate to sub-screen
-                },
+                subtitle: 'Coming in a future update',
+                enabled: false,
+                onTap: () {},
               ),
             ],
           ),
@@ -124,8 +188,7 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
 // PRIVATE WIDGETS
 // =============================================================================
 
-/// Top row: 48×48 back chevron circle on the left, centered title, 48×48
-/// placeholder span on the right to keep the title visually centred.
+/// Top row: 48×48 back chevron circle on the left, centered title.
 class _ScreenHeader extends StatelessWidget {
   const _ScreenHeader({required this.cs});
 
@@ -188,113 +251,149 @@ class _ScreenHeader extends StatelessWidget {
   }
 }
 
-/// Blue-gradient status card showing prosthesis health and cleaning schedule.
+/// Blue-gradient status card driven by live order + reminder data.
 class _StatusCard extends StatelessWidget {
-  const _StatusCard({required this.cs});
+  const _StatusCard({
+    required this.cs,
+    required this.isLoading,
+    this.latestOrderStatus,
+    this.nextReminderLabel,
+  });
 
   final ColorScheme cs;
+  final bool isLoading;
+  final String? latestOrderStatus;
+  final String? nextReminderLabel;
+
+  String get _headlineText {
+    if (isLoading) return 'Loading…';
+    if (nextReminderLabel != null) return nextReminderLabel!;
+    return 'No reminders set';
+  }
+
+  String get _subtitleText {
+    if (isLoading) return '';
+    final orderPart = latestOrderStatus != null
+        ? 'Latest order: $latestOrderStatus.'
+        : 'No orders yet.';
+    return '$orderPart Tap to manage care reminders.';
+  }
+
+  String get _semanticsLabel {
+    if (isLoading) return 'Prosthetic Hub status loading.';
+    final reminder =
+        nextReminderLabel != null ? nextReminderLabel! : 'No reminders set';
+    final order = latestOrderStatus != null
+        ? 'Latest order: $latestOrderStatus.'
+        : 'No orders yet.';
+    return 'Prosthetic status: $reminder. $order Double tap to manage care reminders.';
+  }
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Semantics(
       button: true,
-      label:
-          'Prosthetic status: Healthy. Next cleaning in 1 day. Last cleaned 6 days ago. Double tap to log care.',
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [cs.primary, cs.secondary],
-          ),
-          borderRadius: BorderRadius.circular(22),
-          boxShadow: [
-            BoxShadow(
-              color: cs.primary.withValues(alpha: 0.60),
-              blurRadius: 30,
-              offset: const Offset(0, 14),
-              spreadRadius: -10,
+      label: _semanticsLabel,
+      child: GestureDetector(
+        onTap: () => context.goNamed(AppRoutes.careReminders.name),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [cs.primary, cs.secondary],
             ),
-          ],
-        ),
-        padding: const EdgeInsets.all(AppDimensions.cardPaddingLarge),
-        child: ExcludeSemantics(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Top row: Healthy chip + prosthesis type ────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // "Healthy" chip
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.20),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.verified_outlined,
-                          size: 18,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Healthy',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: cs.primary.withValues(alpha: 0.60),
+                blurRadius: 30,
+                offset: const Offset(0, 14),
+                spreadRadius: -10,
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(AppDimensions.cardPaddingLarge),
+          child: ExcludeSemantics(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Top row: status chip + type ────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.20),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isLoading)
+                            const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          else
+                            const Icon(
+                              Icons.verified_outlined,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                          const SizedBox(width: 4),
+                          Text(
+                            latestOrderStatus ?? 'No orders',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  // Prosthesis type
-                  Text(
-                    'Right eye prosthesis',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.85),
+                    Text(
+                      'Ocular prosthesis',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
                     ),
+                  ],
+                ),
+
+                const SizedBox(height: 18),
+
+                Text(
+                  _headlineText,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 18),
-
-              // ── Title ──────────────────────────────────────────────────
-              Text(
-                'Next cleaning in 1 day',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
                 ),
-              ),
 
-              const SizedBox(height: 6),
+                const SizedBox(height: 6),
 
-              // ── Subtitle ───────────────────────────────────────────────
-              Text(
-                'Last cleaned 6 days ago. Tap to log today\'s care.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.90),
-                  height: 1.4,
+                Text(
+                  _subtitleText,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.90),
+                    height: 1.4,
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 18),
+                const SizedBox(height: 18),
 
-              // ── "Log care" button ──────────────────────────────────────
-              Semantics(
-                button: true,
-                label: 'Log today care',
-                child: Container(
+                // ── CTA ────────────────────────────────────────────────
+                Container(
                   height: 52,
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -304,9 +403,8 @@ class _StatusCard extends StatelessWidget {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(14),
-                      onTap: () {
-                        // TODO(prosthetic-hub): open care logging flow
-                      },
+                      onTap: () =>
+                          context.goNamed(AppRoutes.careReminders.name),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppDimensions.space16,
@@ -315,7 +413,7 @@ class _StatusCard extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Log care',
+                              'Manage reminders',
                               style: theme.textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.w700,
                                 color: cs.secondary,
@@ -333,8 +431,8 @@ class _StatusCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -342,20 +440,21 @@ class _StatusCard extends StatelessWidget {
   }
 }
 
-/// A single "Care & support" link row with a blue-tint icon chip, title,
-/// subtitle, and a trailing chevron.
+/// A single "Care & support" link row.
 class _HubLink extends StatelessWidget {
   const _HubLink({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.enabled = true,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -364,75 +463,76 @@ class _HubLink extends StatelessWidget {
     final ext = theme.extension<AppExtendedCustomColors>();
 
     final Color blueTint = ext?.blueTint ?? cs.primaryContainer;
-    final Color blueStrong = cs.secondary;
+    final Color blueStrong = enabled ? cs.secondary : cs.onSurfaceVariant;
     final Color line = ext?.line ?? cs.outline;
     final Color ink2 = ext?.ink2 ?? cs.onSurfaceVariant;
     final Color ink3 = ext?.ink3 ?? cs.onSurfaceVariant;
 
     return Semantics(
-      button: true,
-      label: '$title. $subtitle',
+      button: enabled,
+      enabled: enabled,
+      label: enabled ? '$title. $subtitle' : '$title. Not yet available.',
       child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            vertical: 15,
-            horizontal: AppDimensions.space16,
-          ),
-          decoration: BoxDecoration(
-            color: cs.surface,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusRow),
-            border: Border.all(color: line, width: 1.5),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // ── Leading icon chip (48×48, radius 13) ──────────────────
-              ExcludeSemantics(
-                child: Container(
-                  width: AppDimensions.minTapTarget,
-                  height: AppDimensions.minTapTarget,
-                  decoration: BoxDecoration(
-                    color: blueTint,
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                  child: Icon(icon, size: 22, color: blueStrong),
-                ),
-              ),
-
-              const SizedBox(width: 14),
-
-              // ── Text column ────────────────────────────────────────────
-              Expanded(
-                child: ExcludeSemantics(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        title,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: cs.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: ink2,
-                        ),
-                      ),
-                    ],
+        onTap: enabled ? onTap : null,
+        child: Opacity(
+          opacity: enabled ? 1.0 : 0.5,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              vertical: 15,
+              horizontal: AppDimensions.space16,
+            ),
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusRow),
+              border: Border.all(color: line, width: 1.5),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ExcludeSemantics(
+                  child: Container(
+                    width: AppDimensions.minTapTarget,
+                    height: AppDimensions.minTapTarget,
+                    decoration: BoxDecoration(
+                      color: blueTint,
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: Icon(icon, size: 22, color: blueStrong),
                   ),
                 ),
-              ),
 
-              // ── Trailing chevron ───────────────────────────────────────
-              ExcludeSemantics(
-                child: Icon(Icons.chevron_right, size: 22, color: ink3),
-              ),
-            ],
+                const SizedBox(width: 14),
+
+                Expanded(
+                  child: ExcludeSemantics(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          title,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: cs.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: ink2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                ExcludeSemantics(
+                  child: Icon(Icons.chevron_right, size: 22, color: ink3),
+                ),
+              ],
+            ),
           ),
         ),
       ),
