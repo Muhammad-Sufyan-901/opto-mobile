@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
-import 'package:ids_elder_rehab_app/core/widgets/buttons/app_button.dart';
-import 'package:ids_elder_rehab_app/features/setup/presentation/widgets/setup_progress_bar.dart';
+import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/widgets/buttons/app_button.dart';
+import 'package:opto/features/setup/presentation/widgets/setup_progress_bar.dart';
 
 /// Shared scaffold for the Onboarding & Setup form screens (10–13).
 ///

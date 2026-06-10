@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
-import 'package:ids_elder_rehab_app/core/themes/app_custom_colors.dart';
+import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/themes/app_custom_colors.dart';
 
 // Button Variants
 enum AppButtonVariant {

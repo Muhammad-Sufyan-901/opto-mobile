@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:go_router/go_router.dart';
-import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
+import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/constants/app_routes.dart';
 
 // =============================================================================
 // SosActiveScreen — Screen 21
@@ -324,12 +325,14 @@ class _LocationChip extends StatelessWidget {
               color: Colors.white,
             ),
             const SizedBox(width: AppDimensions.space8),
-            const Text(
-              'Jl. Merdeka No. 24, Bandung — accuracy 5 m',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            const Flexible(
+              child: Text(
+                'Jl. Merdeka No. 24, Bandung — accuracy 5 m',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
           ],
@@ -481,7 +484,13 @@ class _CancelButton extends StatelessWidget {
       button: true,
       label: 'Hold to cancel emergency call',
       child: GestureDetector(
-        onLongPress: () => context.pop(),
+        onLongPress: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go(AppRoutes.home.path);
+          }
+        },
         child: Container(
           height: 58,
           width: double.infinity,

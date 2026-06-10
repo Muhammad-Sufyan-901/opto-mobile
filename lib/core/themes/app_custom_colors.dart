@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ids_elder_rehab_app/core/constants/app_colors.dart';
+import 'package:opto/core/constants/app_colors.dart';
 
 // =============================================================================
 // EXTENDED COLOR TOKENS

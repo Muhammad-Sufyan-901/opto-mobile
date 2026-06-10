@@ -1,9 +1,12 @@
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'core/config/hive_client.dart';
+import 'core/constants/app_env_keys.dart';
 import 'core/di/dependencies_injection_container.dart' as deps_container;
 
 Future<void> main() async {
@@ -16,12 +19,70 @@ Future<void> main() async {
   // Initialize date formatting for Indonesian locale
   await initializeDateFormatting('id_ID', null);
 
-  // Hive Client (Local Database)
+  // Supabase Client (Backend — PostgREST, Auth, Storage, Realtime)
+  // The anon key is safe to hold here; RLS controls row-level access.
+  // Service-role keys must NEVER appear in the Flutter app.
+  await Supabase.initialize(
+    url: dotenv.env[AppEnvKeys.supabaseUrl] ?? '',
+    // ignore: deprecated_member_use
+    // publishableKey is the new name for anonKey in supabase_flutter >= 2.14.
+    // This comment can be removed once the upstream API stabilises.
+    publishableKey: dotenv.env[AppEnvKeys.supabasePublishableKey] ?? '',
+    debug: false,
+  );
+
+  // Hive Client (Local Database — offline cache)
   await HiveClient.init();
 
   // GetIt Dependencies Injection Container (Used to inject dependencies like Bloc, Repository, Data Source, etc)
   await deps_container.init();
 
+  // Deep-link handler for Supabase auth callbacks (opto://login-callback?code=…).
+  // Covers two entry points:
+  //   1. App already running — uriLinkStream fires when the OS delivers the link.
+  //   2. App opened from scratch via the link — getInitialLink() returns it once.
+  // In both cases we forward the URI to Supabase's PKCE code-exchange; the
+  // resulting session fires the onAuthStateChange stream, which AuthBloc turns
+  // into an AuthAuthenticated state and GoRouter navigates to /home.
+  _initDeepLinks();
+
   // App Bootstraping (Run the app)
   runApp(const App());
+}
+
+void _initDeepLinks() {
+  final appLinks = AppLinks();
+  final supabaseAuth = Supabase.instance.client.auth;
+
+  bool isAuthCallback(Uri uri) =>
+      uri.scheme == 'opto' && uri.host == 'login-callback';
+
+  // Handle links while the app is already running.
+  appLinks.uriLinkStream.listen(
+    (uri) async {
+      if (isAuthCallback(uri)) {
+        try {
+          await supabaseAuth.getSessionFromUrl(uri);
+        } catch (e) {
+          debugPrint('[DeepLink] auth callback error: $e');
+        }
+      }
+    },
+    onError: (Object e) => debugPrint('[DeepLink] stream error: $e'),
+  );
+
+  // Handle the link that launched a cold-start of the app.
+  appLinks.getInitialLink().then((uri) async {
+    if (uri != null && isAuthCallback(uri)) {
+      try {
+        await supabaseAuth.getSessionFromUrl(uri);
+      } catch (e) {
+        debugPrint('[DeepLink] initial link error: $e');
+      }
+    }
+  // ignore: avoid_catches_without_on_clauses
+  }).catchError((dynamic e) {
+    debugPrint('[DeepLink] getInitialLink error: $e');
+    return null;
+  });
 }

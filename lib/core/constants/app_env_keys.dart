@@ -6,6 +6,8 @@ abstract class AppEnvKeys {
   static const String appDescription = 'APP_DESCRIPTION';
   static const String appEnvMode = 'APP_ENV_MODE';
 
-  // API Network
-  static const String apiBaseUrl = 'API_BASE_URL';
+  // Supabase
+  // Obtain from: Supabase Dashboard → Settings → API
+  static const String supabaseUrl = 'SUPABASE_URL';
+  static const String supabasePublishableKey = 'SUPABASE_PUBLISHABLE_KEY';
 }

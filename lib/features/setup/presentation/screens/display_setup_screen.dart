@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
-import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
-import 'package:ids_elder_rehab_app/core/themes/app_custom_colors.dart';
-import 'package:ids_elder_rehab_app/features/setup/presentation/widgets/setup_slider_block.dart';
-import 'package:ids_elder_rehab_app/features/setup/presentation/widgets/setup_step_scaffold.dart';
-import 'package:ids_elder_rehab_app/features/setup/presentation/widgets/setup_toggle_tile.dart';
+import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/features/setup/presentation/widgets/setup_slider_block.dart';
+import 'package:opto/features/setup/presentation/widgets/setup_step_scaffold.dart';
+import 'package:opto/features/setup/presentation/widgets/setup_toggle_tile.dart';
 
 /// Screen 11 — Text size & contrast setup.
 ///

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:ids_elder_rehab_app/core/themes/app_custom_colors.dart';
+import 'package:opto/core/themes/app_custom_colors.dart';
 
 /// Persistent bottom navigation bar for the Opto Home screen.
 ///

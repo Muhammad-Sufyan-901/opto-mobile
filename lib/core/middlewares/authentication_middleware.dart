@@ -1,55 +1,49 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
-import 'package:ids_elder_rehab_app/core/di/dependencies_injection_container.dart';
-import 'package:ids_elder_rehab_app/core/utils/secure_storage_helper.dart';
-import 'package:ids_elder_rehab_app/core/utils/route_helper.dart';
+import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/di/dependencies_injection_container.dart';
+import 'package:opto/core/utils/route_helper.dart';
+import 'package:opto/core/utils/secure_storage_helper.dart';
 
 class AuthenticationMiddleware {
   static FutureOr<String?> guard(
     BuildContext context,
     GoRouterState state,
   ) async {
-    final SecureStorageHelper storageHelper = sl<SecureStorageHelper>();
-
-    final bool hasToken = await storageHelper.hasToken();
+    // Use Supabase session as the source of truth (not secure-storage token).
+    final session = Supabase.instance.client.auth.currentSession;
+    final bool isAuthenticated = session != null;
 
     final bool isGoingToPublicRoute = RouteHelper.isPublicRoute(
       state.matchedLocation,
     );
 
-    // Scenario 1: User is not logged in and trying to access protected route
-    if (!hasToken && !isGoingToPublicRoute) {
-      debugPrint(
-        'Access Denied: User is not logged in and trying to access protected route.',
-      );
+    // Scenario 1: Not authenticated — trying to access a protected route.
+    if (!isAuthenticated && !isGoingToPublicRoute) {
+      debugPrint('AuthMiddleware: unauthenticated access blocked.');
 
-      // Delete all data of the user from secure storage
-      await storageHelper.clearAll();
+      // Clear any stale secure-storage role cache.
+      final storage = sl<SecureStorageHelper>();
+      await storage.clearAll();
 
-      final String errorMessage =
-          'Sesi anda telah berakhir, silakan login kembali.';
-
-      // Redirect to login with error message
-      return '${AppRoutes.login.path}?error=$errorMessage';
+      return '${AppRoutes.login.path}?error=Your+session+has+expired.+Please+sign+in+again.';
     }
 
-    // Scenario 2: User is logged in and trying to access public route
-    if (hasToken && isGoingToPublicRoute) {
+    // Scenario 2: Authenticated — trying to access a public/auth route.
+    if (isAuthenticated && isGoingToPublicRoute) {
       debugPrint(
-        'Access Denied: User is logged in and trying to access public route.',
+        'AuthMiddleware: authenticated user redirected from public route.',
       );
 
-      // Get user role
-      final String? role = await storageHelper.getRole();
-
-      // Get dashboard route based on role
+      // Get user role from cache to determine the correct dashboard.
+      final String? role = await sl<SecureStorageHelper>().getRole();
       return RouteHelper.getDashboardRouteByRole(role);
     }
 
-    // Scenario 3: User is logged in and trying to access protected route (allowed secure user)
+    // Scenario 3: Authenticated — accessing a protected route. Allow.
     return null;
   }
 }

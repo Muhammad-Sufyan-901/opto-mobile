@@ -11,7 +11,6 @@ class AppRoute {
 abstract class AppRoutes {
   static const String doctorRoutePrefix = '/doctor';
   static const String caregiverRoutePrefix = '/caregiver';
-  static const String lansiaRoutePrefix = '/lansia';
 
   // ── Home / Dashboard ──────────────────────────────────────────────────────
   /// Main Opto Home Dashboard — reached after setup completes (screen 15).
@@ -113,6 +112,12 @@ abstract class AppRoutes {
     name: 'auth_caregiver',
   );
 
+  /// Email register — create a new account.
+  static const AppRoute authRegister = AppRoute(
+    path: '/auth/register',
+    name: 'auth_register',
+  );
+
   // ── Onboarding & Setup routes (post-auth, screens 10–14) ──────────────────
   /// Step 10 — Vision profile selection.
   static const AppRoute setupVision = AppRoute(
@@ -142,16 +147,6 @@ abstract class AppRoutes {
   static const AppRoute setupDone = AppRoute(
     path: '/setup/done',
     name: 'setup_done',
-  );
-
-  // Lansia routes (Grouped with "/lansia" as parent)
-  static const AppRoute lansiaDashboard = AppRoute(
-    path: '$lansiaRoutePrefix/dashboard',
-    name: 'lansia_dashboard',
-  );
-  static const AppRoute lansiaAssessment = AppRoute(
-    path: '$lansiaRoutePrefix/assessment',
-    name: 'lansia_assessment',
   );
 
   // Caregiver routes (Grouped with "/caregiver" as parent)

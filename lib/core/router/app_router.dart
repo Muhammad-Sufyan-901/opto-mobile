@@ -1,32 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ids_elder_rehab_app/core/config/app_info.dart';
+import 'package:opto/core/config/app_info.dart';
 
-import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
-import 'package:ids_elder_rehab_app/core/middlewares/authentication_middleware.dart';
-import 'package:ids_elder_rehab_app/core/middlewares/roles_middleware.dart';
-import 'package:ids_elder_rehab_app/features/dashboard/presentation/screens/lansia_dashboard_screen.dart';
-import 'package:ids_elder_rehab_app/features/home/presentation/screens/home_screen.dart';
-import 'package:ids_elder_rehab_app/features/auth/presentation/screens/sign_in_hub_screen.dart';
-import 'package:ids_elder_rehab_app/features/auth/presentation/screens/email_auth_screen.dart';
-import 'package:ids_elder_rehab_app/features/auth/presentation/screens/phone_auth_screen.dart';
-import 'package:ids_elder_rehab_app/features/auth/presentation/screens/otp_verify_screen.dart';
-import 'package:ids_elder_rehab_app/features/auth/presentation/screens/caregiver_setup_screen.dart';
-import 'package:ids_elder_rehab_app/features/dev/presentation/screens/dev_screen.dart';
-import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/splash_screen.dart';
-import 'package:ids_elder_rehab_app/features/onboarding/presentation/screens/welcome_screen.dart';
-import 'package:ids_elder_rehab_app/features/setup/presentation/screens/vision_profile_screen.dart';
-import 'package:ids_elder_rehab_app/features/setup/presentation/screens/display_setup_screen.dart';
-import 'package:ids_elder_rehab_app/features/setup/presentation/screens/voice_setup_screen.dart';
-import 'package:ids_elder_rehab_app/features/setup/presentation/screens/permissions_setup_screen.dart';
-import 'package:ids_elder_rehab_app/features/consultation/presentation/screens/consult_screen.dart';
-import 'package:ids_elder_rehab_app/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
-import 'package:ids_elder_rehab_app/features/connect/presentation/screens/community_screen.dart';
-import 'package:ids_elder_rehab_app/features/profile/presentation/screens/profile_screen.dart';
-import 'package:ids_elder_rehab_app/features/setup/presentation/screens/setup_done_screen.dart';
-import 'package:ids_elder_rehab_app/features/sos/presentation/screens/sos_active_screen.dart';
-import 'package:ids_elder_rehab_app/features/vision_ai/presentation/screens/vision_ai_screen.dart';
-import 'package:ids_elder_rehab_app/features/voice/presentation/screens/aura_voice_screen.dart';
+import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/constants/user_role.dart';
+import 'package:opto/core/middlewares/authentication_middleware.dart';
+import 'package:opto/core/middlewares/roles_middleware.dart';
+import 'package:opto/features/home/presentation/screens/home_screen.dart';
+import 'package:opto/features/auth/presentation/screens/sign_in_hub_screen.dart';
+import 'package:opto/features/auth/presentation/screens/email_auth_screen.dart';
+import 'package:opto/features/auth/presentation/screens/phone_auth_screen.dart';
+import 'package:opto/features/auth/presentation/screens/otp_verify_screen.dart';
+import 'package:opto/features/auth/presentation/screens/caregiver_setup_screen.dart';
+import 'package:opto/features/auth/presentation/screens/email_register_screen.dart';
+import 'package:opto/features/dev/presentation/screens/dev_screen.dart';
+import 'package:opto/features/onboarding/presentation/screens/splash_screen.dart';
+import 'package:opto/features/onboarding/presentation/screens/welcome_screen.dart';
+import 'package:opto/features/setup/presentation/screens/vision_profile_screen.dart';
+import 'package:opto/features/setup/presentation/screens/display_setup_screen.dart';
+import 'package:opto/features/setup/presentation/screens/voice_setup_screen.dart';
+import 'package:opto/features/setup/presentation/screens/permissions_setup_screen.dart';
+import 'package:opto/features/consultation/presentation/screens/consult_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
+import 'package:opto/features/connect/presentation/screens/community_screen.dart';
+import 'package:opto/features/profile/presentation/screens/profile_screen.dart';
+import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
+import 'package:opto/features/sos/presentation/screens/sos_active_screen.dart';
+import 'package:opto/features/vision_ai/presentation/screens/vision_ai_screen.dart';
+import 'package:opto/features/voice/presentation/screens/aura_voice_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   debugLogDiagnostics: true,
@@ -115,6 +116,14 @@ final GoRouter appRouter = GoRouter(
             return const CaregiverSetupScreen();
           },
         ),
+        // 06b · Email register — create a new account
+        GoRoute(
+          path: AppRoutes.authRegister.path,
+          name: AppRoutes.authRegister.name,
+          builder: (BuildContext context, GoRouterState state) {
+            return const EmailRegisterScreen();
+          },
+        ),
       ],
     ),
 
@@ -171,23 +180,18 @@ final GoRouter appRouter = GoRouter(
     ),
 
     // ==========================================
-    // Doctor Routes (Protected only for doctor)
+    // Doctor Routes (Protected — doctor role only)
     // ==========================================
     ShellRoute(
-      // Role-based middleware to protect "doctor only" routes
       redirect: (BuildContext context, GoRouterState state) {
         return RolesMiddleware.requireRole(
           context,
           state,
-          allowedRole: 'doctor',
+          allowedRole: UserRole.doctor,
         );
       },
       builder: (BuildContext context, GoRouterState state, Widget child) {
-        return Scaffold(
-          body: Center(
-            child: child,
-          ),
-        );
+        return Scaffold(body: Center(child: child));
       },
       routes: [
         GoRoute(
@@ -195,9 +199,7 @@ final GoRouter appRouter = GoRouter(
           name: AppRoutes.doctorDashboard.name,
           builder: (BuildContext context, GoRouterState state) {
             return const Scaffold(
-              body: Center(
-                child: Text('Doctor Dashboard'),
-              ),
+              body: Center(child: Text('Doctor Dashboard')),
             );
           },
         ),
@@ -206,15 +208,13 @@ final GoRouter appRouter = GoRouter(
           name: AppRoutes.doctorAssessment.name,
           builder: (BuildContext context, GoRouterState state) {
             return const Scaffold(
-              body: Center(
-                child: Text('Doctor Assessment'),
-              ),
+              body: Center(child: Text('Doctor Assessment')),
             );
           },
         ),
       ],
     ),
-    // Handle direct access to doctor route prefix (e.g. /doctor)
+    // Handle direct access to /doctor prefix
     GoRoute(
       path: AppRoutes.doctorRoutePrefix,
       redirect: (BuildContext context, GoRouterState state) {
@@ -223,23 +223,18 @@ final GoRouter appRouter = GoRouter(
     ),
 
     // ==========================================
-    // Caregiver Routes (Protected only for caregiver)
+    // Caregiver Routes (Protected — caregiver role only)
     // ==========================================
     ShellRoute(
-      // Role-based middleware to protect "caregiver only" routes
       redirect: (BuildContext context, GoRouterState state) {
         return RolesMiddleware.requireRole(
           context,
           state,
-          allowedRole: 'caregiver',
+          allowedRole: UserRole.caregiver,
         );
       },
       builder: (BuildContext context, GoRouterState state, Widget child) {
-        return Scaffold(
-          body: Center(
-            child: child,
-          ),
-        );
+        return Scaffold(body: Center(child: child));
       },
       routes: [
         GoRoute(
@@ -247,9 +242,7 @@ final GoRouter appRouter = GoRouter(
           name: AppRoutes.caregiverDashboard.name,
           builder: (BuildContext context, GoRouterState state) {
             return const Scaffold(
-              body: Center(
-                child: Text('Caregiver Dashboard'),
-              ),
+              body: Center(child: Text('Caregiver Dashboard')),
             );
           },
         ),
@@ -258,15 +251,13 @@ final GoRouter appRouter = GoRouter(
           name: AppRoutes.caregiverAssessment.name,
           builder: (BuildContext context, GoRouterState state) {
             return const Scaffold(
-              body: Center(
-                child: Text('Caregiver Assessment'),
-              ),
+              body: Center(child: Text('Caregiver Assessment')),
             );
           },
         ),
       ],
     ),
-    // Handle direct access to caregiver route prefix (e.g. /caregiver)
+    // Handle direct access to /caregiver prefix
     GoRoute(
       path: AppRoutes.caregiverRoutePrefix,
       redirect: (BuildContext context, GoRouterState state) {
@@ -275,69 +266,14 @@ final GoRouter appRouter = GoRouter(
     ),
 
     // ==========================================
-    // Lansia Routes (Protected only for lansia)
-    // ==========================================
-    ShellRoute(
-      // Role-based middleware to protect "lansia only" routes
-      redirect: (BuildContext context, GoRouterState state) {
-        return RolesMiddleware.requireRole(
-          context,
-          state,
-          allowedRole: 'lansia',
-        );
-      },
-      builder: (BuildContext context, GoRouterState state, Widget child) {
-        return Scaffold(
-          body: Center(
-            child: child,
-          ),
-        );
-      },
-      routes: [
-        GoRoute(
-          path: AppRoutes.lansiaAssessment.path,
-          name: AppRoutes.lansiaAssessment.name,
-          builder: (BuildContext context, GoRouterState state) {
-            return const Scaffold(
-              body: Center(
-                child: Text('Lansia Assessment'),
-              ),
-            );
-          },
-        ),
-      ],
-    ),
-    // Handle direct access to lansia route prefix (e.g. /lansia) →
-    // redirect to the new Opto Home screen (A-3 migration).
-    GoRoute(
-      path: AppRoutes.lansiaRoutePrefix,
-      redirect: (BuildContext context, GoRouterState state) {
-        return AppRoutes.home.path;
-      },
-    ),
-
-    // ==========================================
     // Opto Home Dashboard (Screen 15)
-    // Replaces the rehab-leftover LansiaDashboardScreen as the main
-    // post-setup landing screen. See system_architecture.md A-3.
+    // Post-setup landing screen for the 'user' role.
     // ==========================================
     GoRoute(
       path: AppRoutes.home.path,
       name: AppRoutes.home.name,
       builder: (BuildContext context, GoRouterState state) {
         return const HomeScreen();
-      },
-    ),
-
-    // ==========================================
-    // Lansia Dashboard (Legacy — kept to avoid dangling references.
-    // Unreachable from the main navigation flow. Remove as part of A-3.)
-    // ==========================================
-    GoRoute(
-      path: AppRoutes.lansiaDashboard.path,
-      name: AppRoutes.lansiaDashboard.name,
-      builder: (BuildContext context, GoRouterState state) {
-        return const LansiaDashboardScreen();
       },
     ),
 

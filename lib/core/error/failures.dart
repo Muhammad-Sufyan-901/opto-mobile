@@ -23,3 +23,13 @@ class NetworkFailure extends Failure {
 class SensorFailure extends Failure {
   const SensorFailure(super.message);
 }
+
+// Failure from Supabase Auth (sign-in, sign-up, OTP, session)
+class AuthFailure extends Failure {
+  const AuthFailure(super.message);
+}
+
+// Failure from Supabase Storage (upload, download, signed URL)
+class StorageFailure extends Failure {
+  const StorageFailure(super.message);
+}

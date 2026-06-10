@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
-import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
-import 'package:ids_elder_rehab_app/features/home/presentation/widgets/aura_voice_card.dart';
-import 'package:ids_elder_rehab_app/features/home/presentation/widgets/home_bottom_nav.dart';
-import 'package:ids_elder_rehab_app/features/home/presentation/widgets/home_info_row.dart';
-import 'package:ids_elder_rehab_app/features/home/presentation/widgets/home_top_bar.dart';
-import 'package:ids_elder_rehab_app/features/home/presentation/widgets/quick_action_grid.dart';
-import 'package:ids_elder_rehab_app/features/home/presentation/widgets/recent_activity_list.dart';
-import 'package:ids_elder_rehab_app/features/home/presentation/widgets/sos_card.dart';
+import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/features/home/presentation/widgets/aura_voice_card.dart';
+import 'package:opto/features/home/presentation/widgets/home_bottom_nav.dart';
+import 'package:opto/features/home/presentation/widgets/home_info_row.dart';
+import 'package:opto/features/home/presentation/widgets/home_top_bar.dart';
+import 'package:opto/features/home/presentation/widgets/quick_action_grid.dart';
+import 'package:opto/features/home/presentation/widgets/recent_activity_list.dart';
+import 'package:opto/features/home/presentation/widgets/sos_card.dart';
 
 /// Screen 15 — Opto Home Dashboard.
 ///

@@ -30,13 +30,38 @@ class SecureStorageHelper {
   }
 
   // ==========================================
-  // SPESIFIC CRUD (TOKEN & ROLE)
+  // SPECIFIC CRUD (TOKEN & ROLE)
   // ==========================================
 
-  // -- Token
+  // ==========================================
+  // DEPRECATED TOKEN METHODS
+  // (Session is now managed by Supabase Auth, not by storing a raw JWT token here.)
+  // These methods are kept temporarily to avoid breaking any code that might reference
+  // them, but they will be removed in a cleanup pass.
+  // ==========================================
+
+  /// @deprecated Supabase Auth manages the session. Use Supabase.instance.client.auth.currentSession.
+  @Deprecated(
+    'Session is managed by Supabase Auth. Use Supabase.instance.client.auth.currentSession.',
+  )
   Future<void> saveToken(String token) => saveString(_keyToken, token);
+
+  /// @deprecated Supabase Auth manages the session. Use Supabase.instance.client.auth.currentSession.
+  @Deprecated(
+    'Session is managed by Supabase Auth. Use Supabase.instance.client.auth.currentSession.',
+  )
   Future<String?> getToken() => getString(_keyToken);
+
+  /// @deprecated Supabase Auth manages the session. Use Supabase.instance.client.auth.currentSession.
+  @Deprecated(
+    'Session is managed by Supabase Auth. Use Supabase.instance.client.auth.currentSession.',
+  )
   Future<void> deleteToken() => deleteString(_keyToken);
+
+  /// @deprecated Supabase Auth manages the session. Use Supabase.instance.client.auth.currentSession.
+  @Deprecated(
+    'Session is managed by Supabase Auth. Use Supabase.instance.client.auth.currentSession.',
+  )
   Future<bool> hasToken() => hasString(_keyToken);
 
   // -- Role

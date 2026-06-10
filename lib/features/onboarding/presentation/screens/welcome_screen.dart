@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
-import 'package:ids_elder_rehab_app/core/constants/app_routes.dart';
-import 'package:ids_elder_rehab_app/core/widgets/buttons/app_button.dart';
-import 'package:ids_elder_rehab_app/features/onboarding/data/models/welcome_slide_data.dart';
-import 'package:ids_elder_rehab_app/features/onboarding/presentation/widgets/page_dots.dart';
-import 'package:ids_elder_rehab_app/features/onboarding/presentation/widgets/welcome_slide.dart';
+import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/widgets/buttons/app_button.dart';
+import 'package:opto/features/onboarding/data/models/welcome_slide_data.dart';
+import 'package:opto/features/onboarding/presentation/widgets/page_dots.dart';
+import 'package:opto/features/onboarding/presentation/widgets/welcome_slide.dart';
 
 /// Three-slide Welcome intro carousel (screens 02–04 in the design canvas).
 ///

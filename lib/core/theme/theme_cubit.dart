@@ -1,29 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
 
-// =============================================================================
-// APP THEME MODE ENUM
-// =============================================================================
+import 'package:opto/core/constants/app_theme_mode.dart';
 
-/// User-selectable theme modes.
-///
-/// The value is persisted to Hive as [name] (string) under [ThemeCubit.themeKey].
-/// Synced to `accessibility_settings.theme` on Supabase when that migration is done.
-///
-/// Default: [light] (canonical Opto blue-on-white, per design system §2).
-enum AppThemeMode {
-  /// Follow the OS light/dark preference.
-  system,
-
-  /// Canonical Opto blue-on-white light theme (default).
-  light,
-
-  /// Near-black surface dark theme.
-  dark,
-
-  /// ≥7:1 contrast everywhere — WCAG AAA (high-contrast).
-  highContrast,
-}
+export 'package:opto/core/constants/app_theme_mode.dart' show AppThemeMode;
 
 // =============================================================================
 // THEME CUBIT
@@ -42,6 +22,10 @@ enum AppThemeMode {
 ///
 /// Registered as a lazy singleton in [GetIt] — provided via [BlocProvider.value]
 /// at the root of the widget tree (see `app.dart`).
+///
+/// @deprecated Will be superseded by [AccessibilitySettingsCubit] once
+/// app.dart (Step H) provides it to the root. Retained for backward compatibility
+/// during the Phase 1 migration.
 class ThemeCubit extends Cubit<AppThemeMode> {
   final Box _settingsBox;
 

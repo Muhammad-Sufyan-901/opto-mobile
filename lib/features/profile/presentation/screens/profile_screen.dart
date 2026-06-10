@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
-import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
-import 'package:ids_elder_rehab_app/core/themes/app_custom_colors.dart';
-import 'package:ids_elder_rehab_app/features/home/presentation/widgets/home_bottom_nav.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
+
+import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/constants/app_theme_mode.dart';
+import 'package:opto/core/constants/identity_enums.dart';
+import 'package:opto/core/di/dependencies_injection_container.dart';
+import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:opto/features/home/presentation/widgets/home_bottom_nav.dart';
+import 'package:opto/features/profile/domain/entities/profile_entity.dart';
+import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
 
 /// Screen 20 — Profile & Settings.
 ///
-/// Displays user profile info plus grouped accessibility and account settings.
+/// Provides [ProfileBloc], [AccessibilitySettingsCubit], and [AuthBloc] via
+/// [MultiBlocProvider]. Loads the current user's profile on init, then
+/// renders real data from [ProfileLoaded]. Falls back gracefully while loading
+/// or on error.
+///
 /// Accessibility is the whole point of this app — every element follows
 /// `design_system.md §9` and `CLAUDE.md` non-negotiable rules.
 ///
@@ -14,26 +30,48 @@ import 'package:ids_elder_rehab_app/features/home/presentation/widgets/home_bott
 ///   1. Header row — "Profile" title + Settings cog button
 ///   2. Profile card — avatar, name, tagline, Edit button
 ///   3. "ACCESSIBILITY" section label (decorative, ExcludeSemantics)
-///   4. Accessibility settings group (4 rows with dividers)
+///   4. Accessibility settings group (4 rows with live data)
 ///   5. "ACCOUNT" section label (decorative, ExcludeSemantics)
-///   6. Account settings group (2 rows with dividers)
+///   6. Account settings group (sign-out + help rows)
 ///   7. Persistent bottom nav (activeTab = 4)
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ProfileBloc>(create: (_) => sl<ProfileBloc>()),
+        BlocProvider<AccessibilitySettingsCubit>.value(
+          value: sl<AccessibilitySettingsCubit>(),
+        ),
+        BlocProvider<AuthBloc>.value(value: sl<AuthBloc>()),
+      ],
+      child: const _ProfileScreenBody(),
+    );
+  }
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenBody extends StatefulWidget {
+  const _ProfileScreenBody();
+
+  @override
+  State<_ProfileScreenBody> createState() => _ProfileScreenBodyState();
+}
+
+class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
   @override
   void initState() {
     super.initState();
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId != null) {
+      context.read<ProfileBloc>().add(ProfileEvent.loadProfile(userId: userId));
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       SemanticsService.sendAnnouncement(
         View.of(context),
-        'Profile. Rian Hidayat.',
+        'Profile.',
         TextDirection.ltr,
       );
     });
@@ -41,240 +79,329 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme cs = theme.colorScheme;
-    final ext = theme.extension<AppExtendedCustomColors>();
-    final Color blueTint = ext?.blueTint ?? cs.primaryContainer;
-    final Color blueStrong = cs.secondary;
-    final Color line = ext?.line ?? cs.outline;
-    final Color ink2 = ext?.ink2 ?? cs.onSurfaceVariant;
-    final Color ink3 = ext?.ink3 ?? cs.onSurfaceVariant;
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (ctx, state) {
+        state.mapOrNull(
+          unauthenticated: (_) => ctx.go(AppRoutes.login.path),
+        );
+      },
+      child: BlocBuilder<ProfileBloc, ProfileState>(
+        builder: (ctx, profileState) {
+          final ThemeData theme = Theme.of(ctx);
+          final ColorScheme cs = theme.colorScheme;
+          final ext = theme.extension<AppExtendedCustomColors>();
+          final Color blueTint = ext?.blueTint ?? cs.primaryContainer;
+          final Color blueStrong = cs.secondary;
+          final Color line = ext?.line ?? cs.outline;
+          final Color ink2 = ext?.ink2 ?? cs.onSurfaceVariant;
+          final Color ink3 = ext?.ink3 ?? cs.onSurfaceVariant;
 
-    return Scaffold(
-      backgroundColor: cs.surface,
-      bottomNavigationBar: const HomeBottomNav(activeTab: 4),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(
-            left: 22,
-            right: 22,
-            top: 14,
-            bottom: 24,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── 1. Header row ──────────────────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Profile',
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      color: cs.onSurface,
+          // Extract profile data when loaded, or fall back to placeholder values.
+          final ProfileEntity? profile =
+              profileState is ProfileLoaded ? profileState.profile : null;
+          final String displayName = profile?.fullName ?? '—';
+          final String initials = displayName.isNotEmpty &&
+                  displayName != '—'
+              ? displayName.trim().split(' ').map((w) => w[0]).take(2).join()
+              : '?';
+          final String visionLabel =
+              _visionProfileLabel(profile?.visionProfile);
+          final int memberYear = profile?.createdAt.year ??
+              DateTime.now().year;
+          final String tagline = '$visionLabel · Member since $memberYear';
+
+          return Scaffold(
+            backgroundColor: cs.surface,
+            bottomNavigationBar: const HomeBottomNav(activeTab: 4),
+            body: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(
+                  left: 22,
+                  right: 22,
+                  top: 14,
+                  bottom: 24,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // ── 1. Header row ──────────────────────────────────────────
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Profile',
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                            color: cs.onSurface,
+                          ),
+                        ),
+                        Semantics(
+                          button: true,
+                          label: 'Settings',
+                          child: GestureDetector(
+                            onTap: () {
+                              // TODO(profile): navigate to Settings screen
+                            },
+                            child: Container(
+                              width: AppDimensions.minTapTarget,
+                              height: AppDimensions.minTapTarget,
+                              decoration: BoxDecoration(
+                                color: blueTint,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.settings_outlined,
+                                  size: 22,
+                                  color: blueStrong,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Semantics(
-                    button: true,
-                    label: 'Settings',
-                    child: GestureDetector(
-                      onTap: () {
-                        // TODO(profile): navigate to Settings screen
-                      },
+
+                    // ── Loading / error overlay ────────────────────────────────
+                    if (profileState is ProfileLoading)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: LinearProgressIndicator(),
+                      )
+                    else if (profileState is ProfileError)
+                      Semantics(
+                        liveRegion: true,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            profileState.message,
+                            style: TextStyle(
+                              color: cs.error,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    // ── 2. Profile card ────────────────────────────────────────
+                    Semantics(
+                      button: true,
+                      label:
+                          '$displayName profile. $tagline. Double tap to edit.',
                       child: Container(
-                        width: AppDimensions.minTapTarget,
-                        height: AppDimensions.minTapTarget,
+                        margin: const EdgeInsets.only(top: 6, bottom: 22),
+                        padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
                           color: blueTint,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.settings_outlined,
-                            size: 22,
-                            color: blueStrong,
+                          borderRadius:
+                              BorderRadius.circular(AppDimensions.radiusCard),
+                          border: Border.all(
+                            color: cs.primary.withValues(alpha: 0.18),
+                            width: 1.5,
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              // ── 2. Profile card ────────────────────────────────────────
-              Semantics(
-                button: true,
-                label:
-                    'Rian Hidayat profile. Low vision, member since 2025. Double tap to edit.',
-                child: Container(
-                  margin: const EdgeInsets.only(top: 6, bottom: 22),
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: blueTint,
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-                    border: Border.all(
-                      color: cs.primary.withValues(alpha: 0.18),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      // Avatar circle with initials
-                      ExcludeSemantics(
-                        child: Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            color: cs.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              'R',
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 16),
-
-                      // Name and tagline
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(
-                              'Rian Hidayat',
-                              style: TextStyle(
-                                fontSize: 21,
-                                fontWeight: FontWeight.bold,
-                                color: cs.onSurface,
+                            // Avatar circle with initials
+                            ExcludeSemantics(
+                              child: Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  color: cs.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    initials,
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 3),
-                            Text(
-                              'Low vision · Member since 2025',
-                              style: TextStyle(
-                                fontSize: 14.5,
-                                color: ink2,
+
+                            const SizedBox(width: 16),
+
+                            // Name and tagline
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    displayName,
+                                    style: TextStyle(
+                                      fontSize: 21,
+                                      fontWeight: FontWeight.bold,
+                                      color: cs.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    tagline,
+                                    style: TextStyle(
+                                      fontSize: 14.5,
+                                      color: ink2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(width: 12),
+
+                            // Edit button
+                            Semantics(
+                              button: true,
+                              label: 'Edit profile',
+                              child: GestureDetector(
+                                onTap: () {
+                                  // TODO(profile): navigate to edit profile screen
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 9,
+                                    horizontal: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    'Edit',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: cs.primary,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
+                    ),
 
-                      const SizedBox(width: 12),
+                    // ── 3. ACCESSIBILITY section label ─────────────────────────
+                    ExcludeSemantics(
+                      child: _SectionLabel(label: 'ACCESSIBILITY'),
+                    ),
 
-                      // Edit button
-                      GestureDetector(
-                        onTap: () {
-                          // TODO(profile): navigate to edit profile screen
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 9,
-                            horizontal: 16,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            'Edit',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: cs.primary,
+                    const SizedBox(height: 8),
+
+                    // ── 4. Accessibility settings group ────────────────────────
+                    BlocBuilder<AccessibilitySettingsCubit,
+                        AccessibilitySettingsEntity>(
+                      builder: (ctx2, settings) {
+                        return _SettingGroup(
+                          blueTint: blueTint,
+                          blueStrong: blueStrong,
+                          line: line,
+                          ink3: ink3,
+                          cs: cs,
+                          rows: [
+                            _SettingRowData(
+                              icon: Icons.format_size_outlined,
+                              title: 'Text size',
+                              value: _textScaleLabel(settings.textScale),
                             ),
-                          ),
+                            _SettingRowData(
+                              icon: Icons.contrast,
+                              title: 'High contrast',
+                              value: settings.theme == AppThemeMode.highContrast
+                                  ? 'On'
+                                  : 'Off',
+                            ),
+                            _SettingRowData(
+                              icon: Icons.volume_up_outlined,
+                              title: 'Voice & speech',
+                              value: settings.voiceEnabled ? 'On' : 'Off',
+                            ),
+                            _SettingRowData(
+                              icon: Icons.visibility_outlined,
+                              title: 'Vision profile',
+                              value: visionLabel,
+                              isLast: true,
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+
+                    // ── 5. ACCOUNT section label ───────────────────────────────
+                    const SizedBox(height: 8),
+
+                    ExcludeSemantics(
+                      child: _SectionLabel(label: 'ACCOUNT'),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // ── 6. Account settings group ──────────────────────────────
+                    _SettingGroup(
+                      blueTint: blueTint,
+                      blueStrong: blueStrong,
+                      line: line,
+                      ink3: ink3,
+                      cs: cs,
+                      rows: [
+                        const _SettingRowData(
+                          icon: Icons.security_outlined,
+                          title: 'Privacy & safety',
+                          value: '',
                         ),
-                      ),
-                    ],
-                  ),
+                        const _SettingRowData(
+                          icon: Icons.help_outline,
+                          title: 'Help & support',
+                          value: '',
+                        ),
+                        _SettingRowData(
+                          icon: Icons.logout,
+                          title: 'Sign out',
+                          value: '',
+                          isLast: true,
+                          onTap: () {
+                            ctx.read<AuthBloc>().add(const AuthEvent.signOut());
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-
-              // ── 3. ACCESSIBILITY section label ─────────────────────────
-              ExcludeSemantics(
-                child: _SectionLabel(label: 'ACCESSIBILITY'),
-              ),
-
-              const SizedBox(height: 8),
-
-              // ── 4. Accessibility settings group ────────────────────────
-              _SettingGroup(
-                blueTint: blueTint,
-                blueStrong: blueStrong,
-                line: line,
-                ink3: ink3,
-                cs: cs,
-                rows: const [
-                  _SettingRowData(
-                    icon: Icons.format_size_outlined,
-                    title: 'Text size',
-                    value: 'Large',
-                  ),
-                  _SettingRowData(
-                    icon: Icons.contrast,
-                    title: 'High contrast',
-                    value: 'On',
-                  ),
-                  _SettingRowData(
-                    icon: Icons.volume_up_outlined,
-                    title: 'Voice & speech',
-                    value: 'On',
-                  ),
-                  _SettingRowData(
-                    icon: Icons.visibility_outlined,
-                    title: 'Vision profile',
-                    value: 'Low vision',
-                    isLast: true,
-                  ),
-                ],
-              ),
-
-              // ── 5. ACCOUNT section label ───────────────────────────────
-              const SizedBox(height: 8),
-
-              ExcludeSemantics(
-                child: _SectionLabel(label: 'ACCOUNT'),
-              ),
-
-              const SizedBox(height: 8),
-
-              // ── 6. Account settings group ──────────────────────────────
-              _SettingGroup(
-                blueTint: blueTint,
-                blueStrong: blueStrong,
-                line: line,
-                ink3: ink3,
-                cs: cs,
-                rows: const [
-                  _SettingRowData(
-                    icon: Icons.security_outlined,
-                    title: 'Privacy & safety',
-                    value: '',
-                  ),
-                  _SettingRowData(
-                    icon: Icons.help_outline,
-                    title: 'Help & support',
-                    value: '',
-                    isLast: true,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
+  }
+
+  String _visionProfileLabel(VisionProfile? visionProfile) {
+    switch (visionProfile) {
+      case VisionProfile.blindTotal:
+        return 'Blind (total)';
+      case VisionProfile.lowVision:
+        return 'Low vision';
+      case VisionProfile.ocularProsthesis:
+        return 'Ocular prosthesis';
+      case VisionProfile.caregiver:
+        return 'Caregiver';
+      case VisionProfile.unspecified:
+      case null:
+        return 'Not set';
+    }
+  }
+
+  String _textScaleLabel(double scale) {
+    if (scale <= 1.0) return 'Default';
+    if (scale <= 1.5) return 'Large';
+    if (scale <= 2.0) return 'Larger';
+    return 'Largest';
   }
 }
 
@@ -312,12 +439,14 @@ class _SettingRowData {
   final String title;
   final String value;
   final bool isLast;
+  final VoidCallback? onTap;
 
   const _SettingRowData({
     required this.icon,
     required this.title,
     required this.value,
     this.isLast = false,
+    this.onTap,
   });
 }
 
@@ -360,6 +489,7 @@ class _SettingGroup extends StatelessWidget {
               blueStrong: blueStrong,
               ink3: ink3,
               cs: cs,
+              onTap: row.onTap,
             ),
             if (!row.isLast)
               Divider(height: 1.5, thickness: 1.5, color: line),
@@ -380,6 +510,7 @@ class _SettingRow extends StatelessWidget {
     required this.blueStrong,
     required this.ink3,
     required this.cs,
+    this.onTap,
   });
 
   final IconData icon;
@@ -389,6 +520,7 @@ class _SettingRow extends StatelessWidget {
   final Color blueStrong;
   final Color ink3;
   final ColorScheme cs;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -399,7 +531,7 @@ class _SettingRow extends StatelessWidget {
       button: true,
       label: semanticLabel,
       child: InkWell(
-        onTap: () {
+        onTap: onTap ?? () {
           // TODO(profile): navigate to $title screen
         },
         child: Padding(

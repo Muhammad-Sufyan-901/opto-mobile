@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-import 'package:ids_elder_rehab_app/core/constants/app_env_keys.dart';
+import 'package:opto/core/constants/app_env_keys.dart';
 
 enum EnvironmentMode { development, production }
 

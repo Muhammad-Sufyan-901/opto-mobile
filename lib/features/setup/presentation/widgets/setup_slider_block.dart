@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:ids_elder_rehab_app/core/constants/app_dimensions.dart';
-import 'package:ids_elder_rehab_app/core/themes/app_custom_colors.dart';
-import 'package:ids_elder_rehab_app/core/widgets/sliders/app_slider.dart';
+import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/core/widgets/sliders/app_slider.dart';
 
 /// A labelled slider row used in the Display and Voice setup screens.
 ///
