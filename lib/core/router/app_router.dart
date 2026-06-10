@@ -24,7 +24,10 @@ import 'package:opto/features/setup/presentation/screens/display_setup_screen.da
 import 'package:opto/features/setup/presentation/screens/voice_setup_screen.dart';
 import 'package:opto/features/setup/presentation/screens/permissions_setup_screen.dart';
 import 'package:opto/features/consultation/presentation/screens/consult_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/catalog_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/product_detail_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/catalog/catalog_bloc.dart';
 import 'package:opto/features/connect/presentation/screens/community_screen.dart';
 import 'package:opto/features/profile/presentation/screens/profile_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
@@ -310,15 +313,22 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: 'catalog',
           name: AppRoutes.prostheticCatalog.name,
-          builder: (context, state) =>
-              const Scaffold(body: Center(child: Text('Coming soon'))),
+          builder: (context, state) => BlocProvider<CatalogBloc>(
+            create: (_) => sl<CatalogBloc>(),
+            child: const CatalogScreen(),
+          ),
           routes: [
             // Product detail — nested under catalog
             GoRoute(
               path: ':productId',
               name: AppRoutes.prostheticProductDetail.name,
-              builder: (context, state) =>
-                  const Scaffold(body: Center(child: Text('Coming soon'))),
+              builder: (context, state) {
+                final productId = state.pathParameters['productId']!;
+                return BlocProvider<CatalogBloc>(
+                  create: (_) => sl<CatalogBloc>(),
+                  child: ProductDetailScreen(productId: productId),
+                );
+              },
             ),
           ],
         ),
