@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:opto/core/constants/app_dimensions.dart';
@@ -77,20 +78,15 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
                   behavior: SnackBarBehavior.floating,
                 ),
               );
-              SemanticsService.sendAnnouncement(
-                View.of(ctx),
-                s.message,
-                TextDirection.ltr,
-              );
+              announce(ctx, s.message);
             },
-            authenticated: (_) => ctx.go(AppRoutes.home.path),
+            authenticated: (_) => ctx.go(AppRoutes.setupVision.path),
             emailConfirmationRequired: (s) {
               // Announce for screen-reader users before the UI rebuilds.
-              SemanticsService.sendAnnouncement(
-                View.of(ctx),
+              announce(
+                ctx,
                 'Account created. Check your email at ${s.email} for a '
                 'confirmation link, then sign in.',
-                TextDirection.ltr,
               );
             },
           );

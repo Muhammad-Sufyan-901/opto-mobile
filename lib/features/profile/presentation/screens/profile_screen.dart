@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
@@ -69,11 +70,7 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      SemanticsService.sendAnnouncement(
-        View.of(context),
-        'Profile.',
-        TextDirection.ltr,
-      );
+      announce(context, 'Profile.');
     });
   }
 
@@ -130,8 +127,7 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
                       children: [
                         Text(
                           'Profile',
-                          style: TextStyle(
-                            fontSize: 25,
+                          style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: cs.onSurface,
                           ),
@@ -176,9 +172,8 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Text(
                             profileState.message,
-                            style: TextStyle(
+                            style: theme.textTheme.bodySmall?.copyWith(
                               color: cs.error,
-                              fontSize: 14,
                             ),
                           ),
                         ),
@@ -215,8 +210,7 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
                                 child: Center(
                                   child: Text(
                                     initials,
-                                    style: const TextStyle(
-                                      fontSize: 24,
+                                    style: theme.textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
@@ -234,8 +228,7 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
                                 children: [
                                   Text(
                                     displayName,
-                                    style: TextStyle(
-                                      fontSize: 21,
+                                    style: theme.textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: cs.onSurface,
                                     ),
@@ -243,8 +236,7 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
                                   const SizedBox(height: 3),
                                   Text(
                                     tagline,
-                                    style: TextStyle(
-                                      fontSize: 14.5,
+                                    style: theme.textTheme.bodySmall?.copyWith(
                                       color: ink2,
                                     ),
                                   ),
@@ -273,8 +265,7 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
                                   ),
                                   child: Text(
                                     'Edit',
-                                    style: TextStyle(
-                                      fontSize: 15,
+                                    style: theme.textTheme.labelMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: cs.primary,
                                     ),
@@ -423,10 +414,9 @@ class _SectionLabel extends StatelessWidget {
 
     return Text(
       label,
-      style: TextStyle(
-        fontSize: 14,
+      style: theme.textTheme.labelSmall?.copyWith(
         fontWeight: FontWeight.bold,
-        letterSpacing: 1.3,
+        letterSpacing: 1.6,
         color: ink3,
       ),
     );
@@ -524,6 +514,7 @@ class _SettingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     final String semanticLabel =
         value.isNotEmpty ? '$title, $value' : title;
 
@@ -557,8 +548,7 @@ class _SettingRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 17,
+                  style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: cs.onSurface,
                   ),
@@ -569,8 +559,7 @@ class _SettingRow extends StatelessWidget {
               if (value.isNotEmpty) ...[
                 Text(
                   value,
-                  style: TextStyle(
-                    fontSize: 15,
+                  style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: ink3,
                   ),

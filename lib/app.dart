@@ -2,16 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
+import 'package:opto/core/accessibility/haptic_controller.dart';
 import 'package:opto/core/config/app_info.dart';
+import 'package:opto/core/voice/voice_controller.dart';
 import 'package:opto/core/constants/app_theme_mode.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/router/app_router.dart';
+import 'package:opto/core/router/deep_link_handler.dart';
 import 'package:opto/core/themes/app_themes.dart';
 import 'package:opto/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   const App({super.key});
+
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  @override
+  void initState() {
+    super.initState();
+    // Start the feature deep-link listener. Auth callbacks are handled by
+    // main.dart's _initDeepLinks(); this handles everything else.
+    DeepLinkHandler.start(appRouter);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +55,11 @@ class App extends StatelessWidget {
         },
         child: BlocBuilder<AccessibilitySettingsCubit, AccessibilitySettingsEntity>(
           builder: (context, settings) {
+            // Keep HapticController in sync with user settings.
+            sl<HapticController>().value = settings.hapticIntensity;
+            // Keep VoiceController in sync with user's voice-enabled preference.
+            sl<VoiceController>().setVoiceEnabled(settings.voiceEnabled);
+
             final (ThemeData theme, ThemeData? dark, ThemeMode flutterMode) =
                 switch (settings.theme) {
               AppThemeMode.system => (
@@ -65,11 +86,17 @@ class App extends StatelessWidget {
               themeMode: flutterMode,
               routerConfig: appRouter,
               builder: (BuildContext context, Widget? child) {
-                // Apply user text-scale (1.0–3.0) per design_system.md §3 / §15.4.
-                final double scale = settings.textScale.clamp(1.0, 3.0);
+                // Compose OS font-size with the user's in-app preference so
+                // that neither is discarded. design_system.md §3 / §15.4:
+                // honor MediaQuery.textScaler in the range 1.0–3.0.
+                final double osScale =
+                    MediaQuery.of(context).textScaler.scale(1.0);
+                final double userScale = settings.textScale.clamp(1.0, 3.0);
+                final double effectiveScale =
+                    (osScale > userScale ? osScale : userScale).clamp(1.0, 3.0);
                 return MediaQuery(
                   data: MediaQuery.of(context).copyWith(
-                    textScaler: TextScaler.linear(scale),
+                    textScaler: TextScaler.linear(effectiveScale),
                   ),
                   child: child!,
                 );

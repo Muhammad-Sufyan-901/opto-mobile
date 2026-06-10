@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 
 /// Persistent bottom navigation bar for the Opto Home screen.
@@ -83,9 +84,14 @@ class HomeBottomNav extends StatelessWidget {
               button: true,
               selected: active,
               child: GestureDetector(
-                // TODO: add SemanticsService.announce + selectionClick haptic
-                // per design_system.md §12.
-                onTap: () => context.go(_routes[i]),
+                onTap: () {
+                  announce(
+                    context,
+                    '${_tabs[i].label} tab ${i + 1} of $total',
+                  );
+                  HapticPatterns.tabNav();
+                  context.go(_routes[i]);
+                },
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

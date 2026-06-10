@@ -80,6 +80,14 @@ abstract class AccessibilitySettingsModel with _$AccessibilitySettingsModel {
     /// Whether the always-on hotword listener is active; defaults to false.
     @JsonKey(name: 'hotword_enabled') @Default(false) bool hotwordEnabled,
 
+    /// Whether spoken guidance (TTS feedback) is enabled; defaults to true.
+    @JsonKey(name: 'spoken_guidance_enabled')
+    @Default(true)
+    bool spokenGuidanceEnabled,
+
+    /// TTS speaking rate multiplier — 0.0 (slowest) to 1.0 (fastest); default 0.45.
+    @JsonKey(name: 'speaking_rate') @Default(0.45) double speakingRate,
+
     /// Timestamp of the last settings update (nullable if never explicitly saved).
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _AccessibilitySettingsModel;

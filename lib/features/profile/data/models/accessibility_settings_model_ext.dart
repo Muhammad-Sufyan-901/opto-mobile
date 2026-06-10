@@ -16,6 +16,8 @@ extension AccessibilitySettingsModelX on AccessibilitySettingsModel {
         hapticIntensity: hapticIntensity,
         voiceEnabled: voiceEnabled,
         hotwordEnabled: hotwordEnabled,
+        spokenGuidanceEnabled: spokenGuidanceEnabled,
+        speakingRate: speakingRate,
         updatedAt: updatedAt,
       );
 }

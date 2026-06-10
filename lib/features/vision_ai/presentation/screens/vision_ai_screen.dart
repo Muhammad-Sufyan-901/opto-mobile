@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:go_router/go_router.dart';
+
+import 'package:opto/core/accessibility/accessibility.dart';
 
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
@@ -55,10 +56,9 @@ class _VisionAiScreenState extends State<VisionAiScreen> {
     // Announce a concise one-line summary on arrival (design_system.md §21.3).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      SemanticsService.sendAnnouncement(
-        View.of(context),
+      announce(
+        context,
         'Vision AI. Point your camera to read text, identify objects, or describe scenes.',
-        TextDirection.ltr,
       );
     });
   }

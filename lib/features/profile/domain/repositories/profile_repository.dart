@@ -31,4 +31,10 @@ abstract class ProfileRepository {
     VisionProfile? visionProfile,
     String? avatarUrl,
   });
+
+  /// Updates only the `vision_profile` column for the currently signed-in user.
+  ///
+  /// Throws `AuthFailure` when there is no active session, and `ServerFailure`
+  /// on RLS violation or network error.
+  Future<void> updateVisionProfile(VisionProfile profile);
 }

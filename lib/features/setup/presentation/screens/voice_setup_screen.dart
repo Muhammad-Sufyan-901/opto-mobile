@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
 import 'package:opto/features/setup/presentation/widgets/setup_slider_block.dart';
 import 'package:opto/features/setup/presentation/widgets/setup_step_scaffold.dart';
 import 'package:opto/features/setup/presentation/widgets/setup_toggle_tile.dart';
 
 /// Screen 12 — Voice & sound setup.
 ///
-/// Spec: `ScreenVoice` / `.voice-list` / `.set-block` in `Opto Onboarding.html`.
-///
-/// Two toggles (spoken guidance + voice commands) and a speaking-speed slider.
-/// All state is local UI state; pass forward to BLoC/persistence when ready.
+/// Wired to [AccessibilitySettingsCubit]: spoken guidance → [spokenGuidanceEnabled],
+/// voice commands → [voiceEnabled], speaking speed → [speakingRate] (0.0–1.0).
 ///
 /// Layout via [SetupStepScaffold] (step 3/4).
 class VoiceSetupScreen extends StatefulWidget {
@@ -24,9 +24,19 @@ class VoiceSetupScreen extends StatefulWidget {
 }
 
 class _VoiceSetupScreenState extends State<VoiceSetupScreen> {
-  bool _spokenGuidance = true; // design default: on
-  bool _voiceCommands = true;  // design default: on
-  double _speakingSpeed = 45.0; // design default: 45% (between Slow and Fast)
+  bool _spokenGuidance = true;
+  bool _voiceCommands = true;
+  double _speakingSpeed = 45.0; // slider 0–100; maps to speakingRate 0.0–1.0
+
+  @override
+  void initState() {
+    super.initState();
+    final settings = context.read<AccessibilitySettingsCubit>().state;
+    _spokenGuidance = settings.spokenGuidanceEnabled;
+    _voiceCommands = settings.voiceEnabled;
+    // Map speakingRate 0.0–1.0 → slider 0–100
+    _speakingSpeed = (settings.speakingRate * 100).clamp(0.0, 100.0);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +100,12 @@ class _VoiceSetupScreenState extends State<VoiceSetupScreen> {
             title: 'Spoken guidance',
             desc: 'Read screens and actions aloud',
             value: _spokenGuidance,
-            onChanged: (v) => setState(() => _spokenGuidance = v),
+            onChanged: (v) {
+              setState(() => _spokenGuidance = v);
+              context
+                  .read<AccessibilitySettingsCubit>()
+                  .updateSpokenGuidance(enabled: v);
+            },
           ),
 
           const SizedBox(height: AppDimensions.space12),
@@ -101,7 +116,10 @@ class _VoiceSetupScreenState extends State<VoiceSetupScreen> {
             title: 'Voice commands',
             desc: 'Say "Hey Opto" to navigate hands-free',
             value: _voiceCommands,
-            onChanged: (v) => setState(() => _voiceCommands = v),
+            onChanged: (v) {
+              setState(() => _voiceCommands = v);
+              context.read<AccessibilitySettingsCubit>().updateVoice(enabled: v);
+            },
           ),
 
           const SizedBox(height: AppDimensions.space24),
@@ -110,7 +128,13 @@ class _VoiceSetupScreenState extends State<VoiceSetupScreen> {
           SetupSliderBlock(
             label: 'Speaking speed',
             value: _speakingSpeed,
-            onChanged: (v) => setState(() => _speakingSpeed = v),
+            onChanged: (v) {
+              setState(() => _speakingSpeed = v);
+              // Map slider 0–100 → speakingRate 0.0–1.0
+              context
+                  .read<AccessibilitySettingsCubit>()
+                  .updateSpeakingRate(v / 100.0);
+            },
             leading: Text(
               'Slow',
               style: theme.textTheme.bodyMedium?.copyWith(

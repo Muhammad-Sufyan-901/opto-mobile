@@ -14,61 +14,30 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProfileEvent {
 
- String get userId;
-/// Create a copy of ProfileEvent
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$ProfileEventCopyWith<ProfileEvent> get copyWith => _$ProfileEventCopyWithImpl<ProfileEvent>(this as ProfileEvent, _$identity);
+
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileEvent&&(identical(other.userId, userId) || other.userId == userId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileEvent);
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,userId);
+int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'ProfileEvent(userId: $userId)';
+  return 'ProfileEvent()';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $ProfileEventCopyWith<$Res>  {
-  factory $ProfileEventCopyWith(ProfileEvent value, $Res Function(ProfileEvent) _then) = _$ProfileEventCopyWithImpl;
-@useResult
-$Res call({
- String userId
-});
-
-
-
-
-}
-/// @nodoc
-class _$ProfileEventCopyWithImpl<$Res>
-    implements $ProfileEventCopyWith<$Res> {
-  _$ProfileEventCopyWithImpl(this._self, this._then);
-
-  final ProfileEvent _self;
-  final $Res Function(ProfileEvent) _then;
-
-/// Create a copy of ProfileEvent
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,}) {
-  return _then(_self.copyWith(
-userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
-as String,
-  ));
-}
-
+class $ProfileEventCopyWith<$Res>  {
+$ProfileEventCopyWith(ProfileEvent _, $Res Function(ProfileEvent) __);
 }
 
 
@@ -86,12 +55,13 @@ extension ProfileEventPatterns on ProfileEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LoadProfile value)?  loadProfile,TResult Function( UpdateProfile value)?  updateProfile,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LoadProfile value)?  loadProfile,TResult Function( UpdateProfile value)?  updateProfile,TResult Function( UpdateVisionProfile value)?  updateVisionProfile,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case LoadProfile() when loadProfile != null:
 return loadProfile(_that);case UpdateProfile() when updateProfile != null:
-return updateProfile(_that);case _:
+return updateProfile(_that);case UpdateVisionProfile() when updateVisionProfile != null:
+return updateVisionProfile(_that);case _:
   return orElse();
 
 }
@@ -109,12 +79,13 @@ return updateProfile(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LoadProfile value)  loadProfile,required TResult Function( UpdateProfile value)  updateProfile,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LoadProfile value)  loadProfile,required TResult Function( UpdateProfile value)  updateProfile,required TResult Function( UpdateVisionProfile value)  updateVisionProfile,}){
 final _that = this;
 switch (_that) {
 case LoadProfile():
 return loadProfile(_that);case UpdateProfile():
-return updateProfile(_that);}
+return updateProfile(_that);case UpdateVisionProfile():
+return updateVisionProfile(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -128,12 +99,13 @@ return updateProfile(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LoadProfile value)?  loadProfile,TResult? Function( UpdateProfile value)?  updateProfile,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LoadProfile value)?  loadProfile,TResult? Function( UpdateProfile value)?  updateProfile,TResult? Function( UpdateVisionProfile value)?  updateVisionProfile,}){
 final _that = this;
 switch (_that) {
 case LoadProfile() when loadProfile != null:
 return loadProfile(_that);case UpdateProfile() when updateProfile != null:
-return updateProfile(_that);case _:
+return updateProfile(_that);case UpdateVisionProfile() when updateVisionProfile != null:
+return updateVisionProfile(_that);case _:
   return null;
 
 }
@@ -150,11 +122,12 @@ return updateProfile(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String userId)?  loadProfile,TResult Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl)?  updateProfile,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String userId)?  loadProfile,TResult Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl)?  updateProfile,TResult Function( VisionProfile profile)?  updateVisionProfile,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case LoadProfile() when loadProfile != null:
 return loadProfile(_that.userId);case UpdateProfile() when updateProfile != null:
-return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl);case _:
+return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl);case UpdateVisionProfile() when updateVisionProfile != null:
+return updateVisionProfile(_that.profile);case _:
   return orElse();
 
 }
@@ -172,11 +145,12 @@ return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String userId)  loadProfile,required TResult Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl)  updateProfile,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String userId)  loadProfile,required TResult Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl)  updateProfile,required TResult Function( VisionProfile profile)  updateVisionProfile,}) {final _that = this;
 switch (_that) {
 case LoadProfile():
 return loadProfile(_that.userId);case UpdateProfile():
-return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl);}
+return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl);case UpdateVisionProfile():
+return updateVisionProfile(_that.profile);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -190,11 +164,12 @@ return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String userId)?  loadProfile,TResult? Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl)?  updateProfile,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String userId)?  loadProfile,TResult? Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl)?  updateProfile,TResult? Function( VisionProfile profile)?  updateVisionProfile,}) {final _that = this;
 switch (_that) {
 case LoadProfile() when loadProfile != null:
 return loadProfile(_that.userId);case UpdateProfile() when updateProfile != null:
-return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl);case _:
+return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl);case UpdateVisionProfile() when updateVisionProfile != null:
+return updateVisionProfile(_that.profile);case _:
   return null;
 
 }
@@ -209,11 +184,11 @@ class LoadProfile implements ProfileEvent {
   const LoadProfile({required this.userId});
   
 
-@override final  String userId;
+ final  String userId;
 
 /// Create a copy of ProfileEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
+@JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $LoadProfileCopyWith<LoadProfile> get copyWith => _$LoadProfileCopyWithImpl<LoadProfile>(this, _$identity);
 
@@ -239,7 +214,7 @@ String toString() {
 /// @nodoc
 abstract mixin class $LoadProfileCopyWith<$Res> implements $ProfileEventCopyWith<$Res> {
   factory $LoadProfileCopyWith(LoadProfile value, $Res Function(LoadProfile) _then) = _$LoadProfileCopyWithImpl;
-@override @useResult
+@useResult
 $Res call({
  String userId
 });
@@ -258,7 +233,7 @@ class _$LoadProfileCopyWithImpl<$Res>
 
 /// Create a copy of ProfileEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? userId = null,}) {
   return _then(LoadProfile(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,
@@ -275,7 +250,7 @@ class UpdateProfile implements ProfileEvent {
   const UpdateProfile({required this.userId, this.fullName, this.phone, this.visionProfile, this.avatarUrl});
   
 
-@override final  String userId;
+ final  String userId;
  final  String? fullName;
  final  String? phone;
  final  VisionProfile? visionProfile;
@@ -283,7 +258,7 @@ class UpdateProfile implements ProfileEvent {
 
 /// Create a copy of ProfileEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
+@JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $UpdateProfileCopyWith<UpdateProfile> get copyWith => _$UpdateProfileCopyWithImpl<UpdateProfile>(this, _$identity);
 
@@ -309,7 +284,7 @@ String toString() {
 /// @nodoc
 abstract mixin class $UpdateProfileCopyWith<$Res> implements $ProfileEventCopyWith<$Res> {
   factory $UpdateProfileCopyWith(UpdateProfile value, $Res Function(UpdateProfile) _then) = _$UpdateProfileCopyWithImpl;
-@override @useResult
+@useResult
 $Res call({
  String userId, String? fullName, String? phone, VisionProfile? visionProfile, String? avatarUrl
 });
@@ -328,7 +303,7 @@ class _$UpdateProfileCopyWithImpl<$Res>
 
 /// Create a copy of ProfileEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? fullName = freezed,Object? phone = freezed,Object? visionProfile = freezed,Object? avatarUrl = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? fullName = freezed,Object? phone = freezed,Object? visionProfile = freezed,Object? avatarUrl = freezed,}) {
   return _then(UpdateProfile(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,fullName: freezed == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
@@ -336,6 +311,72 @@ as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullabl
 as String?,visionProfile: freezed == visionProfile ? _self.visionProfile : visionProfile // ignore: cast_nullable_to_non_nullable
 as VisionProfile?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
 as String?,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class UpdateVisionProfile implements ProfileEvent {
+  const UpdateVisionProfile({required this.profile});
+  
+
+ final  VisionProfile profile;
+
+/// Create a copy of ProfileEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$UpdateVisionProfileCopyWith<UpdateVisionProfile> get copyWith => _$UpdateVisionProfileCopyWithImpl<UpdateVisionProfile>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UpdateVisionProfile&&(identical(other.profile, profile) || other.profile == profile));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,profile);
+
+@override
+String toString() {
+  return 'ProfileEvent.updateVisionProfile(profile: $profile)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $UpdateVisionProfileCopyWith<$Res> implements $ProfileEventCopyWith<$Res> {
+  factory $UpdateVisionProfileCopyWith(UpdateVisionProfile value, $Res Function(UpdateVisionProfile) _then) = _$UpdateVisionProfileCopyWithImpl;
+@useResult
+$Res call({
+ VisionProfile profile
+});
+
+
+
+
+}
+/// @nodoc
+class _$UpdateVisionProfileCopyWithImpl<$Res>
+    implements $UpdateVisionProfileCopyWith<$Res> {
+  _$UpdateVisionProfileCopyWithImpl(this._self, this._then);
+
+  final UpdateVisionProfile _self;
+  final $Res Function(UpdateVisionProfile) _then;
+
+/// Create a copy of ProfileEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? profile = null,}) {
+  return _then(UpdateVisionProfile(
+profile: null == profile ? _self.profile : profile // ignore: cast_nullable_to_non_nullable
+as VisionProfile,
   ));
 }
 

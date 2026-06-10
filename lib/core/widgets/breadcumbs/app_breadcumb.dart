@@ -50,7 +50,8 @@ class AppBreadcrumbSeparator extends StatelessWidget {
         size: _defaultIconSize,
       ),
       child: DefaultTextStyle(
-        style: TextStyle(
+        // Use textTheme so font family, size, and textScaler compose correctly.
+        style: theme.textTheme.bodySmall!.copyWith(
           color: color,
           fontWeight: FontWeight.w400,
         ),

@@ -2,8 +2,11 @@ import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:opto/core/accessibility/haptic_controller.dart';
+import 'package:opto/core/voice/intent_parser.dart';
+import 'package:opto/core/voice/speech_recognizer.dart';
+import 'package:opto/core/voice/voice_controller.dart';
 import 'package:opto/core/config/secure_storage_config.dart';
-import 'package:opto/core/theme/theme_cubit.dart';
 import 'package:opto/core/utils/secure_storage_helper.dart';
 import 'package:opto/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:opto/features/auth/data/repositories/auth_repository_impl.dart';
@@ -29,9 +32,19 @@ Future<void> init() async {
   // CORE LAYERS
   // ===============================================================
 
-  // Theme — persisted to the 'settings_box' opened by HiveClient.init().
-  sl.registerLazySingleton<ThemeCubit>(
-    () => ThemeCubit(Hive.box('settings_box')),
+  // HapticController — core-level haptic preference holder.
+  // Kept in sync with AccessibilitySettingsCubit via app.dart.
+  sl.registerLazySingleton<HapticController>(() => HapticController());
+
+  // VoiceController — Aura Voice engine.
+  // Kept in sync with AccessibilitySettingsCubit via app.dart (setVoiceEnabled).
+  sl.registerLazySingleton<SpeechRecognizer>(() => SpeechToTextRecognizer());
+  sl.registerLazySingleton<IntentParser>(() => const IntentParser());
+  sl.registerLazySingleton<VoiceController>(
+    () => VoiceController(
+      recognizer: sl<SpeechRecognizer>(),
+      parser: sl<IntentParser>(),
+    ),
   );
 
   // Supabase client — initialized in main.dart before this runs.

@@ -1,8 +1,9 @@
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
+
+import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
@@ -74,11 +75,7 @@ class _SosActiveScreenState extends State<SosActiveScreen>
     // Announce emergency activation to screen readers after first frame.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      SemanticsService.sendAnnouncement(
-        View.of(context),
-        'Emergency SOS activated. Calling emergency services now.',
-        TextDirection.ltr,
-      );
+      announce(context, 'Emergency SOS activated. Calling emergency services now.');
     });
   }
 
@@ -91,7 +88,8 @@ class _SosActiveScreenState extends State<SosActiveScreen>
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final ThemeData theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final errorColor = cs.error;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -124,8 +122,7 @@ class _SosActiveScreenState extends State<SosActiveScreen>
                   liveRegion: true,
                   child: Text(
                     'Calling emergency services…',
-                    style: const TextStyle(
-                      fontSize: 25,
+                    style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       height: 1.2,
@@ -138,8 +135,7 @@ class _SosActiveScreenState extends State<SosActiveScreen>
                 const SizedBox(height: AppDimensions.space8),
                 Text(
                   'Sharing your live location and vision profile with responders.',
-                  style: TextStyle(
-                    fontSize: 16,
+                  style: theme.textTheme.bodyLarge?.copyWith(
                     color: Colors.white.withValues(alpha: 0.92),
                     height: 1.45,
                   ),
@@ -180,6 +176,7 @@ class _StatusRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     return Semantics(
       liveRegion: true,
       label: 'Emergency services have been alerted. Emergency active.',
@@ -190,10 +187,9 @@ class _StatusRow extends StatelessWidget {
           const SizedBox(width: AppDimensions.space8),
           Text(
             'EMERGENCY ACTIVE',
-            style: TextStyle(
-              fontSize: 15,
+            style: theme.textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              letterSpacing: 1.0,
+              letterSpacing: 1.6,
               color: Colors.white.withValues(alpha: 0.95),
             ),
           ),
@@ -305,6 +301,7 @@ class _LocationChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     return Semantics(
       label: 'Location: Jl. Merdeka No. 24, Bandung, accuracy 5 meters',
       child: Container(
@@ -325,11 +322,10 @@ class _LocationChip extends StatelessWidget {
               color: Colors.white,
             ),
             const SizedBox(width: AppDimensions.space8),
-            const Flexible(
+            Flexible(
               child: Text(
                 'Jl. Merdeka No. 24, Bandung — accuracy 5 m',
-                style: TextStyle(
-                  fontSize: 14,
+                style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -363,15 +359,17 @@ class _ContactsPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ExcludeSemantics(
-            child: Text(
-              'NOTIFYING YOUR CONTACTS',
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-                color: Colors.white.withValues(alpha: 0.80),
-              ),
-            ),
+            child: Builder(builder: (context) {
+              final theme = Theme.of(context);
+              return Text(
+                'NOTIFYING YOUR CONTACTS',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.6,
+                  color: Colors.white.withValues(alpha: 0.80),
+                ),
+              );
+            }),
           ),
           const SizedBox(height: 12),
           const _ContactRow(
@@ -410,6 +408,7 @@ class _ContactRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     final semanticLabel = '$name — $status';
 
     return Semantics(
@@ -427,8 +426,7 @@ class _ContactRow extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               initials,
-              style: const TextStyle(
-                fontSize: 15,
+              style: theme.textTheme.labelMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -442,16 +440,14 @@ class _ContactRow extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: theme.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
                 Text(
                   status,
-                  style: TextStyle(
-                    fontSize: 13.5,
+                  style: theme.textTheme.labelSmall?.copyWith(
                     color: Colors.white.withValues(alpha: 0.85),
                   ),
                 ),
@@ -480,6 +476,7 @@ class _CancelButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     return Semantics(
       button: true,
       label: 'Hold to cancel emergency call',
@@ -501,8 +498,7 @@ class _CancelButton extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             'Hold to cancel',
-            style: TextStyle(
-              fontSize: 18,
+            style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.bold,
               color: errorColor,
             ),

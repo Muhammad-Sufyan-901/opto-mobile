@@ -24,6 +24,7 @@ abstract class ProfileRemoteDataSource {
   // ── profiles ──────────────────────────────────────────────────────────────
   Future<ProfileModel> getProfile(String userId);
   Future<void> updateProfile(String userId, Map<String, dynamic> fields);
+  Future<void> updateVisionProfile(String dbValue);
 
   // ── accessibility_settings ─────────────────────────────────────────────────
   Future<AccessibilitySettingsModel> getSettings(String userId);
@@ -87,6 +88,22 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   ) async {
     try {
       await _client.from('profiles').update(fields).eq('id', userId);
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<void> updateVisionProfile(String dbValue) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw const AuthFailure('Not authenticated');
+    try {
+      await _client
+          .from('profiles')
+          .update({'vision_profile': dbValue})
+          .eq('id', userId);
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {

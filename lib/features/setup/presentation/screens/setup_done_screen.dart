@@ -1,26 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/constants/identity_enums.dart';
 import 'package:opto/core/widgets/buttons/app_button.dart';
+import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
 
 /// Screen 14 — All set / setup complete.
 ///
-/// Spec: `ScreenDone` / `.scr-done` / `.done-check` / `.done-summary`
-/// in `Opto Onboarding.html`.
-///
-/// Full-bleed primary-blue background. Content:
-///   - Large check-circle badge.
-///   - Congratulatory title + subtitle.
-///   - Translucent summary card listing the chosen Vision, Text size, and
-///     Voice settings (hardcoded to the design's defaults for now — wire to
-///     the setup state once a SetupCubit is added).
-///   - "Enter Opto" white-on-blue CTA → navigates to the home dashboard.
-///
-/// Accessibility: the page announces itself on mount; the summary card is
-/// read out as a single semantic group.
+/// Reads live values from [ProfileBloc] (vision profile) and
+/// [AccessibilitySettingsCubit] (text scale, spoken guidance) to populate
+/// the summary card.
 class SetupDoneScreen extends StatefulWidget {
   const SetupDoneScreen({super.key});
 
@@ -32,14 +26,9 @@ class _SetupDoneScreenState extends State<SetupDoneScreen> {
   @override
   void initState() {
     super.initState();
-    // Announce screen to screen readers on arrival.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      SemanticsService.sendAnnouncement(
-        View.of(context),
-        'All set. You\'re ready to use Opto.',
-        TextDirection.ltr,
-      );
+      announce(context, "All set. You're ready to use Opto.");
     });
   }
 
@@ -47,6 +36,15 @@ class _SetupDoneScreenState extends State<SetupDoneScreen> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme cs = theme.colorScheme;
+
+    final settings = context.watch<AccessibilitySettingsCubit>().state;
+    final profileState = context.watch<ProfileBloc>().state;
+
+    final visionLabel = _visionLabel(profileState);
+    final textSizeLabel = _textSizeLabel(settings.textScale);
+    final voiceLabel = settings.spokenGuidanceEnabled ? 'On' : 'Off';
+    final summarySemantics =
+        'Setup summary. Vision: $visionLabel. Text size: $textSizeLabel. Voice: $voiceLabel.';
 
     return Scaffold(
       backgroundColor: cs.primary,
@@ -73,7 +71,7 @@ class _SetupDoneScreenState extends State<SetupDoneScreen> {
                           shape: BoxShape.circle,
                           color: Colors.white.withValues(alpha: 0.16),
                         ),
-                        child: Center(
+                        child: const Center(
                           child: Icon(
                             Icons.check,
                             size: 56,
@@ -89,7 +87,7 @@ class _SetupDoneScreenState extends State<SetupDoneScreen> {
                     Semantics(
                       header: true,
                       child: Text(
-                        "You're all set, Sari",
+                        "You're all set",
                         textAlign: TextAlign.center,
                         style: theme.textTheme.displayMedium?.copyWith(
                           color: Colors.white,
@@ -116,7 +114,7 @@ class _SetupDoneScreenState extends State<SetupDoneScreen> {
                     // ── Summary card ──────────────────────────
                     Semantics(
                       container: true,
-                      label: 'Setup summary. Vision: Low vision. Text size: Large. Voice: On.',
+                      label: summarySemantics,
                       child: ExcludeSemantics(
                         child: Container(
                           width: double.infinity,
@@ -131,11 +129,11 @@ class _SetupDoneScreenState extends State<SetupDoneScreen> {
                           ),
                           child: Column(
                             children: [
-                              _SummaryRow(label: 'Vision', value: 'Low vision'),
-                              _SummaryRow(label: 'Text size', value: 'Large'),
+                              _SummaryRow(label: 'Vision', value: visionLabel),
+                              _SummaryRow(label: 'Text size', value: textSizeLabel),
                               _SummaryRow(
                                 label: 'Voice',
-                                value: 'On',
+                                value: voiceLabel,
                                 isLast: true,
                               ),
                             ],
@@ -151,7 +149,6 @@ class _SetupDoneScreenState extends State<SetupDoneScreen> {
             ),
 
             // ── "Enter Opto" CTA ──────────────────────────
-            // White background / primary foreground = `.opt-btn-onblue`.
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppDimensions.screenPadding,
@@ -165,21 +162,34 @@ class _SetupDoneScreenState extends State<SetupDoneScreen> {
                 suffixIcon: Icons.arrow_forward,
                 height: AppDimensions.buttonHeight,
                 radius: AppDimensions.radiusButton,
-                // Override: white bg / primary fg to match .opt-btn-onblue.
                 customStyle: FilledButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: cs.primary,
                 ),
-                onPressed: () {
-                  // Navigate to the Opto Home Dashboard (screen 15).
-                  context.go(AppRoutes.home.path);
-                },
+                onPressed: () => context.go(AppRoutes.home.path),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  static String _visionLabel(ProfileState state) {
+    if (state is! ProfileLoaded) return '—';
+    return switch (state.profile.visionProfile) {
+      VisionProfile.blindTotal => 'Blind',
+      VisionProfile.lowVision => 'Low vision',
+      VisionProfile.ocularProsthesis => 'Ocular prosthetic',
+      VisionProfile.caregiver => 'Caregiver',
+      VisionProfile.unspecified || null => 'Not specified',
+    };
+  }
+
+  static String _textSizeLabel(double textScale) {
+    if (textScale >= 2.5) return 'Extra large';
+    if (textScale >= 1.5) return 'Large';
+    return 'Normal';
   }
 }
 

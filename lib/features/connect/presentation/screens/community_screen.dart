@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
+import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/home/presentation/widgets/home_bottom_nav.dart';
@@ -63,11 +63,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      SemanticsService.sendAnnouncement(
-        View.of(context),
-        'Community. Showing posts for you.',
-        TextDirection.ltr,
-      );
+      announce(context, 'Community. Showing posts for you.');
     });
   }
 
@@ -178,14 +174,16 @@ class _HeaderRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // Title
-        Text(
-          'Community',
-          style: TextStyle(
-            fontSize: 25,
-            fontWeight: FontWeight.w700,
-            color: cs.onSurface,
-          ),
-        ),
+        Builder(builder: (context) {
+          final theme = Theme.of(context);
+          return Text(
+            'Community',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: cs.onSurface,
+            ),
+          );
+        }),
 
         // Notifications bell
         Semantics(
@@ -307,14 +305,16 @@ class _TopicChip extends StatelessWidget {
             ),
           ),
           child: ExcludeSemantics(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 14.5,
-                fontWeight: FontWeight.w700,
-                color: active ? Colors.white : ink2,
-              ),
-            ),
+            child: Builder(builder: (context) {
+              final theme = Theme.of(context);
+              return Text(
+                label,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: active ? Colors.white : ink2,
+                ),
+              );
+            }),
           ),
         ),
       ),
@@ -391,14 +391,16 @@ class _PostCard extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: Center(
-                      child: Text(
-                        post.initials,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
+                      child: Builder(builder: (context) {
+                        final theme = Theme.of(context);
+                        return Text(
+                          post.initials,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        );
+                      }),
                     ),
                   ),
                 ),
@@ -409,22 +411,26 @@ class _PostCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      post.name,
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: cs.onSurface,
-                      ),
-                    ),
+                    Builder(builder: (context) {
+                      final theme = Theme.of(context);
+                      return Text(
+                        post.name,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: cs.onSurface,
+                        ),
+                      );
+                    }),
                     const SizedBox(height: 2),
-                    Text(
-                      post.meta,
-                      style: TextStyle(
-                        fontSize: 13.5,
-                        color: ink3,
-                      ),
-                    ),
+                    Builder(builder: (context) {
+                      final theme = Theme.of(context);
+                      return Text(
+                        post.meta,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: ink3,
+                        ),
+                      );
+                    }),
                   ],
                 ),
               ],
@@ -433,14 +439,16 @@ class _PostCard extends StatelessWidget {
             // ── Post body ────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: Text(
-                post.body,
-                style: TextStyle(
-                  fontSize: 16.5,
-                  color: cs.onSurface,
-                  height: 1.5,
-                ),
-              ),
+              child: Builder(builder: (context) {
+                final theme = Theme.of(context);
+                return Text(
+                  post.body,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: cs.onSurface,
+                    height: 1.5,
+                  ),
+                );
+              }),
             ),
 
             // ── Post actions ─────────────────────────────────────────────
@@ -511,14 +519,16 @@ class _PostActions extends StatelessWidget {
                   ),
                   const SizedBox(width: 5),
                   ExcludeSemantics(
-                    child: Text(
-                      '$likes',
-                      style: TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w700,
-                        color: liked ? cs.error : ink2,
-                      ),
-                    ),
+                    child: Builder(builder: (context) {
+                      final theme = Theme.of(context);
+                      return Text(
+                        '$likes',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: liked ? cs.error : ink2,
+                        ),
+                      );
+                    }),
                   ),
                 ],
               ),
@@ -550,14 +560,16 @@ class _PostActions extends StatelessWidget {
                   ),
                   const SizedBox(width: 5),
                   ExcludeSemantics(
-                    child: Text(
-                      '$replies',
-                      style: TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w700,
-                        color: ink2,
-                      ),
-                    ),
+                    child: Builder(builder: (context) {
+                      final theme = Theme.of(context);
+                      return Text(
+                        '$replies',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: ink2,
+                        ),
+                      );
+                    }),
                   ),
                 ],
               ),
@@ -590,14 +602,16 @@ class _PostActions extends StatelessWidget {
                   ),
                   const SizedBox(width: 5),
                   ExcludeSemantics(
-                    child: Text(
-                      'Listen',
-                      style: TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w700,
-                        color: cs.primary,
-                      ),
-                    ),
+                    child: Builder(builder: (context) {
+                      final theme = Theme.of(context);
+                      return Text(
+                        'Listen',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: cs.primary,
+                        ),
+                      );
+                    }),
                   ),
                 ],
               ),

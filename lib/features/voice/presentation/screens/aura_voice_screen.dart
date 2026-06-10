@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:go_router/go_router.dart';
+
+import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/di/dependencies_injection_container.dart';
+import 'package:opto/core/voice/voice.dart';
 
 // =============================================================================
 // AuraVoiceScreen — Screen 22
@@ -25,7 +28,7 @@ import 'package:opto/core/constants/app_routes.dart';
 ///   7. Microphone button
 ///
 /// Accessibility:
-///   - Screen summary announced on mount via [SemanticsService.sendAnnouncement].
+///   - Screen summary announced on mount via [announce].
 ///   - [liveRegion: true] on "Listening…" and transcript labels.
 ///   - Decorative waveform bars wrapped in [ExcludeSemantics].
 ///   - All interactive elements have [Semantics(button: true, label: ...)].
@@ -45,6 +48,7 @@ class AuraVoiceScreen extends StatefulWidget {
 class _AuraVoiceScreenState extends State<AuraVoiceScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _animCtrl;
+  late final VoiceController _voiceCtrl;
 
   @override
   void initState() {
@@ -55,26 +59,107 @@ class _AuraVoiceScreenState extends State<AuraVoiceScreen>
       duration: const Duration(milliseconds: 800),
     )..repeat(reverse: true);
 
-    // Announce screen to screen readers after the first frame renders.
+    _voiceCtrl = sl<VoiceController>();
+    _voiceCtrl.addListener(_onVoiceStateChanged);
+
+    // Announce screen to screen readers after the first frame renders,
+    // then start listening automatically.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      SemanticsService.sendAnnouncement(
-        View.of(context),
-        'Aura Voice. Say a command or question.',
-        TextDirection.ltr,
-      );
+      announce(context, 'Aura Voice. Say a command or question.');
+      _voiceCtrl.startListening();
     });
   }
 
   @override
   void dispose() {
+    _voiceCtrl.removeListener(_onVoiceStateChanged);
+    _voiceCtrl.stopListening();
     _animCtrl.dispose();
     super.dispose();
+  }
+
+  void _onVoiceStateChanged() {
+    if (!mounted) return;
+    setState(() {}); // trigger rebuild to show current state
+
+    // Handle result state.
+    final result = _voiceCtrl.lastResult;
+    if (_voiceCtrl.state == VoiceControllerState.result && result != null) {
+      switch (result) {
+        case ResolvedIntent(:final intent):
+          announce(
+            context,
+            'Going to ${intent.runtimeType.toString().replaceAll('Intent', '').toLowerCase()}',
+          );
+          // Navigate after a brief moment so the announce fires first.
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (!mounted) return;
+            context.go(intent.routePath);
+            _voiceCtrl.reset();
+          });
+        case NeedsConfirmation(:final hint):
+          announce(context, 'Did you mean: $hint? Tap mic to retry.');
+          _voiceCtrl.reset();
+        case UnknownPhrase(:final phrase):
+          announce(context, "Sorry, I didn't understand: $phrase. Try again.");
+          _voiceCtrl.reset();
+      }
+    }
+  }
+
+  // Handle a suggestion chip tap by parsing the chip text as a voice intent.
+  void _onSuggestionChipTap(String rawText) {
+    final parser = sl<IntentParser>();
+    final result = parser.parse(rawText);
+    _voiceCtrl.reset(); // clear any previous result first
+
+    switch (result) {
+      case ResolvedIntent(:final intent):
+        announce(
+          context,
+          'Going to ${intent.runtimeType.toString().replaceAll('Intent', '').toLowerCase()}',
+        );
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (!mounted) return;
+          context.go(intent.routePath);
+        });
+      case NeedsConfirmation(:final hint):
+        announce(context, 'Did you mean: $hint? Tap mic to retry.');
+      case UnknownPhrase(:final phrase):
+        announce(context, "Sorry, I didn't understand: $phrase. Try again.");
+    }
+  }
+
+  /// Returns the reactive status label text based on controller state.
+  String get _statusLabel {
+    return switch (_voiceCtrl.state) {
+      VoiceControllerState.listening => 'Listening…',
+      VoiceControllerState.processing => 'Processing…',
+      VoiceControllerState.initializing => 'Starting…',
+      VoiceControllerState.idle => 'Ready',
+      VoiceControllerState.result => 'Done',
+      VoiceControllerState.error => 'Tap mic to start',
+    };
+  }
+
+  /// Returns the semantic label for the status live region.
+  String get _statusSemanticLabel {
+    return switch (_voiceCtrl.state) {
+      VoiceControllerState.listening => 'Aura is listening. Say a command.',
+      VoiceControllerState.processing => 'Processing your command.',
+      VoiceControllerState.initializing => 'Starting voice engine.',
+      VoiceControllerState.idle => 'Aura Voice is ready.',
+      VoiceControllerState.result => 'Command received.',
+      VoiceControllerState.error => 'Voice input unavailable. Tap mic to retry.',
+    };
   }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final transcript = _voiceCtrl.lastPhrase;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
@@ -90,15 +175,14 @@ class _AuraVoiceScreenState extends State<AuraVoiceScreen>
                 const SizedBox(height: AppDimensions.space8),
                 _TopBar(),
 
-                // ── 2. Middle section ──────────────────────────────────────
+                // ── 2. Status label (reactive) ─────────────────────────────
                 const SizedBox(height: 54),
                 Semantics(
                   liveRegion: true,
-                  label: 'Aura is listening. Say a command.',
+                  label: _statusSemanticLabel,
                   child: Text(
-                    'Listening…',
-                    style: TextStyle(
-                      fontSize: 18,
+                    _statusLabel,
+                    style: tt.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.5,
                       color: Colors.white.withValues(alpha: 0.92),
@@ -111,14 +195,15 @@ class _AuraVoiceScreenState extends State<AuraVoiceScreen>
                 _WaveformBars(animCtrl: _animCtrl),
                 const SizedBox(height: 22),
 
-                // ── 4. Heard transcript ────────────────────────────────────
+                // ── 4. Heard transcript (reactive, live region) ────────────
                 Semantics(
                   liveRegion: true,
-                  label: 'Heard: Read my messages',
-                  child: const Text(
-                    '"Read my messages"',
-                    style: TextStyle(
-                      fontSize: 28,
+                  label: transcript != null
+                      ? 'Heard: $transcript'
+                      : 'Waiting for voice input.',
+                  child: Text(
+                    transcript != null ? '“$transcript”' : 'Say something…',
+                    style: tt.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -133,8 +218,7 @@ class _AuraVoiceScreenState extends State<AuraVoiceScreen>
                 ExcludeSemantics(
                   child: Text(
                     'TRY SAYING',
-                    style: TextStyle(
-                      fontSize: 12.5,
+                    style: tt.labelSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.0,
                       color: Colors.white.withValues(alpha: 0.75),
@@ -145,21 +229,34 @@ class _AuraVoiceScreenState extends State<AuraVoiceScreen>
                 _SuggestionChip(
                   text: '"What\'s in front of me?"',
                   semanticLabel: 'Say: What\'s in front of me?',
+                  onTap: () => _onSuggestionChipTap("What's in front of me?"),
                 ),
                 const SizedBox(height: 10),
                 _SuggestionChip(
                   text: '"Navigate to the pharmacy"',
                   semanticLabel: 'Say: Navigate to the pharmacy',
+                  onTap: () => _onSuggestionChipTap('Navigate to the pharmacy'),
                 ),
                 const SizedBox(height: 10),
                 _SuggestionChip(
                   text: '"Call Dr. Anwar"',
                   semanticLabel: 'Say: Call Dr. Anwar',
+                  onTap: () => _onSuggestionChipTap('Call Dr. Anwar'),
                 ),
 
-                // ── 7. Mic button ──────────────────────────────────────────
+                // ── 7. Mic button (reactive) ───────────────────────────────
                 const SizedBox(height: 22),
-                _MicButton(),
+                _MicButton(
+                  voiceState: _voiceCtrl.state,
+                  onTap: () {
+                    final s = _voiceCtrl.state;
+                    if (s == VoiceControllerState.listening) {
+                      _voiceCtrl.stopListening();
+                    } else {
+                      _voiceCtrl.startListening();
+                    }
+                  },
+                ),
                 const SizedBox(height: 22),
               ],
             ),
@@ -213,13 +310,12 @@ class _TopBar extends StatelessWidget {
         ),
 
         // Center: Title
-        const Text(
+        Text(
           'Aura Voice',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
         ),
 
         // Right: Spacer to balance layout
@@ -285,10 +381,12 @@ class _SuggestionChip extends StatelessWidget {
   const _SuggestionChip({
     required this.text,
     required this.semanticLabel,
+    required this.onTap,
   });
 
   final String text;
   final String semanticLabel;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -296,9 +394,7 @@ class _SuggestionChip extends StatelessWidget {
       button: true,
       label: semanticLabel,
       child: GestureDetector(
-        onTap: () {
-          // TODO: handle suggestion chip tap — fire voice command intent
-        },
+        onTap: onTap,
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
@@ -309,11 +405,10 @@ class _SuggestionChip extends StatelessWidget {
           ),
           child: Text(
             text,
-            style: const TextStyle(
-              fontSize: 16.5,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
           ),
         ),
       ),
@@ -324,7 +419,24 @@ class _SuggestionChip extends StatelessWidget {
 // ── Mic Button ────────────────────────────────────────────────────────────────
 
 class _MicButton extends StatelessWidget {
-  const _MicButton();
+  const _MicButton({
+    required this.voiceState,
+    required this.onTap,
+  });
+
+  final VoiceControllerState voiceState;
+  final VoidCallback onTap;
+
+  String get _semanticLabel {
+    return switch (voiceState) {
+      VoiceControllerState.listening => 'Microphone. Tap to stop listening',
+      VoiceControllerState.processing => 'Processing voice command',
+      VoiceControllerState.initializing => 'Starting microphone',
+      VoiceControllerState.idle => 'Microphone. Tap to start listening',
+      VoiceControllerState.result => 'Microphone. Tap to listen again',
+      VoiceControllerState.error => 'Microphone unavailable. Tap to retry',
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -334,11 +446,9 @@ class _MicButton extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: 'Microphone. Tap to stop listening',
+      label: _semanticLabel,
       child: GestureDetector(
-        onTap: () {
-          // TODO: toggle listening state
-        },
+        onTap: onTap,
         child: Container(
           width: 78,
           height: 78,
@@ -355,7 +465,9 @@ class _MicButton extends StatelessWidget {
                 color: Colors.white,
               ),
               child: Icon(
-                Icons.mic,
+                voiceState == VoiceControllerState.listening
+                    ? Icons.mic
+                    : Icons.mic_none,
                 size: 30,
                 color: blueStrong,
               ),

@@ -35,6 +35,17 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="opto" android:host="login-callback" />
             </intent-filter>
+            <!-- Feature deep links for Aura Voice intents and external opto:// URIs.
+                 Handles opto://vision, opto://sos, opto://prosthetic, opto://consult,
+                 opto://community, opto://settings, opto://home, opto://aura.
+                 Auth callbacks (opto://login-callback) are handled separately above
+                 and filtered in DeepLinkHandler.isFeatureLink(). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="opto" />
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

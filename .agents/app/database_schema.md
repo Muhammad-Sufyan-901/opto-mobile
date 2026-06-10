@@ -31,6 +31,8 @@
 | `haptic_intensity` | `haptic_level` enum | default `'full'` | `off`, `light`, `full` |
 | `voice_enabled` | `boolean` | default `true` | Aura Voice |
 | `hotword_enabled` | `boolean` | default `false` | always-on hotword (battery/privacy) |
+| `spoken_guidance_enabled` | `boolean` | default `true` | whether TTS guidance is read aloud |
+| `speaking_rate` | `numeric(3,2)` | default `0.45` | TTS playback speed: 0.0 (slowest)–1.0 (fastest) |
 | `updated_at` | `timestamptz` | default `now()` | |
 
 **RLS:** owner-only (`auth.uid() = user_id`).

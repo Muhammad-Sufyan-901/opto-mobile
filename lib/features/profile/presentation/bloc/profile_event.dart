@@ -25,4 +25,13 @@ sealed class ProfileEvent with _$ProfileEvent {
     VisionProfile? visionProfile,
     String? avatarUrl,
   }) = UpdateProfile;
+
+  /// Persist only the [visionProfile] field for the currently signed-in user.
+  ///
+  /// Uses the active Supabase session — no userId required. Emits an
+  /// optimistic [ProfileLoaded] state immediately so the done screen can
+  /// display the chosen label before the round-trip completes.
+  const factory ProfileEvent.updateVisionProfile({
+    required VisionProfile profile,
+  }) = UpdateVisionProfile;
 }
