@@ -26,11 +26,14 @@ import 'package:opto/features/profile/presentation/cubit/accessibility_settings_
 import 'package:opto/features/prosthetic_hub/data/datasources/prosthetic_remote_data_source.dart';
 import 'package:opto/features/prosthetic_hub/data/repositories/anthropometric_repository_impl.dart';
 import 'package:opto/features/prosthetic_hub/data/repositories/catalog_repository_impl.dart';
+import 'package:opto/features/prosthetic_hub/data/repositories/eye_photos_repository_impl.dart';
 import 'package:opto/features/prosthetic_hub/data/repositories/tutorials_repository_impl.dart';
 import 'package:opto/features/prosthetic_hub/domain/repositories/anthropometric_repository.dart';
 import 'package:opto/features/prosthetic_hub/domain/repositories/catalog_repository.dart';
+import 'package:opto/features/prosthetic_hub/domain/repositories/eye_photos_repository.dart';
 import 'package:opto/features/prosthetic_hub/domain/repositories/tutorials_repository.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/catalog/catalog_bloc.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/eye_photos/eye_photos_cubit.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/product_detail/product_detail_bloc.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/anthropometric/anthropometric_cubit.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/tutorials/tutorials_cubit.dart';
@@ -182,5 +185,15 @@ Future<void> init() async {
 
   sl.registerFactory<AnthropometricCubit>(
     () => AnthropometricCubit(sl<AnthropometricRepository>()),
+  );
+
+  // ── Prosthetic Hub — Eye Photos 🔒 ────────────────────────────────────────
+
+  sl.registerLazySingleton<EyePhotosRepository>(
+    () => EyePhotosRepositoryImpl(sl<ProstheticRemoteDataSource>()),
+  );
+
+  sl.registerFactory<EyePhotosCubit>(
+    () => EyePhotosCubit(sl<EyePhotosRepository>()),
   );
 }

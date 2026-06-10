@@ -34,6 +34,8 @@ import 'package:opto/features/prosthetic_hub/presentation/screens/tutorial_playe
 import 'package:opto/features/prosthetic_hub/presentation/bloc/tutorials/tutorials_cubit.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/anthropometric_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/anthropometric/anthropometric_cubit.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/eye_photos_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/eye_photos/eye_photos_cubit.dart';
 import 'package:opto/features/connect/presentation/screens/community_screen.dart';
 import 'package:opto/features/profile/presentation/screens/profile_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
@@ -370,12 +372,14 @@ final GoRouter appRouter = GoRouter(
             child: const AnthropometricScreen(),
           ),
         ),
-        // Eye photos
+        // Eye photos 🔒
         GoRoute(
           path: 'eye-photos',
           name: AppRoutes.eyePhotos.name,
-          builder: (context, state) =>
-              const Scaffold(body: Center(child: Text('Coming soon'))),
+          builder: (context, state) => BlocProvider(
+            create: (_) => sl<EyePhotosCubit>(),
+            child: const EyePhotosScreen(),
+          ),
         ),
         // Orders
         GoRoute(
