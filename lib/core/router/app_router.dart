@@ -39,6 +39,8 @@ import 'package:opto/features/prosthetic_hub/presentation/bloc/eye_photos/eye_ph
 import 'package:opto/features/prosthetic_hub/presentation/screens/orders_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/order_detail_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/orders/orders_bloc.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/care_reminders_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/reminders/reminders_cubit.dart';
 import 'package:opto/features/connect/presentation/screens/community_screen.dart';
 import 'package:opto/features/profile/presentation/screens/profile_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
@@ -422,8 +424,10 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: 'reminders',
           name: AppRoutes.careReminders.name,
-          builder: (context, state) =>
-              const Scaffold(body: Center(child: Text('Coming soon'))),
+          builder: (context, state) => BlocProvider(
+            create: (_) => sl<RemindersCubit>(),
+            child: const CareRemindersScreen(),
+          ),
         ),
       ],
     ),

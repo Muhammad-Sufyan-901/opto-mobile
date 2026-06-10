@@ -19,6 +19,7 @@ import 'package:opto/core/supabase/supabase_error_mapper.dart';
 import 'dart:typed_data';
 
 import 'package:opto/features/prosthetic_hub/data/models/anthropometric_model.dart';
+import 'package:opto/features/prosthetic_hub/data/models/care_reminder_model.dart';
 import 'package:opto/features/prosthetic_hub/data/models/care_tutorial_model.dart';
 import 'package:opto/features/prosthetic_hub/data/models/eye_photo_model.dart';
 import 'package:opto/features/prosthetic_hub/data/models/prosthetic_order_model.dart';
@@ -139,6 +140,27 @@ abstract class ProstheticRemoteDataSource {
     String orderId,
     String newStatus,
   );
+
+  // ── care_reminders ────────────────────────────────────────────────────────
+
+  /// Returns all reminder rows for the current user.
+  Future<List<CareReminderModel>> getMyReminders();
+
+  /// Inserts or updates a reminder row.
+  ///
+  /// When [id] is provided, upserts on [id]; otherwise inserts a new row.
+  Future<CareReminderModel> upsertReminder({
+    String? id,
+    required String label,
+    required String scheduleCron,
+    bool notifyCaregiver,
+  });
+
+  /// Fetches current [is_active] and flips it.
+  Future<CareReminderModel> toggleActive(String reminderId);
+
+  /// Deletes a reminder row.
+  Future<void> deleteReminder(String reminderId);
 }
 
 // =============================================================================
@@ -542,6 +564,96 @@ class ProstheticRemoteDataSourceImpl implements ProstheticRemoteDataSource {
           .select(_orderColumns)
           .single();
       return ProstheticOrderModel.fromJson(row);
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  static const String _reminderColumns =
+      'id, user_id, label, schedule_cron, notify_caregiver, is_active';
+
+  // ── care_reminders ────────────────────────────────────────────────────────
+
+  @override
+  Future<List<CareReminderModel>> getMyReminders() async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw const AuthFailure('Not authenticated');
+    try {
+      final rows = await _client
+          .from('care_reminders')
+          .select(_reminderColumns)
+          .eq('user_id', userId)
+          .order('label');
+      return rows.map((r) => CareReminderModel.fromJson(r)).toList();
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      if (e is AuthFailure) rethrow;
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<CareReminderModel> upsertReminder({
+    String? id,
+    required String label,
+    required String scheduleCron,
+    bool notifyCaregiver = false,
+  }) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw const AuthFailure('Not authenticated');
+    try {
+      final payload = <String, dynamic>{
+        'user_id': userId,
+        'label': label,
+        'schedule_cron': scheduleCron,
+        'notify_caregiver': notifyCaregiver,
+        'id': ?id,
+      };
+      final row = await _client
+          .from('care_reminders')
+          .upsert(payload, onConflict: 'id')
+          .select(_reminderColumns)
+          .single();
+      return CareReminderModel.fromJson(row);
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      if (e is AuthFailure) rethrow;
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<CareReminderModel> toggleActive(String reminderId) async {
+    try {
+      // Fetch current value, then flip.
+      final current = await _client
+          .from('care_reminders')
+          .select('is_active')
+          .eq('id', reminderId)
+          .single();
+      final flipped = !(current['is_active'] as bool);
+      final row = await _client
+          .from('care_reminders')
+          .update({'is_active': flipped})
+          .eq('id', reminderId)
+          .select(_reminderColumns)
+          .single();
+      return CareReminderModel.fromJson(row);
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<void> deleteReminder(String reminderId) async {
+    try {
+      await _client.from('care_reminders').delete().eq('id', reminderId);
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
