@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:opto/core/accessibility/accessibility.dart';
-
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
@@ -11,17 +11,9 @@ import 'package:opto/features/setup/presentation/widgets/setup_step_scaffold.dar
 
 /// Screen 13 — App permissions.
 ///
-/// Spec: `ScreenPermissions` / `.perm-list` / `.perm-note` in
-/// `Opto Onboarding.html`.
-///
-/// Shows Camera, Microphone, and Location permission rows. Camera and
-/// Microphone are pre-granted in the design; Location starts not-granted
-/// and can be toggled via the "Allow" button (stubbed — real permission
-/// requests wired up when the backend BLoC is added).
-///
-/// A shield note below the list reassures the user they stay in control.
-///
-/// Layout via [SetupStepScaffold] (step 4/4, CTA = "Finish setup").
+/// Checks current permission status on mount and requests each permission
+/// when the user taps Allow. Uses [permission_handler] for real platform
+/// permission APIs (camera, microphone, location).
 class PermissionsSetupScreen extends StatefulWidget {
   const PermissionsSetupScreen({super.key});
 
@@ -30,18 +22,43 @@ class PermissionsSetupScreen extends StatefulWidget {
 }
 
 class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
-  // Camera and mic pre-granted (matching design); location starts not-granted.
-  bool _cameraGranted = true;
-  bool _micGranted = true;
+  bool _cameraGranted = false;
+  bool _micGranted = false;
   bool _locationGranted = false;
 
-  void _grantPermission(String name, VoidCallback grant) {
-    // Stub: in production, call platform permission API then setState on
-    // success. For now, immediately mark granted and announce via live region.
-    grant();
+  @override
+  void initState() {
+    super.initState();
+    _checkCurrentStatuses();
+  }
+
+  Future<void> _checkCurrentStatuses() async {
+    final results = await [
+      Permission.camera,
+      Permission.microphone,
+      Permission.location,
+    ].request();
+    if (!mounted) return;
+    setState(() {
+      _cameraGranted = results[Permission.camera]?.isGranted ?? false;
+      _micGranted = results[Permission.microphone]?.isGranted ?? false;
+      _locationGranted = results[Permission.location]?.isGranted ?? false;
+    });
+  }
+
+  Future<void> _requestPermission(
+    Permission permission,
+    String label,
+    void Function(bool granted) onResult,
+  ) async {
+    final status = await permission.request();
+    if (!mounted) return;
+    final granted = status.isGranted;
+    onResult(granted);
+    final message = granted ? '$label permission granted.' : '$label permission denied.';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      announce(context, '$name permission granted.');
+      announce(context, message);
     });
   }
 
@@ -107,9 +124,10 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
             title: 'Camera',
             desc: 'Read text and identify objects around you',
             granted: _cameraGranted,
-            onAllow: () => _grantPermission(
+            onAllow: () => _requestPermission(
+              Permission.camera,
               'Camera',
-              () => setState(() => _cameraGranted = true),
+              (granted) => setState(() => _cameraGranted = granted),
             ),
           ),
 
@@ -120,9 +138,10 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
             title: 'Microphone',
             desc: 'Voice commands and calling for help',
             granted: _micGranted,
-            onAllow: () => _grantPermission(
+            onAllow: () => _requestPermission(
+              Permission.microphone,
               'Microphone',
-              () => setState(() => _micGranted = true),
+              (granted) => setState(() => _micGranted = granted),
             ),
           ),
 
@@ -133,9 +152,10 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
             title: 'Location',
             desc: 'Turn-by-turn walking directions',
             granted: _locationGranted,
-            onAllow: () => _grantPermission(
+            onAllow: () => _requestPermission(
+              Permission.location,
               'Location',
-              () => setState(() => _locationGranted = true),
+              (granted) => setState(() => _locationGranted = granted),
             ),
           ),
 

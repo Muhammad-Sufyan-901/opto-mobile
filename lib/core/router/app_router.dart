@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opto/core/config/app_info.dart';
 
 import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/constants/user_role.dart';
+import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/middlewares/authentication_middleware.dart';
 import 'package:opto/core/middlewares/roles_middleware.dart';
+import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opto/features/home/presentation/screens/home_screen.dart';
 import 'package:opto/features/auth/presentation/screens/sign_in_hub_screen.dart';
 import 'package:opto/features/auth/presentation/screens/email_auth_screen.dart';
@@ -129,11 +132,15 @@ final GoRouter appRouter = GoRouter(
 
     // ==========================================
     // Onboarding & Setup Routes (screens 10–14)
-    // Public while auth is stubbed — add token gating when SetupCubit lands.
+    // ProfileBloc is scoped to this shell so VisionProfileScreen and
+    // SetupDoneScreen share the same bloc instance.
     // ==========================================
     ShellRoute(
       builder: (BuildContext context, GoRouterState state, Widget child) {
-        return child;
+        return BlocProvider<ProfileBloc>(
+          create: (_) => sl<ProfileBloc>(),
+          child: child,
+        );
       },
       routes: [
         // 10 · Vision profile

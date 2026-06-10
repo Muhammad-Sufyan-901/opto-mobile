@@ -80,7 +80,7 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
               );
               announce(ctx, s.message);
             },
-            authenticated: (_) => ctx.go(AppRoutes.home.path),
+            authenticated: (_) => ctx.go(AppRoutes.setupVision.path),
             emailConfirmationRequired: (s) {
               // Announce for screen-reader users before the UI rebuilds.
               announce(

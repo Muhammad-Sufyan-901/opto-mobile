@@ -1,8 +1,11 @@
 // BLoC for profile operations — sits between [ProfileRepository] and the
 // profile screens.
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:opto/core/constants/user_role.dart';
 import 'package:opto/core/error/failures.dart';
+import 'package:opto/features/profile/domain/entities/profile_entity.dart';
 import 'package:opto/features/profile/domain/repositories/profile_repository.dart';
 import 'package:opto/features/profile/presentation/bloc/profile_event.dart';
 import 'package:opto/features/profile/presentation/bloc/profile_state.dart';
@@ -16,6 +19,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ProfileBloc(this._profile) : super(const ProfileState.initial()) {
     on<LoadProfile>(_onLoadProfile);
     on<UpdateProfile>(_onUpdateProfile);
+    on<UpdateVisionProfile>(_onUpdateVisionProfile);
   }
 
   // ---------------------------------------------------------------------------
@@ -70,6 +74,38 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       if (previous is ProfileLoaded) {
         emit(const ProfileState.error(message: 'An unexpected error occurred.'));
       }
+    }
+  }
+
+  Future<void> _onUpdateVisionProfile(
+    UpdateVisionProfile event,
+    Emitter<ProfileState> emit,
+  ) async {
+    // Emit an optimistic loaded state immediately so SetupDoneScreen can
+    // display the chosen label without waiting for the round-trip.
+    final optimistic = state is ProfileLoaded
+        ? ProfileState.loaded(
+            profile: (state as ProfileLoaded).profile.copyWith(
+              visionProfile: event.profile,
+            ),
+          )
+        : ProfileState.loaded(
+            profile: ProfileEntity(
+              id: '',
+              role: UserRole.user,
+              visionProfile: event.profile,
+              createdAt: DateTime.now(),
+            ),
+          );
+    emit(optimistic);
+
+    try {
+      await _profile.updateVisionProfile(event.profile);
+    } on Failure catch (f) {
+      // Persist failure is non-blocking during setup — user can re-set in Profile.
+      debugPrint('UpdateVisionProfile: persist failed — ${f.message}');
+    } catch (e) {
+      debugPrint('UpdateVisionProfile: unexpected — $e');
     }
   }
 }

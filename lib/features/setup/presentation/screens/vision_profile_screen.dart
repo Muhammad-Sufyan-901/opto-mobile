@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/constants/identity_enums.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opto/features/setup/presentation/widgets/setup_option_tile.dart';
 import 'package:opto/features/setup/presentation/widgets/setup_step_scaffold.dart';
 
 /// Screen 10 — Vision profile selection.
 ///
-/// Spec: `ScreenVision` / `.ob-head` / `.ob-options` in `Opto Onboarding.html`.
-///
-/// Allows the user to select how they experience their vision so Opto can
-/// tune itself accordingly. Selection is local [StatefulWidget] state; the
-/// chosen value is passed forward when a backend/BLoC is wired up.
-///
-/// Layout via [SetupStepScaffold] (step 1/4, progress bar, scrollable body,
-/// pinned "Continue" CTA).
+/// Wired to [ProfileBloc]: on Continue the selected [VisionProfile] is
+/// persisted via [UpdateVisionProfile] (optimistic emit so [SetupDoneScreen]
+/// can display the label immediately).
 class VisionProfileScreen extends StatefulWidget {
   const VisionProfileScreen({super.key});
 
@@ -25,34 +23,40 @@ class VisionProfileScreen extends StatefulWidget {
 }
 
 class _VisionProfileScreenState extends State<VisionProfileScreen> {
-  // Default to "Low vision" as shown in the design.
-  String _selected = 'low_vision';
+  VisionProfile _selected = VisionProfile.lowVision;
 
   static const List<_VisionOption> _options = [
     _VisionOption(
-      key: 'blind',
+      profile: VisionProfile.blindTotal,
       icon: Icons.visibility_off_outlined,
       title: 'Blind',
       desc: 'Little or no usable vision',
     ),
     _VisionOption(
-      key: 'low_vision',
+      profile: VisionProfile.lowVision,
       icon: Icons.remove_red_eye_outlined,
       title: 'Low vision',
       desc: 'Some usable sight, needs support',
     ),
     _VisionOption(
-      key: 'prosthetic',
+      profile: VisionProfile.ocularProsthesis,
       icon: Icons.adjust,
       title: 'Ocular prosthetic',
       desc: 'One or both eyes',
     ),
     _VisionOption(
-      key: 'prefer_not',
+      profile: VisionProfile.unspecified,
       icon: Icons.person_outline,
       title: 'Prefer not to say',
     ),
   ];
+
+  void _onContinue() {
+    context.read<ProfileBloc>().add(
+      ProfileEvent.updateVisionProfile(profile: _selected),
+    );
+    context.push(AppRoutes.setupDisplay.path);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +69,7 @@ class _VisionProfileScreenState extends State<VisionProfileScreen> {
       totalSteps: 4,
       ctaLabel: 'Continue',
       ctaSuffixIcon: Icons.arrow_forward,
-      onCta: () => context.push(AppRoutes.setupDisplay.path),
+      onCta: _onContinue,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -117,8 +121,8 @@ class _VisionProfileScreenState extends State<VisionProfileScreen> {
                 icon: opt.icon,
                 title: opt.title,
                 desc: opt.desc,
-                selected: _selected == opt.key,
-                onTap: () => setState(() => _selected = opt.key),
+                selected: _selected == opt.profile,
+                onTap: () => setState(() => _selected = opt.profile),
               ),
             ),
           ),
@@ -134,13 +138,13 @@ class _VisionProfileScreenState extends State<VisionProfileScreen> {
 
 class _VisionOption {
   const _VisionOption({
-    required this.key,
+    required this.profile,
     required this.icon,
     required this.title,
     this.desc,
   });
 
-  final String key;
+  final VisionProfile profile;
   final IconData icon;
   final String title;
   final String? desc;

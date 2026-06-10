@@ -45,4 +45,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
     await _remote.updateProfile(userId, fields);
   }
+
+  @override
+  Future<void> updateVisionProfile(VisionProfile profile) async {
+    await _remote.updateVisionProfile(profile.dbValue);
+  }
 }
