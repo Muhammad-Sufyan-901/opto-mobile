@@ -7,12 +7,26 @@ import 'package:opto/core/config/app_info.dart';
 import 'package:opto/core/constants/app_theme_mode.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/router/app_router.dart';
+import 'package:opto/core/router/deep_link_handler.dart';
 import 'package:opto/core/themes/app_themes.dart';
 import 'package:opto/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   const App({super.key});
+
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  @override
+  void initState() {
+    super.initState();
+    // Start the feature deep-link listener. Auth callbacks are handled by
+    // main.dart's _initDeepLinks(); this handles everything else.
+    DeepLinkHandler.start(appRouter);
+  }
 
   @override
   Widget build(BuildContext context) {
