@@ -297,13 +297,92 @@ final GoRouter appRouter = GoRouter(
       },
     ),
 
-    // Screen 17 — Prosthetic Hub
+    // Screen 17 — Prosthetic Hub (with Phase 3A sub-routes as children)
+    // TODO(phase-3a): Replace stub builders with real screens as they are created.
     GoRoute(
       path: AppRoutes.prostheticHub.path,
       name: AppRoutes.prostheticHub.name,
       builder: (BuildContext context, GoRouterState state) {
         return const ProstheticHubScreen();
       },
+      routes: [
+        // Catalog listing
+        GoRoute(
+          path: 'catalog',
+          name: AppRoutes.prostheticCatalog.name,
+          builder: (context, state) =>
+              const Scaffold(body: Center(child: Text('Coming soon'))),
+          routes: [
+            // Product detail — nested under catalog
+            GoRoute(
+              path: ':productId',
+              name: AppRoutes.prostheticProductDetail.name,
+              builder: (context, state) =>
+                  const Scaffold(body: Center(child: Text('Coming soon'))),
+            ),
+          ],
+        ),
+        // Care tutorials listing
+        GoRoute(
+          path: 'tutorials',
+          name: AppRoutes.careTutorials.name,
+          builder: (context, state) =>
+              const Scaffold(body: Center(child: Text('Coming soon'))),
+          routes: [
+            // Tutorial video player — nested under tutorials
+            GoRoute(
+              path: ':tutorialId',
+              name: AppRoutes.tutorialPlayer.name,
+              builder: (context, state) =>
+                  const Scaffold(body: Center(child: Text('Coming soon'))),
+            ),
+          ],
+        ),
+        // Anthropometric measurements
+        GoRoute(
+          path: 'measurements',
+          name: AppRoutes.anthropometric.name,
+          builder: (context, state) =>
+              const Scaffold(body: Center(child: Text('Coming soon'))),
+        ),
+        // Eye photos
+        GoRoute(
+          path: 'eye-photos',
+          name: AppRoutes.eyePhotos.name,
+          builder: (context, state) =>
+              const Scaffold(body: Center(child: Text('Coming soon'))),
+        ),
+        // Orders
+        GoRoute(
+          path: 'orders',
+          name: AppRoutes.prostheticOrders.name,
+          builder: (context, state) =>
+              const Scaffold(body: Center(child: Text('Coming soon'))),
+          routes: [
+            // New order wizard — registered before :orderId to avoid shadowing
+            GoRoute(
+              path: 'new',
+              name: AppRoutes.orderCreate.name,
+              builder: (context, state) =>
+                  const Scaffold(body: Center(child: Text('Coming soon'))),
+            ),
+            // Order detail
+            GoRoute(
+              path: ':orderId',
+              name: AppRoutes.orderDetail.name,
+              builder: (context, state) =>
+                  const Scaffold(body: Center(child: Text('Coming soon'))),
+            ),
+          ],
+        ),
+        // Care reminders
+        GoRoute(
+          path: 'reminders',
+          name: AppRoutes.careReminders.name,
+          builder: (context, state) =>
+              const Scaffold(body: Center(child: Text('Coming soon'))),
+        ),
+      ],
     ),
 
     // Screen 18 — Consult

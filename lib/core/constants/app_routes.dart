@@ -32,6 +32,68 @@ abstract class AppRoutes {
     name: 'prosthetic_hub',
   );
 
+  // ── Prosthetic Hub sub-routes (Phase 3A) ─────────────────────────────────
+
+  /// Prosthetic Hub → Product catalog listing.
+  static const AppRoute prostheticCatalog = AppRoute(
+    path: '/prosthetic-hub/catalog',
+    name: 'prosthetic_catalog',
+  );
+
+  /// Prosthetic Hub → Product detail page (`:productId` path param).
+  static const AppRoute prostheticProductDetail = AppRoute(
+    path: '/prosthetic-hub/catalog/:productId',
+    name: 'prosthetic_product_detail',
+  );
+
+  /// Prosthetic Hub → Care & maintenance tutorial listing.
+  static const AppRoute careTutorials = AppRoute(
+    path: '/prosthetic-hub/tutorials',
+    name: 'care_tutorials',
+  );
+
+  /// Prosthetic Hub → Tutorial video player (`:tutorialId` path param).
+  static const AppRoute tutorialPlayer = AppRoute(
+    path: '/prosthetic-hub/tutorials/:tutorialId',
+    name: 'tutorial_player',
+  );
+
+  /// Prosthetic Hub → Anthropometric measurements entry & history.
+  static const AppRoute anthropometric = AppRoute(
+    path: '/prosthetic-hub/measurements',
+    name: 'anthropometric',
+  );
+
+  /// Prosthetic Hub → Eye photo capture & gallery.
+  static const AppRoute eyePhotos = AppRoute(
+    path: '/prosthetic-hub/eye-photos',
+    name: 'eye_photos',
+  );
+
+  /// Prosthetic Hub → Orders listing.
+  static const AppRoute prostheticOrders = AppRoute(
+    path: '/prosthetic-hub/orders',
+    name: 'prosthetic_orders',
+  );
+
+  /// Prosthetic Hub → New order creation wizard.
+  static const AppRoute orderCreate = AppRoute(
+    path: '/prosthetic-hub/orders/new',
+    name: 'order_create',
+  );
+
+  /// Prosthetic Hub → Order detail / status (`:orderId` path param).
+  static const AppRoute orderDetail = AppRoute(
+    path: '/prosthetic-hub/orders/:orderId',
+    name: 'order_detail',
+  );
+
+  /// Prosthetic Hub → Care reminders schedule & management.
+  static const AppRoute careReminders = AppRoute(
+    path: '/prosthetic-hub/reminders',
+    name: 'care_reminders',
+  );
+
   /// Screen 18 — Health & Consultation (booking & history).
   static const AppRoute consult = AppRoute(
     path: '/consult',
