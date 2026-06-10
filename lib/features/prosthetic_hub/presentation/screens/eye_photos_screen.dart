@@ -303,7 +303,8 @@ class _PhotoTile extends StatelessWidget {
                     ? Image.network(
                         photo.signedUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _PlaceholderImage(cs: cs),
+                        errorBuilder: (context, error, stack) =>
+                            _PlaceholderImage(cs: cs),
                       )
                     : _PlaceholderImage(cs: cs),
               ),

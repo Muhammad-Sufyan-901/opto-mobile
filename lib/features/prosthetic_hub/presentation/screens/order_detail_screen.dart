@@ -19,7 +19,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:opto/core/accessibility/accessibility.dart';
-import 'package:opto/core/accessibility/haptic_patterns.dart';
 import 'package:opto/core/constants/prosthetic_enums.dart';
 import 'package:opto/features/prosthetic_hub/domain/entities/prosthetic_order_entity.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/orders/orders_bloc.dart';
