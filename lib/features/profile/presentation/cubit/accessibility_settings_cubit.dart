@@ -97,7 +97,7 @@ class AccessibilitySettingsCubit extends Cubit<AccessibilitySettingsEntity> {
 
   /// Change the TTS speaking rate (0.0–1.0) immediately and persist.
   Future<void> updateSpeakingRate(double rate) async =>
-      _updateField((s) => s.copyWith(speakingRate: rate));
+      _updateField((s) => s.copyWith(speakingRate: rate.clamp(0.0, 1.0)));
 
   /// Reset all settings to the Opto defaults.
   ///
