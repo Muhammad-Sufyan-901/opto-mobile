@@ -36,6 +36,9 @@ import 'package:opto/features/prosthetic_hub/presentation/screens/anthropometric
 import 'package:opto/features/prosthetic_hub/presentation/bloc/anthropometric/anthropometric_cubit.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/eye_photos_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/eye_photos/eye_photos_cubit.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/orders_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/order_detail_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/orders/orders_bloc.dart';
 import 'package:opto/features/connect/presentation/screens/community_screen.dart';
 import 'package:opto/features/profile/presentation/screens/profile_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
@@ -385,22 +388,33 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: 'orders',
           name: AppRoutes.prostheticOrders.name,
-          builder: (context, state) =>
-              const Scaffold(body: Center(child: Text('Coming soon'))),
+          builder: (context, state) => BlocProvider(
+            create: (_) => sl<OrdersBloc>(),
+            child: const OrdersScreen(),
+          ),
           routes: [
             // New order wizard — registered before :orderId to avoid shadowing
             GoRoute(
               path: 'new',
               name: AppRoutes.orderCreate.name,
-              builder: (context, state) =>
-                  const Scaffold(body: Center(child: Text('Coming soon'))),
+              builder: (context, state) => BlocProvider(
+                create: (_) => sl<OrdersBloc>(),
+                child: const Scaffold(
+                  body: Center(child: Text('New order — coming soon')),
+                ),
+              ),
             ),
             // Order detail
             GoRoute(
               path: ':orderId',
               name: AppRoutes.orderDetail.name,
-              builder: (context, state) =>
-                  const Scaffold(body: Center(child: Text('Coming soon'))),
+              builder: (context, state) {
+                final orderId = state.pathParameters['orderId']!;
+                return BlocProvider(
+                  create: (_) => sl<OrdersBloc>(),
+                  child: OrderDetailScreen(orderId: orderId),
+                );
+              },
             ),
           ],
         ),

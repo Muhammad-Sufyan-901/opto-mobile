@@ -21,6 +21,7 @@ import 'dart:typed_data';
 import 'package:opto/features/prosthetic_hub/data/models/anthropometric_model.dart';
 import 'package:opto/features/prosthetic_hub/data/models/care_tutorial_model.dart';
 import 'package:opto/features/prosthetic_hub/data/models/eye_photo_model.dart';
+import 'package:opto/features/prosthetic_hub/data/models/prosthetic_order_model.dart';
 import 'package:opto/features/prosthetic_hub/data/models/prosthetic_product_model.dart';
 import 'package:opto/features/prosthetic_hub/data/models/vendor_model.dart';
 
@@ -111,6 +112,33 @@ abstract class ProstheticRemoteDataSource {
 
   /// Returns the Storage path for [photoId] (needed before deleting the object).
   Future<String?> getEyePhotoStoragePath(String photoId);
+
+  // ── prosthetic_orders ─────────────────────────────────────────────────────
+
+  /// Returns all orders for the current user, newest first.
+  Future<List<ProstheticOrderModel>> getMyOrders();
+
+  /// Returns a single order by [orderId].
+  ///
+  /// Throws [ServerFailure('Order not found')] on PGRST116.
+  Future<ProstheticOrderModel> getOrderById(String orderId);
+
+  /// Inserts a new `prosthetic_orders` row with status = 'draft'.
+  Future<ProstheticOrderModel> insertOrder({
+    required String productId,
+    required int totalIdr,
+    String? anthropometricId,
+    String status,
+  });
+
+  /// Updates [orderId]'s [consent_given] flag to true.
+  Future<ProstheticOrderModel> updateOrderConsent(String orderId);
+
+  /// Updates [orderId]'s status column.
+  Future<ProstheticOrderModel> updateOrderStatus(
+    String orderId,
+    String newStatus,
+  );
 }
 
 // =============================================================================
@@ -398,6 +426,122 @@ class ProstheticRemoteDataSourceImpl implements ProstheticRemoteDataSource {
           .eq('id', photoId)
           .maybeSingle();
       return row?['storage_path'] as String?;
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  /// Explicit column list for `prosthetic_orders`.
+  ///
+  /// Never join `anthropometric_data` or `eye_photos` into this select.
+  static const String _orderColumns =
+      'id, user_id, product_id, anthropometric_id, '
+      'status, consent_given, total_idr, created_at';
+
+  // ── prosthetic_orders ─────────────────────────────────────────────────────
+
+  @override
+  Future<List<ProstheticOrderModel>> getMyOrders() async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw const AuthFailure('Not authenticated');
+    try {
+      final rows = await _client
+          .from('prosthetic_orders')
+          .select(_orderColumns)
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+      return rows.map((r) => ProstheticOrderModel.fromJson(r)).toList();
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      if (e is AuthFailure) rethrow;
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<ProstheticOrderModel> getOrderById(String orderId) async {
+    try {
+      final row = await _client
+          .from('prosthetic_orders')
+          .select(_orderColumns)
+          .eq('id', orderId)
+          .single();
+      return ProstheticOrderModel.fromJson(row);
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST116') {
+        throw const ServerFailure('Order not found');
+      }
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      if (e is ServerFailure) rethrow;
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<ProstheticOrderModel> insertOrder({
+    required String productId,
+    required int totalIdr,
+    String? anthropometricId,
+    String status = 'draft',
+  }) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw const AuthFailure('Not authenticated');
+    try {
+      final row = await _client
+          .from('prosthetic_orders')
+          .insert({
+            'user_id': userId,
+            'product_id': productId,
+            'total_idr': totalIdr,
+            'status': status,
+            'consent_given': false,
+            'anthropometric_id': ?anthropometricId,
+          })
+          .select(_orderColumns)
+          .single();
+      return ProstheticOrderModel.fromJson(row);
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      if (e is AuthFailure) rethrow;
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<ProstheticOrderModel> updateOrderConsent(String orderId) async {
+    try {
+      final row = await _client
+          .from('prosthetic_orders')
+          .update({'consent_given': true})
+          .eq('id', orderId)
+          .select(_orderColumns)
+          .single();
+      return ProstheticOrderModel.fromJson(row);
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<ProstheticOrderModel> updateOrderStatus(
+    String orderId,
+    String newStatus,
+  ) async {
+    try {
+      final row = await _client
+          .from('prosthetic_orders')
+          .update({'status': newStatus})
+          .eq('id', orderId)
+          .select(_orderColumns)
+          .single();
+      return ProstheticOrderModel.fromJson(row);
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
