@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:opto/core/constants/app_dimensions.dart';
@@ -62,11 +63,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                   behavior: SnackBarBehavior.floating,
                 ),
               );
-              SemanticsService.sendAnnouncement(
-                View.of(ctx),
-                s.message,
-                TextDirection.ltr,
-              );
+              announce(ctx, s.message);
             },
             authenticated: (_) => ctx.go(AppRoutes.home.path),
           );

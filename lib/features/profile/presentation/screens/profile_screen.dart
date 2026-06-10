@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
@@ -69,11 +70,7 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      SemanticsService.sendAnnouncement(
-        View.of(context),
-        'Profile.',
-        TextDirection.ltr,
-      );
+      announce(context, 'Profile.');
     });
   }
 

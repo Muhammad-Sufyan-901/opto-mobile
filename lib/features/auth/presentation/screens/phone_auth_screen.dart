@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
+
+import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -63,11 +64,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                   behavior: SnackBarBehavior.floating,
                 ),
               );
-              SemanticsService.sendAnnouncement(
-                View.of(ctx),
-                s.message,
-                TextDirection.ltr,
-              );
+              announce(ctx, s.message);
             },
           );
         },

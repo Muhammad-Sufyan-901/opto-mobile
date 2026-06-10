@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
+import 'package:opto/core/accessibility/haptic_controller.dart';
 import 'package:opto/core/config/app_info.dart';
 import 'package:opto/core/constants/app_theme_mode.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
@@ -39,6 +40,9 @@ class App extends StatelessWidget {
         },
         child: BlocBuilder<AccessibilitySettingsCubit, AccessibilitySettingsEntity>(
           builder: (context, settings) {
+            // Keep HapticController in sync with user settings.
+            sl<HapticController>().value = settings.hapticIntensity;
+
             final (ThemeData theme, ThemeData? dark, ThemeMode flutterMode) =
                 switch (settings.theme) {
               AppThemeMode.system => (

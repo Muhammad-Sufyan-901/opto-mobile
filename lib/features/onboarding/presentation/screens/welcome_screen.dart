@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:go_router/go_router.dart';
+
+import 'package:opto/core/accessibility/accessibility.dart';
 
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
@@ -63,10 +64,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     setState(() => _currentIndex = index);
 
     // Announce slide change for screen readers.
-    SemanticsService.sendAnnouncement(
-      View.of(context),
+    announce(
+      context,
       '${_slides[index].title}. Step ${index + 1} of ${_slides.length}',
-      TextDirection.ltr,
     );
   }
 

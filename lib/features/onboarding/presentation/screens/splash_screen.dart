@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:go_router/go_router.dart';
+
+import 'package:opto/core/accessibility/accessibility.dart';
 
 import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/features/onboarding/presentation/widgets/opto_brand_mark.dart';
@@ -35,11 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // Announce the brand tagline on the first rendered frame.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      SemanticsService.sendAnnouncement(
-        View.of(context),
-        'Opto. Your world, made clear.',
-        TextDirection.ltr,
-      );
+      announce(context, 'Opto. Your world, made clear.');
     });
 
     // Auto-navigate to the Welcome carousel.

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
+
+import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
@@ -58,11 +59,7 @@ class _AuraVoiceScreenState extends State<AuraVoiceScreen>
     // Announce screen to screen readers after the first frame renders.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      SemanticsService.sendAnnouncement(
-        View.of(context),
-        'Aura Voice. Say a command or question.',
-        TextDirection.ltr,
-      );
+      announce(context, 'Aura Voice. Say a command or question.');
     });
   }
 

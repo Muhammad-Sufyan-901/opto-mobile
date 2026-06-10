@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:opto/core/accessibility/haptic_controller.dart';
 import 'package:opto/core/config/secure_storage_config.dart';
 import 'package:opto/core/utils/secure_storage_helper.dart';
 import 'package:opto/features/auth/data/datasources/auth_remote_data_source.dart';
@@ -27,6 +28,10 @@ Future<void> init() async {
   // ===============================================================
   // CORE LAYERS
   // ===============================================================
+
+  // HapticController — core-level haptic preference holder.
+  // Kept in sync with AccessibilitySettingsCubit via app.dart.
+  sl.registerLazySingleton<HapticController>(() => HapticController());
 
   // Supabase client — initialized in main.dart before this runs.
   // Repositories depend on this; widgets must never call it directly.

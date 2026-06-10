@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:go_router/go_router.dart';
+
+import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
@@ -26,11 +27,7 @@ class _ConsultScreenState extends State<ConsultScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      SemanticsService.sendAnnouncement(
-        View.of(context),
-        'Consult. Next appointment in 2 hours with Dr. Anwar Anggara.',
-        TextDirection.ltr,
-      );
+      announce(context, 'Consult. Next appointment in 2 hours with Dr. Anwar Anggara.');
     });
   }
 
