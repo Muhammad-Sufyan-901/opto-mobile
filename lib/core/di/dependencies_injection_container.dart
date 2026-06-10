@@ -24,12 +24,15 @@ import 'package:opto/features/profile/domain/repositories/profile_repository.dar
 import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
 import 'package:opto/features/prosthetic_hub/data/datasources/prosthetic_remote_data_source.dart';
+import 'package:opto/features/prosthetic_hub/data/repositories/anthropometric_repository_impl.dart';
 import 'package:opto/features/prosthetic_hub/data/repositories/catalog_repository_impl.dart';
 import 'package:opto/features/prosthetic_hub/data/repositories/tutorials_repository_impl.dart';
+import 'package:opto/features/prosthetic_hub/domain/repositories/anthropometric_repository.dart';
 import 'package:opto/features/prosthetic_hub/domain/repositories/catalog_repository.dart';
 import 'package:opto/features/prosthetic_hub/domain/repositories/tutorials_repository.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/catalog/catalog_bloc.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/product_detail/product_detail_bloc.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/anthropometric/anthropometric_cubit.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/tutorials/tutorials_cubit.dart';
 
 // Service Locator
@@ -167,5 +170,17 @@ Future<void> init() async {
 
   sl.registerFactory<TutorialsCubit>(
     () => TutorialsCubit(sl<TutorialsRepository>()),
+  );
+
+  // ── Prosthetic Hub — Anthropometric 🔒 ───────────────────────────────────
+
+  sl.registerLazySingleton<AnthropometricRepository>(
+    () => AnthropometricRepositoryImpl(
+      remoteDataSource: sl<ProstheticRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerFactory<AnthropometricCubit>(
+    () => AnthropometricCubit(sl<AnthropometricRepository>()),
   );
 }

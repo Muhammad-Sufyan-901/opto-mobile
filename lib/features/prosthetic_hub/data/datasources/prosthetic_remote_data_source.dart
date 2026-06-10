@@ -15,6 +15,7 @@ import 'package:opto/core/constants/prosthetic_enums.dart';
 import 'package:opto/core/error/failures.dart';
 import 'package:opto/core/supabase/supabase_client_provider.dart';
 import 'package:opto/core/supabase/supabase_error_mapper.dart';
+import 'package:opto/features/prosthetic_hub/data/models/anthropometric_model.dart';
 import 'package:opto/features/prosthetic_hub/data/models/care_tutorial_model.dart';
 import 'package:opto/features/prosthetic_hub/data/models/prosthetic_product_model.dart';
 import 'package:opto/features/prosthetic_hub/data/models/vendor_model.dart';
@@ -63,6 +64,18 @@ abstract class ProstheticRemoteDataSource {
   ///
   /// Throws [ServerFailure('Tutorial not found')] on PGRST116.
   Future<CareTutorialModel> getTutorialById(String id);
+
+  // ── anthropometric_data 🔒 ────────────────────────────────────────────────
+
+  /// Returns the current user's measurement record, or `null` if none exists.
+  ///
+  /// 🔒 Scoped to [auth.currentUser.id] — never expose this in catalog/feed.
+  Future<AnthropometricModel?> getMyAnthropometric();
+
+  /// Creates or updates the current user's measurement record.
+  ///
+  /// 🔒 Inserts with [user_id = auth.uid()] (required by RLS insert policy).
+  Future<void> upsertAnthropometric(Map<String, dynamic> fields);
 }
 
 // =============================================================================
@@ -207,6 +220,55 @@ class ProstheticRemoteDataSourceImpl implements ProstheticRemoteDataSource {
       if (e.code == 'PGRST116') return null;
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  /// Explicit column list for `anthropometric_data`.
+  ///
+  /// 🔒 NEVER embed these columns in catalog, vendor, or tutorial selects.
+  static const String _anthropometricColumns =
+      'id, user_id, socket_size_mm, curvature, iris_diameter_mm, '
+      'matched_iris_hex, source, created_at';
+
+  // ── anthropometric_data 🔒 ────────────────────────────────────────────────
+
+  @override
+  Future<AnthropometricModel?> getMyAnthropometric() async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw const AuthFailure('Not authenticated');
+    try {
+      final row = await _client
+          .from('anthropometric_data')
+          .select(_anthropometricColumns)
+          .eq('user_id', userId)
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+      if (row == null) return null;
+      return AnthropometricModel.fromJson(row);
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      if (e is AuthFailure) rethrow;
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<void> upsertAnthropometric(Map<String, dynamic> fields) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw const AuthFailure('Not authenticated');
+    // Ensure user_id is always set from the session — client cannot spoof it.
+    final payload = {...fields, 'user_id': userId};
+    try {
+      await _client
+          .from('anthropometric_data')
+          .upsert(payload, onConflict: 'user_id');
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      if (e is AuthFailure) rethrow;
       throw ServerFailure(e.toString());
     }
   }
