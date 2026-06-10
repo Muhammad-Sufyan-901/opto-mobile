@@ -3,7 +3,6 @@ import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:opto/core/config/secure_storage_config.dart';
-import 'package:opto/core/theme/theme_cubit.dart';
 import 'package:opto/core/utils/secure_storage_helper.dart';
 import 'package:opto/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:opto/features/auth/data/repositories/auth_repository_impl.dart';
@@ -28,11 +27,6 @@ Future<void> init() async {
   // ===============================================================
   // CORE LAYERS
   // ===============================================================
-
-  // Theme — persisted to the 'settings_box' opened by HiveClient.init().
-  sl.registerLazySingleton<ThemeCubit>(
-    () => ThemeCubit(Hive.box('settings_box')),
-  );
 
   // Supabase client — initialized in main.dart before this runs.
   // Repositories depend on this; widgets must never call it directly.

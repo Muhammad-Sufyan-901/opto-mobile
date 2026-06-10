@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/constants/app_theme_mode.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
 import 'package:opto/features/setup/presentation/widgets/setup_slider_block.dart';
 import 'package:opto/features/setup/presentation/widgets/setup_step_scaffold.dart';
 import 'package:opto/features/setup/presentation/widgets/setup_toggle_tile.dart';
@@ -15,10 +18,8 @@ import 'package:opto/features/setup/presentation/widgets/setup_toggle_tile.dart'
 ///
 /// Lets the user drag a text-size slider and toggle high-contrast mode.
 /// The preview card updates its sample text size in real-time to show the
-/// effect. High-contrast toggle is local UI state for now.
-///
-/// TODO: wire the high-contrast toggle to [ThemeCubit.setMode] so it
-/// persists across sessions and applies to the whole app immediately.
+/// effect. Both controls are wired to [AccessibilitySettingsCubit] so changes
+/// persist across sessions and apply to the whole app immediately.
 ///
 /// Layout via [SetupStepScaffold] (step 2/4).
 class DisplaySetupScreen extends StatefulWidget {
@@ -29,12 +30,20 @@ class DisplaySetupScreen extends StatefulWidget {
 }
 
 class _DisplaySetupScreenState extends State<DisplaySetupScreen> {
-  // 68 = design default (slider at 68%), maps to a font size in [16, 32].
   double _textSizeSlider = 68.0;
-  bool _highContrast = true; // design default: on
+  bool _highContrast = true;
 
   /// Map slider 0-100 to a font size 16–32 dp for the live preview.
   double get _previewFontSize => 16 + (_textSizeSlider / 100) * 16;
+
+  @override
+  void initState() {
+    super.initState();
+    final settings = context.read<AccessibilitySettingsCubit>().state;
+    // Map textScale 1.0–3.0 → slider 0–100
+    _textSizeSlider = ((settings.textScale - 1.0) / 2.0 * 100).clamp(0.0, 100.0);
+    _highContrast = settings.theme == AppThemeMode.highContrast;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +152,12 @@ class _DisplaySetupScreenState extends State<DisplaySetupScreen> {
           SetupSliderBlock(
             label: 'Text size',
             value: _textSizeSlider,
-            onChanged: (v) => setState(() => _textSizeSlider = v),
+            onChanged: (v) {
+              setState(() => _textSizeSlider = v);
+              // Map slider 0–100 → textScale 1.0–3.0
+              final scale = (1.0 + (v / 100.0) * 2.0).clamp(1.0, 3.0);
+              context.read<AccessibilitySettingsCubit>().updateTextScale(scale);
+            },
             leading: Text(
               'A',
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -163,15 +177,17 @@ class _DisplaySetupScreenState extends State<DisplaySetupScreen> {
           const SizedBox(height: AppDimensions.space24),
 
           // ── High contrast toggle ───────────────────────
-          // TODO: wire `_highContrast` to ThemeCubit.setMode(
-          //   _highContrast ? AppThemeMode.highContrast : AppThemeMode.light
-          // ) once the setup flow persists preferences.
           SetupToggleTile(
             icon: Icons.contrast,
             title: 'High contrast',
             desc: 'Bolder text and stronger edges',
             value: _highContrast,
-            onChanged: (v) => setState(() => _highContrast = v),
+            onChanged: (v) {
+              setState(() => _highContrast = v);
+              context.read<AccessibilitySettingsCubit>().updateTheme(
+                v ? AppThemeMode.highContrast : AppThemeMode.light,
+              );
+            },
           ),
 
           const SizedBox(height: AppDimensions.space8),
