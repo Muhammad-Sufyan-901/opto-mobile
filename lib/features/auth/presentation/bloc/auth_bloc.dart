@@ -9,7 +9,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:opto/core/error/failures.dart';
-import 'package:opto/features/auth/domain/repositories/auth_repository.dart';
+import 'package:opto/features/auth/domain/repositories/auth_repository.dart'
+    show AuthRepository, SignUpOutcome;
 import 'package:opto/features/auth/presentation/bloc/auth_event.dart';
 import 'package:opto/features/auth/presentation/bloc/auth_state.dart';
 
@@ -71,12 +72,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthState.loading());
     try {
-      await _auth.signUp(
+      final outcome = await _auth.signUp(
         email: event.email,
         password: event.password,
         fullName: event.fullName,
       );
-      // Authenticated state follows from _onAuthStateChanged.
+      if (outcome == SignUpOutcome.emailConfirmationRequired) {
+        // No session yet — the user must click the confirmation link.
+        // Emit the new state so the register screen can stop the spinner and
+        // show the "check your email" panel.
+        emit(AuthState.emailConfirmationRequired(email: event.email));
+      }
+      // SignUpOutcome.authenticated → AuthAuthenticated arrives via
+      // _onAuthStateChanged when the session stream fires.
     } on Failure catch (f) {
       emit(AuthState.error(message: f.message));
     } catch (e) {

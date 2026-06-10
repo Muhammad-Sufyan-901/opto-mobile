@@ -19,8 +19,12 @@ import 'package:opto/features/auth/presentation/widgets/auth_scaffold.dart';
 /// **Full name** and **Confirm password**.
 ///
 /// Submit dispatches [AuthEvent.signUp] to [AuthBloc].
-/// On [AuthAuthenticated]: navigates to [AppRoutes.home].
-/// On [AuthError]: floating SnackBar + screen-reader live-region announcement.
+///
+/// Possible outcomes:
+/// - [AuthAuthenticated]: navigates to [AppRoutes.home] (auto-confirm ON, rare).
+/// - [AuthEmailConfirmationRequired]: form is replaced by a "Check your email"
+///   panel and the outcome is announced to the screen reader.
+/// - [AuthError]: floating SnackBar + screen-reader live-region announcement.
 class EmailRegisterScreen extends StatefulWidget {
   const EmailRegisterScreen({super.key});
 
@@ -61,7 +65,9 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
       value: sl<AuthBloc>(),
       child: BlocConsumer<AuthBloc, AuthState>(
         listenWhen: (prev, curr) =>
-            curr is AuthError || curr is AuthAuthenticated,
+            curr is AuthError ||
+            curr is AuthAuthenticated ||
+            curr is AuthEmailConfirmationRequired,
         listener: (ctx, state) {
           state.mapOrNull(
             error: (s) {
@@ -78,14 +84,30 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
               );
             },
             authenticated: (_) => ctx.go(AppRoutes.home.path),
+            emailConfirmationRequired: (s) {
+              // Announce for screen-reader users before the UI rebuilds.
+              SemanticsService.sendAnnouncement(
+                View.of(ctx),
+                'Account created. Check your email at ${s.email} for a '
+                'confirmation link, then sign in.',
+                TextDirection.ltr,
+              );
+            },
           );
         },
         buildWhen: (prev, curr) =>
             curr is AuthLoading ||
             curr is AuthInitial ||
             curr is AuthError ||
-            curr is AuthAuthenticated,
+            curr is AuthAuthenticated ||
+            curr is AuthEmailConfirmationRequired,
         builder: (ctx, state) {
+          // ── Email confirmation panel ──────────────────────────────────────
+          if (state is AuthEmailConfirmationRequired) {
+            return _ConfirmationPanel(email: state.email);
+          }
+
+          // ── Registration form ─────────────────────────────────────────────
           final isLoading = state is AuthLoading;
           final ThemeData theme = Theme.of(ctx);
           final Color ink2 =
@@ -216,6 +238,104 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Confirmation panel — shown after a successful sign-up when the Supabase
+// project requires email confirmation before a session can be started.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ConfirmationPanel extends StatelessWidget {
+  const _ConfirmationPanel({required this.email});
+
+  final String email;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme cs = theme.colorScheme;
+    final Color ink2 =
+        theme.extension<AppExtendedCustomColors>()?.ink2 ??
+            cs.onSurfaceVariant;
+
+    return AuthFormScaffold(
+      ctaLabel: 'Back to sign in',
+      ctaSuffixIcon: Icons.arrow_forward,
+      onCta: () => context.go(AppRoutes.authEmail.path),
+      isCtaLoading: false,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: AppDimensions.space8),
+
+          // ── Envelope icon ──────────────────────────────────────
+          ExcludeSemantics(
+            child: Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: cs.primaryContainer,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusRow),
+              ),
+              child: Icon(
+                Icons.mark_email_unread_outlined,
+                size: 32,
+                color: cs.primary,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: AppDimensions.space24),
+
+          // ── Title ──────────────────────────────────────────────
+          Semantics(
+            header: true,
+            child: Text(
+              'Check your email',
+              style: theme.textTheme.displaySmall?.copyWith(
+                color: cs.onSurface,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: AppDimensions.space12),
+
+          // ── Body ───────────────────────────────────────────────
+          Text(
+            'We sent a confirmation link to',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: ink2,
+              fontSize: 16.5,
+            ),
+          ),
+
+          const SizedBox(height: AppDimensions.space4),
+
+          Text(
+            email,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: cs.onSurface,
+              fontSize: 16.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+
+          const SizedBox(height: AppDimensions.space12),
+
+          Text(
+            'Click the link in the email to confirm your account, '
+            'then come back and sign in.',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: ink2,
+              fontSize: 15,
+            ),
+          ),
+
+          const SizedBox(height: AppDimensions.space32),
+        ],
       ),
     );
   }

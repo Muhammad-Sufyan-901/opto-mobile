@@ -22,6 +22,12 @@ sealed class AuthState with _$AuthState {
   /// An OTP has been sent — the user should now enter it.
   const factory AuthState.otpSent({required String phone}) = AuthOtpSent;
 
+  /// Sign-up succeeded but the user must confirm their email before they can
+  /// sign in.  No Supabase session exists yet — [email] is the address the
+  /// confirmation link was sent to.
+  const factory AuthState.emailConfirmationRequired({required String email}) =
+      AuthEmailConfirmationRequired;
+
   /// An auth operation failed with [message].
   const factory AuthState.error({required String message}) = AuthError;
 }

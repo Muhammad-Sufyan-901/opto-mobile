@@ -26,7 +26,7 @@ Future<void> main() async {
     // ignore: deprecated_member_use
     // publishableKey is the new name for anonKey in supabase_flutter >= 2.14.
     // This comment can be removed once the upstream API stabilises.
-    publishableKey: dotenv.env[AppEnvKeys.supabaseAnonKey] ?? '',
+    publishableKey: dotenv.env[AppEnvKeys.supabasePublishableKey] ?? '',
     debug: false,
   );
 

@@ -8,7 +8,8 @@ import 'package:flutter/foundation.dart' show debugPrint;
 
 import 'package:opto/core/utils/secure_storage_helper.dart';
 import 'package:opto/features/auth/data/datasources/auth_remote_data_source.dart';
-import 'package:opto/features/auth/domain/repositories/auth_repository.dart';
+import 'package:opto/features/auth/domain/repositories/auth_repository.dart'
+    show AuthRepository, SignUpOutcome;
 import 'package:opto/features/profile/domain/repositories/accessibility_settings_repository.dart';
 
 /// Production implementation of [AuthRepository].
@@ -43,7 +44,7 @@ class AuthRepositoryImpl implements AuthRepository {
   // ── sign up ────────────────────────────────────────────────────────────────
 
   @override
-  Future<void> signUp({
+  Future<SignUpOutcome> signUp({
     required String email,
     required String password,
     String? fullName,
@@ -54,26 +55,37 @@ class AuthRepositoryImpl implements AuthRepository {
       fullName: fullName,
     );
 
-    // Upsert a minimal `profiles` row so RLS policies have a row to work with
-    // even before the user completes onboarding.
+    // When "Confirm email" is ON (the hosted Supabase default), signUp returns
+    // a User but a null Session — the account exists but the user must click the
+    // confirmation link before they can sign in.  In that case we skip the
+    // profile upsert: without a session auth.uid() is null and the RLS INSERT
+    // policy would reject it anyway.
     //
-    // If sign-up requires email confirmation the session may be null here —
-    // skip the upsert in that case (the profile trigger or onboarding will
-    // create it after the user confirms).
-    final user = response.user;
-    if (user != null) {
-      try {
-        // CRITICAL 1 & 2: delegate to data source; 'role' is NOT in the payload.
-        await _remote.upsertMinimalProfile(
-          userId: user.id,
-          fullName: fullName,
-        );
-        await _storage.saveRole('user');
-      } on Object catch (e) {
-        // Profile upsert failure should not block sign-up — the auth succeeded.
-        debugPrint('[AuthRepositoryImpl] profile upsert warning: $e');
+    // When confirmation is OFF (or the project uses auto-confirm), a session IS
+    // returned immediately — upsert the minimal profile row and persist the role
+    // so onboarding can read it.  The auth-state stream will fire and the BLoC
+    // will emit AuthAuthenticated on its own.
+    if (response.session != null) {
+      // Session available — user is authenticated immediately.
+      final user = response.user;
+      if (user != null) {
+        try {
+          // CRITICAL 1 & 2: delegate to data source; 'role' is NOT in the payload.
+          await _remote.upsertMinimalProfile(
+            userId: user.id,
+            fullName: fullName,
+          );
+          await _storage.saveRole('user');
+        } on Object catch (e) {
+          // Profile upsert failure should not block sign-up — the auth succeeded.
+          debugPrint('[AuthRepositoryImpl] profile upsert warning: $e');
+        }
       }
+      return SignUpOutcome.authenticated;
     }
+
+    // No session — email confirmation is required before sign-in is possible.
+    return SignUpOutcome.emailConfirmationRequired;
   }
 
   // ── OTP ───────────────────────────────────────────────────────────────────

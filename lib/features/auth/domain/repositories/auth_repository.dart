@@ -6,6 +6,23 @@
 // NOTE: This file must NOT import `supabase_flutter`, `hive`, or any
 // infrastructure package — domain layer stays pure Dart.
 
+/// Outcome of a sign-up operation.
+///
+/// When the Supabase project has "Confirm email" enabled the new account is
+/// created but no session is started immediately — the user must click the
+/// link in the confirmation email first.  The BLoC uses this value to
+/// decide whether to emit [AuthAuthenticated] (session started, rare when
+/// auto-confirm is ON) or [AuthEmailConfirmationRequired] (the common path
+/// when confirmation is required).
+enum SignUpOutcome {
+  /// A session was returned — the user is authenticated immediately.
+  authenticated,
+
+  /// The account was created but requires email confirmation before
+  /// the user can sign in.
+  emailConfirmationRequired,
+}
+
 /// Abstract contract for auth operations.
 ///
 /// All methods throw a [Failure] subclass
@@ -24,9 +41,11 @@ abstract class AuthRepository {
   /// Creates a new account with email + password, optionally setting
   /// the user's full name in the `profiles` row.
   ///
+  /// Returns a [SignUpOutcome] that tells the BLoC whether the user is
+  /// already authenticated or must confirm their email first.
   /// Throws [AuthFailure] if the email is already registered or
   /// the password does not meet Supabase's strength policy.
-  Future<void> signUp({
+  Future<SignUpOutcome> signUp({
     required String email,
     required String password,
     String? fullName,

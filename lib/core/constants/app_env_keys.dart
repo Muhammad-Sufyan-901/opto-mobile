@@ -9,5 +9,5 @@ abstract class AppEnvKeys {
   // Supabase
   // Obtain from: Supabase Dashboard → Settings → API
   static const String supabaseUrl = 'SUPABASE_URL';
-  static const String supabaseAnonKey = 'SUPABASE_ANON_KEY';
+  static const String supabasePublishableKey = 'SUPABASE_PUBLISHABLE_KEY';
 }

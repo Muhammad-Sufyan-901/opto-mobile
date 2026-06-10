@@ -69,10 +69,17 @@ class SupabaseErrorMapper {
   static Failure fromAuth(AuthException e) {
     final message = e.message.toLowerCase();
 
-    if (message.contains('invalid login credentials') ||
-        message.contains('email not confirmed')) {
+    // "Email not confirmed" is a distinct case from wrong credentials —
+    // the user registered but hasn't clicked the confirmation link yet.
+    if (message.contains('email not confirmed')) {
       return const AuthFailure(
-        'Email atau kata sandi tidak valid. Silakan periksa kembali.',
+        'Please confirm your email first — we sent a confirmation link to your inbox.',
+      );
+    }
+
+    if (message.contains('invalid login credentials')) {
+      return const AuthFailure(
+        'Email or password is incorrect. Please check and try again.',
       );
     }
 
