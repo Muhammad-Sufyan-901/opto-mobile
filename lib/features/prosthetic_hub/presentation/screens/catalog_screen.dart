@@ -31,17 +31,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
   String? _irisColorFilter;
   String? _sizeFilter;
 
-  bool _announced = false;
-
   @override
   void initState() {
     super.initState();
     _loadCatalog();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _announced) return;
-      _announced = true;
-      announce(context, 'Prosthetic catalogue.');
-    });
   }
 
   void _loadCatalog() {
@@ -81,26 +74,34 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
             // ── Content ──────────────────────────────────────────────────────
             Expanded(
-              child: BlocConsumer<CatalogBloc, CatalogState>(
+              child: BlocListener<CatalogBloc, CatalogState>(
+                listenWhen: (prev, curr) =>
+                    curr is CatalogLoaded && prev is! CatalogLoaded,
                 listener: (context, state) {
-                  // No side-effect listeners needed at this stage.
+                  announce(
+                    context,
+                    'Prosthetic catalogue. '
+                    '${(state as CatalogLoaded).products.length} products.',
+                  );
                 },
-                builder: (context, state) {
-                  return switch (state) {
-                    CatalogInitial() => const SizedBox.shrink(),
-                    CatalogLoading() => const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    CatalogLoaded(:final products) => products.isEmpty
-                        ? _EmptyState(cs: cs)
-                        : _ProductList(products: products),
-                    ProductLoaded() => const SizedBox.shrink(),
-                    CatalogError(:final message) => _ErrorState(
-                        message: message,
-                        onRetry: _loadCatalog,
-                      ),
-                  };
-                },
+                child: BlocBuilder<CatalogBloc, CatalogState>(
+                  builder: (context, state) {
+                    return switch (state) {
+                      CatalogInitial() => const SizedBox.shrink(),
+                      CatalogLoading() => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      CatalogLoaded(:final products) => products.isEmpty
+                          ? _EmptyState(cs: cs)
+                          : _ProductList(products: products),
+                      ProductLoaded() => const SizedBox.shrink(),
+                      CatalogError(:final message) => _ErrorState(
+                          message: message,
+                          onRetry: _loadCatalog,
+                        ),
+                    };
+                  },
+                ),
               ),
             ),
           ],

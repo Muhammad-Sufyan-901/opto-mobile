@@ -52,7 +52,7 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     try {
       final product = await _repo.getProductById(event.productId);
 
-      // Fetch vendor in parallel only if the product has a vendor FK.
+      // Fetch product first; vendor fetch must follow because vendorId is unknown until product loads.
       final vendorFuture = product.vendorId != null
           ? _repo.getVendor(product.vendorId!)
           : Future.value(null);
