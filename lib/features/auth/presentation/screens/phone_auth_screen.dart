@@ -164,6 +164,8 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                               FilteringTextInputFormatter.digitsOnly,
                             ],
                             textInputAction: TextInputAction.done,
+                            expands: true,
+                            maxLines: null,
                             onFieldSubmitted: (_) =>
                                 isLoading ? null : _handleSubmit(),
                             style: theme.textTheme.titleMedium?.copyWith(
