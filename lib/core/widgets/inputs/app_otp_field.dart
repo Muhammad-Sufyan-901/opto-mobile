@@ -87,12 +87,12 @@ class _AppOTPFieldState extends State<AppOTPField> {
                     ),
                     child: Text(
                       '-',
-                      style: TextStyle(
-                        color: widget.disabled
-                            ? Colors.grey.shade400
-                            : Colors.grey.shade500,
-                        fontSize: 18,
-                      ),
+                      // Use textTheme so textScaler and font family compose correctly.
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: widget.disabled
+                                ? Colors.grey.shade400
+                                : Colors.grey.shade500,
+                          ),
                     ),
                   ),
                 ],
