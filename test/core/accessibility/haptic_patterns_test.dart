@@ -17,7 +17,6 @@
 //
 // GetIt is reset in setUp/tearDown to prevent "already registered" errors.
 
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 
