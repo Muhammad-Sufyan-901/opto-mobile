@@ -33,21 +33,17 @@ enum ProductType {
       case 'care_kit':
         return ProductType.careKit;
       default:
+        assert(false, 'Unknown ProductType db value: "$value"');
         return ProductType.prosthesis;
     }
   }
 
   /// Canonical snake_case string written to Postgres.
-  String get dbValue {
-    switch (this) {
-      case ProductType.prosthesis:
-        return 'prosthesis';
-      case ProductType.selfCleaningCase:
-        return 'self_cleaning_case';
-      case ProductType.careKit:
-        return 'care_kit';
-    }
-  }
+  String get dbValue => switch (this) {
+        ProductType.prosthesis => 'prosthesis',
+        ProductType.selfCleaningCase => 'self_cleaning_case',
+        ProductType.careKit => 'care_kit',
+      };
 }
 
 // =============================================================================
@@ -88,25 +84,19 @@ enum TutorialCategory {
       case 'case_use':
         return TutorialCategory.caseUse;
       default:
+        assert(false, 'Unknown TutorialCategory db value: "$value"');
         return TutorialCategory.clean;
     }
   }
 
   /// Canonical snake_case string written to Postgres.
-  String get dbValue {
-    switch (this) {
-      case TutorialCategory.insert:
-        return 'insert';
-      case TutorialCategory.remove:
-        return 'remove';
-      case TutorialCategory.clean:
-        return 'clean';
-      case TutorialCategory.lubricate:
-        return 'lubricate';
-      case TutorialCategory.caseUse:
-        return 'case_use';
-    }
-  }
+  String get dbValue => switch (this) {
+        TutorialCategory.insert => 'insert',
+        TutorialCategory.remove => 'remove',
+        TutorialCategory.clean => 'clean',
+        TutorialCategory.lubricate => 'lubricate',
+        TutorialCategory.caseUse => 'case_use',
+      };
 }
 
 // =============================================================================
@@ -132,19 +122,16 @@ enum DataSource {
       case 'ocularist_record':
         return DataSource.ocularistRecord;
       default:
+        assert(false, 'Unknown DataSource db value: "$value"');
         return DataSource.selfMeasured;
     }
   }
 
   /// Canonical snake_case string written to Postgres.
-  String get dbValue {
-    switch (this) {
-      case DataSource.selfMeasured:
-        return 'self_measured';
-      case DataSource.ocularistRecord:
-        return 'ocularist_record';
-    }
-  }
+  String get dbValue => switch (this) {
+        DataSource.selfMeasured => 'self_measured',
+        DataSource.ocularistRecord => 'ocularist_record',
+      };
 }
 
 // =============================================================================
@@ -176,21 +163,17 @@ enum PhotoPurpose {
       case 'progress':
         return PhotoPurpose.progress;
       default:
+        assert(false, 'Unknown PhotoPurpose db value: "$value"');
         return PhotoPurpose.irisMatch;
     }
   }
 
   /// Canonical snake_case string written to Postgres.
-  String get dbValue {
-    switch (this) {
-      case PhotoPurpose.irisMatch:
-        return 'iris_match';
-      case PhotoPurpose.consultation:
-        return 'consultation';
-      case PhotoPurpose.progress:
-        return 'progress';
-    }
-  }
+  String get dbValue => switch (this) {
+        PhotoPurpose.irisMatch => 'iris_match',
+        PhotoPurpose.consultation => 'consultation',
+        PhotoPurpose.progress => 'progress',
+      };
 }
 
 // =============================================================================
@@ -241,27 +224,19 @@ enum OrderStatus {
       case 'cancelled':
         return OrderStatus.cancelled;
       default:
+        assert(false, 'Unknown OrderStatus db value: "$value"');
         return OrderStatus.draft;
     }
   }
 
   /// Canonical snake_case string written to Postgres.
-  String get dbValue {
-    switch (this) {
-      case OrderStatus.draft:
-        return 'draft';
-      case OrderStatus.submitted:
-        return 'submitted';
-      case OrderStatus.inReview:
-        return 'in_review';
-      case OrderStatus.inProduction:
-        return 'in_production';
-      case OrderStatus.shipped:
-        return 'shipped';
-      case OrderStatus.completed:
-        return 'completed';
-      case OrderStatus.cancelled:
-        return 'cancelled';
-    }
-  }
+  String get dbValue => switch (this) {
+        OrderStatus.draft => 'draft',
+        OrderStatus.submitted => 'submitted',
+        OrderStatus.inReview => 'in_review',
+        OrderStatus.inProduction => 'in_production',
+        OrderStatus.shipped => 'shipped',
+        OrderStatus.completed => 'completed',
+        OrderStatus.cancelled => 'cancelled',
+      };
 }

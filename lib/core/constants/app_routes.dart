@@ -40,7 +40,14 @@ abstract class AppRoutes {
     name: 'prosthetic_catalog',
   );
 
-  /// Prosthetic Hub → Product detail page (`:productId` path param).
+  /// Prosthetic Hub → Product detail page.
+  ///
+  /// Navigate with:
+  /// ```dart
+  /// context.goNamed(AppRoutes.prostheticProductDetail.name,
+  ///     pathParameters: {'productId': id});
+  /// ```
+  /// ⚠️ Do NOT use `.path` directly — it contains a `:productId` placeholder.
   static const AppRoute prostheticProductDetail = AppRoute(
     path: '/prosthetic-hub/catalog/:productId',
     name: 'prosthetic_product_detail',
@@ -52,7 +59,14 @@ abstract class AppRoutes {
     name: 'care_tutorials',
   );
 
-  /// Prosthetic Hub → Tutorial video player (`:tutorialId` path param).
+  /// Prosthetic Hub → Tutorial video player.
+  ///
+  /// Navigate with:
+  /// ```dart
+  /// context.goNamed(AppRoutes.tutorialPlayer.name,
+  ///     pathParameters: {'tutorialId': id});
+  /// ```
+  /// ⚠️ Do NOT use `.path` directly — it contains a `:tutorialId` placeholder.
   static const AppRoute tutorialPlayer = AppRoute(
     path: '/prosthetic-hub/tutorials/:tutorialId',
     name: 'tutorial_player',
@@ -82,7 +96,14 @@ abstract class AppRoutes {
     name: 'order_create',
   );
 
-  /// Prosthetic Hub → Order detail / status (`:orderId` path param).
+  /// Prosthetic Hub → Order detail / status.
+  ///
+  /// Navigate with:
+  /// ```dart
+  /// context.goNamed(AppRoutes.orderDetail.name,
+  ///     pathParameters: {'orderId': id});
+  /// ```
+  /// ⚠️ Do NOT use `.path` directly — it contains a `:orderId` placeholder.
   static const AppRoute orderDetail = AppRoute(
     path: '/prosthetic-hub/orders/:orderId',
     name: 'order_detail',

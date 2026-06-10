@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:opto/core/error/failures.dart';
+import 'package:opto/core/supabase/supabase_error_mapper.dart';
 
 /// Thin accessor for Supabase Storage operations.
 ///
@@ -28,7 +28,8 @@ class StorageClientProvider {
   ///
   /// [expiresIn] is the URL lifetime in seconds (default: 3600 = 1 hour).
   ///
-  /// Throws a [ServerFailure] if Supabase Storage returns a [StorageException].
+  /// Throws a [StorageFailure] (or other [Failure]) mapped by
+  /// [SupabaseErrorMapper.fromStorage] if Storage returns a [StorageException].
   static Future<String> createSignedUrl(
     String bucket,
     String path, {
@@ -37,7 +38,7 @@ class StorageClientProvider {
     try {
       return await storage.from(bucket).createSignedUrl(path, expiresIn);
     } on StorageException catch (e) {
-      throw ServerFailure(e.message);
+      throw SupabaseErrorMapper.fromStorage(e);
     }
   }
 
@@ -46,7 +47,8 @@ class StorageClientProvider {
   /// [contentType] defaults to `'application/octet-stream'` when not provided.
   ///
   /// Returns the stored object path on success.
-  /// Throws a [ServerFailure] if Supabase Storage returns a [StorageException].
+  /// Throws a [StorageFailure] (or other [Failure]) mapped by
+  /// [SupabaseErrorMapper.fromStorage] if Storage returns a [StorageException].
   static Future<String> uploadBinary(
     String bucket,
     String path,
@@ -62,7 +64,7 @@ class StorageClientProvider {
             ),
           );
     } on StorageException catch (e) {
-      throw ServerFailure(e.message);
+      throw SupabaseErrorMapper.fromStorage(e);
     }
   }
 
@@ -71,7 +73,8 @@ class StorageClientProvider {
   /// [contentType] defaults to `'application/octet-stream'` when not provided.
   ///
   /// Returns the stored object path on success.
-  /// Throws a [ServerFailure] if Supabase Storage returns a [StorageException].
+  /// Throws a [StorageFailure] (or other [Failure]) mapped by
+  /// [SupabaseErrorMapper.fromStorage] if Storage returns a [StorageException].
   static Future<String> updateBinary(
     String bucket,
     String path,
@@ -87,7 +90,7 @@ class StorageClientProvider {
             ),
           );
     } on StorageException catch (e) {
-      throw ServerFailure(e.message);
+      throw SupabaseErrorMapper.fromStorage(e);
     }
   }
 }
