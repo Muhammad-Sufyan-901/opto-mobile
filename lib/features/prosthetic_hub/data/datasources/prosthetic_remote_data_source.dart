@@ -15,6 +15,7 @@ import 'package:opto/core/constants/prosthetic_enums.dart';
 import 'package:opto/core/error/failures.dart';
 import 'package:opto/core/supabase/supabase_client_provider.dart';
 import 'package:opto/core/supabase/supabase_error_mapper.dart';
+import 'package:opto/features/prosthetic_hub/data/models/care_tutorial_model.dart';
 import 'package:opto/features/prosthetic_hub/data/models/prosthetic_product_model.dart';
 import 'package:opto/features/prosthetic_hub/data/models/vendor_model.dart';
 
@@ -47,6 +48,21 @@ abstract class ProstheticRemoteDataSource {
   /// Returns a vendor by [vendorId], or `null` if PGRST116 is received
   /// (vendor is optional on products).
   Future<VendorModel?> getVendor(String vendorId);
+
+  // ── tutorials ─────────────────────────────────────────────────────────────
+
+  /// Returns all care tutorials, ordered by [sort_order].
+  ///
+  /// Pass [categoryFilter] to restrict results to a single [TutorialCategory].
+  /// Selects only explicit, non-sensitive columns.
+  Future<List<CareTutorialModel>> getTutorials({
+    TutorialCategory? categoryFilter,
+  });
+
+  /// Returns a single tutorial by [id].
+  ///
+  /// Throws [ServerFailure('Tutorial not found')] on PGRST116.
+  Future<CareTutorialModel> getTutorialById(String id);
 }
 
 // =============================================================================
@@ -116,6 +132,59 @@ class ProstheticRemoteDataSourceImpl implements ProstheticRemoteDataSource {
     } on PostgrestException catch (e) {
       if (e.code == 'PGRST116') {
         throw const ServerFailure('Product not found');
+      }
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      if (e is ServerFailure) rethrow;
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  /// Explicit column list for `care_tutorials`.
+  ///
+  /// Public read (no sensitive joins).
+  static const String _tutorialColumns =
+      'id, title, category, video_path, audio_narration_path, '
+      'transcript, sort_order';
+
+  // ── tutorials ─────────────────────────────────────────────────────────────
+
+  @override
+  Future<List<CareTutorialModel>> getTutorials({
+    TutorialCategory? categoryFilter,
+  }) async {
+    try {
+      // Build filter query first (PostgrestFilterBuilder), then apply order.
+      // .order() returns a PostgrestTransformBuilder which no longer accepts .eq().
+      var filterQuery = _client
+          .from('care_tutorials')
+          .select(_tutorialColumns);
+
+      if (categoryFilter != null) {
+        filterQuery = filterQuery.eq('category', categoryFilter.dbValue);
+      }
+
+      final rows = await filterQuery.order('sort_order');
+      return rows.map((row) => CareTutorialModel.fromJson(row)).toList();
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<CareTutorialModel> getTutorialById(String id) async {
+    try {
+      final row = await _client
+          .from('care_tutorials')
+          .select(_tutorialColumns)
+          .eq('id', id)
+          .single();
+      return CareTutorialModel.fromJson(row);
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST116') {
+        throw const ServerFailure('Tutorial not found');
       }
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {

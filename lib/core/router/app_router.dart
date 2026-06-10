@@ -29,6 +29,9 @@ import 'package:opto/features/prosthetic_hub/presentation/screens/product_detail
 import 'package:opto/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/catalog/catalog_bloc.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/product_detail/product_detail_bloc.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/care_tutorials_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/tutorial_player_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/tutorials/tutorials_cubit.dart';
 import 'package:opto/features/connect/presentation/screens/community_screen.dart';
 import 'package:opto/features/profile/presentation/screens/profile_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
@@ -337,15 +340,22 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: 'tutorials',
           name: AppRoutes.careTutorials.name,
-          builder: (context, state) =>
-              const Scaffold(body: Center(child: Text('Coming soon'))),
+          builder: (context, state) => BlocProvider<TutorialsCubit>(
+            create: (_) => sl<TutorialsCubit>(),
+            child: const CareTutorialsScreen(),
+          ),
           routes: [
-            // Tutorial video player — nested under tutorials
+            // Tutorial video player — each visit gets its own cubit instance.
             GoRoute(
               path: ':tutorialId',
               name: AppRoutes.tutorialPlayer.name,
-              builder: (context, state) =>
-                  const Scaffold(body: Center(child: Text('Coming soon'))),
+              builder: (context, state) {
+                final tutorialId = state.pathParameters['tutorialId']!;
+                return BlocProvider<TutorialsCubit>(
+                  create: (_) => sl<TutorialsCubit>(),
+                  child: TutorialPlayerScreen(tutorialId: tutorialId),
+                );
+              },
             ),
           ],
         ),

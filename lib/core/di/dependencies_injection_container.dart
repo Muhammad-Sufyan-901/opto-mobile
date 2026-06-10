@@ -25,9 +25,12 @@ import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
 import 'package:opto/features/prosthetic_hub/data/datasources/prosthetic_remote_data_source.dart';
 import 'package:opto/features/prosthetic_hub/data/repositories/catalog_repository_impl.dart';
+import 'package:opto/features/prosthetic_hub/data/repositories/tutorials_repository_impl.dart';
 import 'package:opto/features/prosthetic_hub/domain/repositories/catalog_repository.dart';
+import 'package:opto/features/prosthetic_hub/domain/repositories/tutorials_repository.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/catalog/catalog_bloc.dart';
 import 'package:opto/features/prosthetic_hub/presentation/bloc/product_detail/product_detail_bloc.dart';
+import 'package:opto/features/prosthetic_hub/presentation/bloc/tutorials/tutorials_cubit.dart';
 
 // Service Locator
 final sl = GetIt.instance;
@@ -152,5 +155,17 @@ Future<void> init() async {
 
   sl.registerFactory<ProductDetailBloc>(
     () => ProductDetailBloc(sl<CatalogRepository>()),
+  );
+
+  // ── Prosthetic Hub — Tutorials ────────────────────────────────────────────
+
+  sl.registerLazySingleton<TutorialsRepository>(
+    () => TutorialsRepositoryImpl(
+      remoteDataSource: sl<ProstheticRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerFactory<TutorialsCubit>(
+    () => TutorialsCubit(sl<TutorialsRepository>()),
   );
 }
