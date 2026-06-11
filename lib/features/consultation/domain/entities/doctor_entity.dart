@@ -12,6 +12,10 @@
 /// [fullName], [avatarUrl], and [clinicName] are joined from `profiles` and
 /// `clinics` at the repository level and may be null until hydrated.
 class DoctorEntity {
+  // Sentinel value used by [copyWith] to distinguish "not provided" from null
+  // for nullable fields.
+  static const _unset = Object();
+
   const DoctorEntity({
     required this.id,
     required this.profileId,
@@ -39,34 +43,44 @@ class DoctorEntity {
   /// Whether the doctor's credentials have been verified by the platform.
   final bool isVerified;
 
-  /// Display name joined from `profiles`; null until hydrated by the repository.
+  /// Display name joined from `profiles`; null until hydrated by the
+  /// repository.
   final String? fullName;
 
   /// Avatar public URL joined from `profiles`; null until hydrated.
   final String? avatarUrl;
 
-  /// Clinic name joined from `clinics`; null until hydrated or if not affiliated.
+  /// Clinic name joined from `clinics`; null until hydrated or if the doctor
+  /// is not affiliated with a clinic.
   final String? clinicName;
 
   DoctorEntity copyWith({
     String? id,
     String? profileId,
     String? specialty,
-    String? clinicId,
+    Object? clinicId = _unset,
     bool? isVerified,
-    String? fullName,
-    String? avatarUrl,
-    String? clinicName,
+    Object? fullName = _unset,
+    Object? avatarUrl = _unset,
+    Object? clinicName = _unset,
   }) {
     return DoctorEntity(
       id: id ?? this.id,
       profileId: profileId ?? this.profileId,
       specialty: specialty ?? this.specialty,
-      clinicId: clinicId ?? this.clinicId,
+      clinicId: identical(clinicId, _unset)
+          ? this.clinicId
+          : clinicId as String?,
       isVerified: isVerified ?? this.isVerified,
-      fullName: fullName ?? this.fullName,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
-      clinicName: clinicName ?? this.clinicName,
+      fullName: identical(fullName, _unset)
+          ? this.fullName
+          : fullName as String?,
+      avatarUrl: identical(avatarUrl, _unset)
+          ? this.avatarUrl
+          : avatarUrl as String?,
+      clinicName: identical(clinicName, _unset)
+          ? this.clinicName
+          : clinicName as String?,
     );
   }
 

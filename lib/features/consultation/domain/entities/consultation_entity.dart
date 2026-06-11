@@ -20,6 +20,10 @@
 /// to session recording; it resolves to a private Storage object and must
 /// be fetched via a signed URL from the repository.
 class ConsultationEntity {
+  // Sentinel value used by [copyWith] to distinguish "not provided" from null
+  // for nullable fields.
+  static const _unset = Object();
+
   const ConsultationEntity({
     required this.id,
     required this.bookingId,
@@ -52,17 +56,21 @@ class ConsultationEntity {
   ConsultationEntity copyWith({
     String? id,
     String? bookingId,
-    String? summary,
-    String? prescription,
-    String? recordingPath,
+    Object? summary = _unset,
+    Object? prescription = _unset,
+    Object? recordingPath = _unset,
     DateTime? createdAt,
   }) {
     return ConsultationEntity(
       id: id ?? this.id,
       bookingId: bookingId ?? this.bookingId,
-      summary: summary ?? this.summary,
-      prescription: prescription ?? this.prescription,
-      recordingPath: recordingPath ?? this.recordingPath,
+      summary: identical(summary, _unset) ? this.summary : summary as String?,
+      prescription: identical(prescription, _unset)
+          ? this.prescription
+          : prescription as String?,
+      recordingPath: identical(recordingPath, _unset)
+          ? this.recordingPath
+          : recordingPath as String?,
       createdAt: createdAt ?? this.createdAt,
     );
   }

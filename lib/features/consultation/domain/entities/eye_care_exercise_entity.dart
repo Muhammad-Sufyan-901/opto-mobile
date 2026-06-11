@@ -64,5 +64,11 @@ class EyeCareExerciseEntity {
 
   @override
   int get hashCode =>
-      Object.hash(id, title, audioGuidePath, durationSeconds, medicalDisclaimer);
+      Object.hash(
+        id,
+        title,
+        audioGuidePath,
+        durationSeconds,
+        medicalDisclaimer,
+      );
 }

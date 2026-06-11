@@ -6,29 +6,7 @@
 // Corresponds to the `consultation_bookings` table in the Supabase database.
 // Enums mirror the Postgres `consult_mode` and `booking_status` custom types.
 
-/// Consultation delivery mode — mirrors the `consult_mode` Postgres enum.
-enum ConsultMode {
-  /// Live video call between patient and doctor.
-  video,
-
-  /// Text / image-based asynchronous consultation for non-verbal users.
-  nonVerbal,
-
-  /// Face-to-face appointment at the clinic.
-  inPerson,
-}
-
-/// Lifecycle state of a booking — mirrors the `booking_status` Postgres enum.
-enum BookingStatus {
-  /// Slot has been reserved; appointment not yet held.
-  booked,
-
-  /// Appointment has taken place and the consultation record exists.
-  completed,
-
-  /// Booking was cancelled by the patient, doctor, or system.
-  cancelled,
-}
+import 'package:opto/core/constants/consultation_enums.dart';
 
 /// Immutable domain representation of a consultation booking.
 ///
