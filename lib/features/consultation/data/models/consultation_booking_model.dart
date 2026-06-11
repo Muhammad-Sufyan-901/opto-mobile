@@ -41,7 +41,8 @@ abstract class ConsultationBookingModel with _$ConsultationBookingModel {
     required String status,
 
     /// Whether the booking was completed entirely via Aura Voice.
-    @JsonKey(name: 'booked_via_voice') required bool bookedViaVoice,
+    /// Defaults to false (matches Postgres `default false`).
+    @JsonKey(name: 'booked_via_voice') @Default(false) bool bookedViaVoice,
 
     /// Row creation timestamp — set by Postgres default.
     @JsonKey(name: 'created_at') required DateTime createdAt,

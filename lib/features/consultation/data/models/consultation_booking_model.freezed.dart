@@ -24,6 +24,7 @@ mixin _$ConsultationBookingModel {
  String get mode;/// Lifecycle status — raw Postgres `booking_status` enum string
 /// ('booked', 'completed', 'cancelled').
  String get status;/// Whether the booking was completed entirely via Aura Voice.
+/// Defaults to false (matches Postgres `default false`).
 @JsonKey(name: 'booked_via_voice') bool get bookedViaVoice;/// Row creation timestamp — set by Postgres default.
 @JsonKey(name: 'created_at') DateTime get createdAt;
 /// Create a copy of ConsultationBookingModel
@@ -226,7 +227,7 @@ return $default(_that.id,_that.userId,_that.doctorId,_that.slotId,_that.mode,_th
 @JsonSerializable()
 
 class _ConsultationBookingModel implements ConsultationBookingModel {
-  const _ConsultationBookingModel({required this.id, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'doctor_id') required this.doctorId, @JsonKey(name: 'slot_id') required this.slotId, required this.mode, required this.status, @JsonKey(name: 'booked_via_voice') required this.bookedViaVoice, @JsonKey(name: 'created_at') required this.createdAt});
+  const _ConsultationBookingModel({required this.id, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'doctor_id') required this.doctorId, @JsonKey(name: 'slot_id') required this.slotId, required this.mode, required this.status, @JsonKey(name: 'booked_via_voice') this.bookedViaVoice = false, @JsonKey(name: 'created_at') required this.createdAt});
   factory _ConsultationBookingModel.fromJson(Map<String, dynamic> json) => _$ConsultationBookingModelFromJson(json);
 
 /// Primary key (UUID).
@@ -244,6 +245,7 @@ class _ConsultationBookingModel implements ConsultationBookingModel {
 /// ('booked', 'completed', 'cancelled').
 @override final  String status;
 /// Whether the booking was completed entirely via Aura Voice.
+/// Defaults to false (matches Postgres `default false`).
 @override@JsonKey(name: 'booked_via_voice') final  bool bookedViaVoice;
 /// Row creation timestamp — set by Postgres default.
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;

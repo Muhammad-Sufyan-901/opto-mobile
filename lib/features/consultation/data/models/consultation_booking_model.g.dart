@@ -15,7 +15,7 @@ _ConsultationBookingModel _$ConsultationBookingModelFromJson(
   slotId: json['slot_id'] as String,
   mode: json['mode'] as String,
   status: json['status'] as String,
-  bookedViaVoice: json['booked_via_voice'] as bool,
+  bookedViaVoice: json['booked_via_voice'] as bool? ?? false,
   createdAt: DateTime.parse(json['created_at'] as String),
 );
 
