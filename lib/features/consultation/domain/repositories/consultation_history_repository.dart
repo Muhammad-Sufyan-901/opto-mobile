@@ -11,6 +11,7 @@
 //   • [ConsultationEntity] data MUST NOT appear in community feeds, map
 //     queries, or any public join — ever.
 //   • Do not cache responses beyond the lifetime of the current app session.
+import 'package:opto/core/error/failures.dart';
 import 'package:opto/features/consultation/domain/entities/consultation_entity.dart';
 
 /// Abstract contract for patient-facing consultation history operations.

@@ -4,6 +4,7 @@
 // (`lib/features/consultation/data/repositories/doctor_directory_repository_impl.dart`).
 //
 // NOTE: No Supabase or infrastructure imports — domain layer stays pure Dart.
+import 'package:opto/core/error/failures.dart';
 import 'package:opto/features/consultation/domain/entities/clinic_entity.dart';
 import 'package:opto/features/consultation/domain/entities/doctor_availability_entity.dart';
 import 'package:opto/features/consultation/domain/entities/doctor_entity.dart';

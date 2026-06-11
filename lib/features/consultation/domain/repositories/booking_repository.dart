@@ -4,6 +4,7 @@
 // (`lib/features/consultation/data/repositories/booking_repository_impl.dart`).
 //
 // NOTE: No Supabase or infrastructure imports — domain layer stays pure Dart.
+import 'package:opto/core/error/failures.dart';
 import 'package:opto/core/constants/consultation_enums.dart';
 import 'package:opto/features/consultation/domain/entities/consultation_booking_entity.dart';
 
