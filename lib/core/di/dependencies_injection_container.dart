@@ -23,6 +23,15 @@ import 'package:opto/features/profile/domain/repositories/emergency_contact_repo
 import 'package:opto/features/profile/domain/repositories/profile_repository.dart';
 import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
+import 'package:opto/core/location/location.dart';
+import 'package:opto/features/accessibility_map/data/datasources/map_remote_data_source.dart';
+import 'package:opto/features/accessibility_map/data/repositories/contributions_repository_impl.dart';
+import 'package:opto/features/accessibility_map/data/repositories/poi_repository_impl.dart';
+import 'package:opto/features/accessibility_map/domain/repositories/contributions_repository.dart';
+import 'package:opto/features/accessibility_map/domain/repositories/poi_repository.dart';
+import 'package:opto/features/accessibility_map/presentation/bloc/add_poi/add_poi_cubit.dart';
+import 'package:opto/features/accessibility_map/presentation/bloc/nearby_pois/nearby_pois_bloc.dart';
+import 'package:opto/features/accessibility_map/presentation/bloc/poi_detail/poi_detail_cubit.dart';
 
 // Service Locator
 final sl = GetIt.instance;
@@ -127,5 +136,45 @@ Future<void> init() async {
 
   sl.registerFactory<ProfileBloc>(
     () => ProfileBloc(sl<ProfileRepository>()),
+  );
+
+  // ── Accessibility Map (Phase 3B) ──────────────────────────────────────────
+  // Location service is cross-cutting (reused by SOS in Phase 3E).
+
+  sl.registerLazySingleton<LocationService>(
+    () => const GeolocatorLocationService(),
+  );
+
+  sl.registerLazySingleton<MapRemoteDataSource>(
+    () => MapRemoteDataSourceImpl(),
+  );
+
+  sl.registerLazySingleton<PoiRepository>(
+    () => PoiRepositoryImpl(
+      remoteDataSource: sl<MapRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerLazySingleton<ContributionsRepository>(
+    () => ContributionsRepositoryImpl(
+      remoteDataSource: sl<MapRemoteDataSource>(),
+    ),
+  );
+
+  // NearbyPoisBloc is a singleton so the Map visual screen shares loaded state
+  // with the list screen without re-fetching.
+  sl.registerLazySingleton<NearbyPoisBloc>(
+    () => NearbyPoisBloc(sl<PoiRepository>()),
+  );
+
+  sl.registerFactory<PoiDetailCubit>(
+    () => PoiDetailCubit(
+      poiRepository: sl<PoiRepository>(),
+      contributionsRepository: sl<ContributionsRepository>(),
+    ),
+  );
+
+  sl.registerFactory<AddPoiCubit>(
+    () => AddPoiCubit(sl<PoiRepository>()),
   );
 }
