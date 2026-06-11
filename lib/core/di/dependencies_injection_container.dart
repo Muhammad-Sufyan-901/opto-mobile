@@ -3,15 +3,26 @@ import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:opto/core/accessibility/haptic_controller.dart';
+import 'package:opto/core/config/secure_storage_config.dart';
+import 'package:opto/core/utils/secure_storage_helper.dart';
 import 'package:opto/core/voice/intent_parser.dart';
 import 'package:opto/core/voice/speech_recognizer.dart';
 import 'package:opto/core/voice/voice_controller.dart';
-import 'package:opto/core/config/secure_storage_config.dart';
-import 'package:opto/core/utils/secure_storage_helper.dart';
 import 'package:opto/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:opto/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:opto/features/auth/domain/repositories/auth_repository.dart';
 import 'package:opto/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:opto/features/connect/data/datasources/connect_remote_data_source.dart';
+import 'package:opto/features/connect/data/repositories/connect_repository_impl.dart';
+import 'package:opto/features/connect/data/repositories/follow_repository_impl.dart';
+import 'package:opto/features/connect/data/repositories/report_repository_impl.dart';
+import 'package:opto/features/connect/domain/repositories/connect_repository.dart';
+import 'package:opto/features/connect/domain/repositories/follow_repository.dart';
+import 'package:opto/features/connect/domain/repositories/report_repository.dart';
+import 'package:opto/features/connect/presentation/bloc/compose_post_bloc.dart';
+import 'package:opto/features/connect/presentation/bloc/connect_feed_bloc.dart';
+import 'package:opto/features/connect/presentation/cubit/post_thread_cubit.dart';
+import 'package:opto/features/connect/presentation/cubit/report_cubit.dart';
 import 'package:opto/features/profile/data/datasources/profile_remote_data_source.dart';
 import 'package:opto/features/profile/data/repositories/accessibility_settings_repository_impl.dart';
 import 'package:opto/features/profile/data/repositories/caregiver_link_repository_impl.dart';
@@ -127,5 +138,51 @@ Future<void> init() async {
 
   sl.registerFactory<ProfileBloc>(
     () => ProfileBloc(sl<ProfileRepository>()),
+  );
+
+  // ===============================================================
+  // ── CONNECT (COMMUNITY) ──
+  // ===============================================================
+
+  // Data Sources
+  sl.registerLazySingleton<ConnectRemoteDataSource>(
+    () => ConnectRemoteDataSourceImpl(),
+  );
+
+  // Repositories
+  sl.registerFactory<ConnectRepository>(
+    () => ConnectRepositoryImpl(
+      remoteDataSource: sl<ConnectRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerLazySingleton<FollowRepository>(
+    () => FollowRepositoryImpl(
+      remoteDataSource: sl<ConnectRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerLazySingleton<ReportRepository>(
+    () => ReportRepositoryImpl(
+      remoteDataSource: sl<ConnectRemoteDataSource>(),
+    ),
+  );
+
+  // BLoCs / Cubits — registerFactory so each screen gets a fresh instance
+  // with its own Realtime subscription lifecycle.
+  sl.registerFactory<ConnectFeedBloc>(
+    () => ConnectFeedBloc(sl<ConnectRepository>()),
+  );
+
+  sl.registerFactory<ComposePostBloc>(
+    () => ComposePostBloc(sl<ConnectRepository>()),
+  );
+
+  sl.registerFactory<PostThreadCubit>(
+    () => PostThreadCubit(sl<ConnectRepository>()),
+  );
+
+  sl.registerFactory<ReportCubit>(
+    () => ReportCubit(sl<ReportRepository>()),
   );
 }

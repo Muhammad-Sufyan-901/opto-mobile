@@ -44,6 +44,18 @@ abstract class AppRoutes {
     name: 'community',
   );
 
+  /// Compose a new community post.
+  static const AppRoute communityCompose = AppRoute(
+    path: '/community/compose',
+    name: 'communityCompose',
+  );
+
+  /// Thread view for a single post. The postId is embedded in the path.
+  static const AppRoute communityThread = AppRoute(
+    path: '/community/thread/:postId',
+    name: 'communityThread',
+  );
+
   /// Screen 20 — Profile & Settings (account + preferences).
   static const AppRoute profile = AppRoute(
     path: '/profile',

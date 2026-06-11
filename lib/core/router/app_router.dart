@@ -26,6 +26,8 @@ import 'package:opto/features/setup/presentation/screens/permissions_setup_scree
 import 'package:opto/features/consultation/presentation/screens/consult_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
 import 'package:opto/features/connect/presentation/screens/community_screen.dart';
+import 'package:opto/features/connect/presentation/screens/compose_post_screen.dart';
+import 'package:opto/features/connect/presentation/screens/post_thread_screen.dart';
 import 'package:opto/features/profile/presentation/screens/profile_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
 import 'package:opto/features/sos/presentation/screens/sos_active_screen.dart';
@@ -320,6 +322,24 @@ final GoRouter appRouter = GoRouter(
       name: AppRoutes.community.name,
       builder: (BuildContext context, GoRouterState state) =>
           const CommunityScreen(),
+    ),
+
+    // Screen 19a — Compose new post
+    GoRoute(
+      path: AppRoutes.communityCompose.path,
+      name: AppRoutes.communityCompose.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const ComposePostScreen(),
+    ),
+
+    // Screen 19b — Post thread (replies)
+    GoRoute(
+      path: AppRoutes.communityThread.path,
+      name: AppRoutes.communityThread.name,
+      builder: (BuildContext context, GoRouterState state) {
+        final String postId = state.pathParameters['postId']!;
+        return PostThreadScreen(postId: postId);
+      },
     ),
 
     // Screen 20 — Profile
