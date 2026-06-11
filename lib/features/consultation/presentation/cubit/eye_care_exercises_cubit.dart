@@ -45,8 +45,8 @@ class EyeCareExercisesCubit extends Cubit<EyeCareExercisesState> {
       emit(EyeCareExercisesState.loaded(exercises: exercises));
     } on Failure catch (e) {
       emit(EyeCareExercisesState.error(e.message));
-    } catch (e) {
-      emit(EyeCareExercisesState.error(e.toString()));
+    } catch (_) {
+      emit(EyeCareExercisesState.error('Terjadi kesalahan. Silakan coba lagi.'));
     }
   }
 }

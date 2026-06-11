@@ -73,10 +73,16 @@ class BookingCubit extends Cubit<BookingState> {
     } on Failure catch (e) {
       emit(BookingState.error(e.message));
       // Revert to slot selected so the user can retry without re-selecting.
-      emit(BookingState.slotSelected(slot: current.slot, mode: current.mode));
-    } catch (e) {
-      emit(BookingState.error(e.toString()));
-      emit(BookingState.slotSelected(slot: current.slot, mode: current.mode));
+      // Guard: cubit may have been closed (screen popped) before the revert emit.
+      if (!isClosed) {
+        emit(BookingState.slotSelected(slot: current.slot, mode: current.mode));
+      }
+    } catch (_) {
+      emit(BookingState.error('Terjadi kesalahan. Silakan coba lagi.'));
+      // Guard: cubit may have been closed (screen popped) before the revert emit.
+      if (!isClosed) {
+        emit(BookingState.slotSelected(slot: current.slot, mode: current.mode));
+      }
     }
   }
 
@@ -89,8 +95,8 @@ class BookingCubit extends Cubit<BookingState> {
       emit(BookingState.bookingsLoaded(bookings: bookings));
     } on Failure catch (e) {
       emit(BookingState.error(e.message));
-    } catch (e) {
-      emit(BookingState.error(e.toString()));
+    } catch (_) {
+      emit(BookingState.error('Terjadi kesalahan. Silakan coba lagi.'));
     }
   }
 
@@ -104,8 +110,8 @@ class BookingCubit extends Cubit<BookingState> {
       await loadMyBookings();
     } on Failure catch (e) {
       emit(BookingState.error(e.message));
-    } catch (e) {
-      emit(BookingState.error(e.toString()));
+    } catch (_) {
+      emit(BookingState.error('Terjadi kesalahan. Silakan coba lagi.'));
     }
   }
 

@@ -47,8 +47,8 @@ class ConsultationHistoryCubit extends Cubit<ConsultationHistoryState> {
       emit(ConsultationHistoryState.loaded(consultations: consultations));
     } on Failure catch (e) {
       emit(ConsultationHistoryState.error(e.message));
-    } catch (e) {
-      emit(ConsultationHistoryState.error(e.toString()));
+    } catch (_) {
+      emit(ConsultationHistoryState.error('Terjadi kesalahan. Silakan coba lagi.'));
     }
   }
 }
