@@ -22,7 +22,9 @@ abstract class DoctorDirectoryRepository {
   /// Searches the doctor catalog filtered by an optional [query] (matches
   /// against display name or specialty) and/or an optional [specialty] string.
   ///
-  /// Returns all verified and unverified doctors when both parameters are null.
+  /// Returns only [DoctorEntity.isVerified] == true doctors when both
+  /// parameters are null (verified-only is the safe default for patient UX).
+  /// Pass explicit filters to narrow results.
   ///
   /// Throws [ServerFailure] on network / RLS error.
   Future<List<DoctorEntity>> searchDoctors({
@@ -40,7 +42,9 @@ abstract class DoctorDirectoryRepository {
   /// [doctorId], ordered by [slotStart] ascending.
   ///
   /// Includes both booked and available slots so the caller can present a
-  /// complete calendar; UI should visually distinguish [DoctorAvailabilityEntity.isBooked].
+  /// complete calendar. UI must visually distinguish booked from available
+  /// using [DoctorAvailabilityEntity.isBooked].
+  /// No authentication required (public-read RLS).
   ///
   /// Throws [ServerFailure] on network / RLS error.
   Future<List<DoctorAvailabilityEntity>> getAvailability(String doctorId);
