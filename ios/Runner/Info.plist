@@ -59,6 +59,9 @@
 			</array>
 		</dict>
 	</array>
+	<!-- Location — used by Accessibility Map (nearby POIs) and Emergency SOS. -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Opto uses your location to show nearby accessible places and to send your position during Emergency SOS.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

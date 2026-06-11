@@ -61,6 +61,14 @@ dependencies:
  intl: ^0.20.2
  phosphor_flutter: ^2.1.0
  image_picker: ^1.2.1
+ # ── Accessibility Map (Phase 3B) ───────────────────────────────────────────
+ # Device location — used for "nearby POIs" query and Emergency SOS (Phase 3E).
+ geolocator: ^13.0.0
+ # Tile-based map widget (OpenStreetMap, no API key required).
+ # Visual layer only; list screen is the primary accessible path.
+ flutter_map: ^8.0.1
+ # Lightweight LatLng type used by flutter_map + haversine sort.
+ latlong2: ^0.9.1
 
 dev_dependencies:
  flutter_test:

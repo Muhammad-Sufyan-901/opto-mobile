@@ -48,6 +48,14 @@ import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart'
 import 'package:opto/features/sos/presentation/screens/sos_active_screen.dart';
 import 'package:opto/features/vision_ai/presentation/screens/vision_ai_screen.dart';
 import 'package:opto/features/voice/presentation/screens/aura_voice_screen.dart';
+import 'package:opto/core/location/location.dart';
+import 'package:opto/features/accessibility_map/presentation/bloc/nearby_pois/nearby_pois_bloc.dart';
+import 'package:opto/features/accessibility_map/presentation/bloc/poi_detail/poi_detail_cubit.dart';
+import 'package:opto/features/accessibility_map/presentation/bloc/add_poi/add_poi_cubit.dart';
+import 'package:opto/features/accessibility_map/presentation/screens/nearby_pois_screen.dart';
+import 'package:opto/features/accessibility_map/presentation/screens/poi_map_screen.dart';
+import 'package:opto/features/accessibility_map/presentation/screens/poi_detail_screen.dart';
+import 'package:opto/features/accessibility_map/presentation/screens/add_poi_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   debugLogDiagnostics: true,
@@ -474,6 +482,55 @@ final GoRouter appRouter = GoRouter(
       name: AppRoutes.auraVoice.name,
       builder: (BuildContext context, GoRouterState state) =>
           const AuraVoiceScreen(),
+    ),
+
+    // ── Accessibility Map (Phase 3B) ──────────────────────────────────────
+    // NearbyPoisBloc is a lazy singleton in DI — the visual screen reads the
+    // same already-loaded state as the list screen without re-fetching.
+    GoRoute(
+      path: AppRoutes.accessibilityMap.path,
+      name: AppRoutes.accessibilityMap.name,
+      builder: (context, state) => BlocProvider.value(
+        value: sl<NearbyPoisBloc>(),
+        child: NearbyPoisScreen(
+          locationService: sl<LocationService>(),
+        ),
+      ),
+      routes: [
+        // Optional visual map (flutter_map tile layer).
+        // Wrapped in ExcludeSemantics at the tile level — SR users use list.
+        GoRoute(
+          path: 'visual',
+          name: AppRoutes.accessibilityMapVisual.name,
+          builder: (context, state) => BlocProvider.value(
+            value: sl<NearbyPoisBloc>(),
+            child: const PoiMapScreen(),
+          ),
+        ),
+        // Add a new POI — registered before :poiId to avoid shadowing.
+        GoRoute(
+          path: 'add',
+          name: AppRoutes.addPoi.name,
+          builder: (context, state) => BlocProvider<AddPoiCubit>(
+            create: (_) => sl<AddPoiCubit>(),
+            child: AddPoiScreen(
+              locationService: sl<LocationService>(),
+            ),
+          ),
+        ),
+        // POI detail + verify/suggest-edit.
+        GoRoute(
+          path: ':poiId',
+          name: AppRoutes.poiDetail.name,
+          builder: (context, state) {
+            final poiId = state.pathParameters['poiId']!;
+            return BlocProvider<PoiDetailCubit>(
+              create: (_) => sl<PoiDetailCubit>(),
+              child: PoiDetailScreen(poiId: poiId),
+            );
+          },
+        ),
+      ],
     ),
 
     // ==========================================

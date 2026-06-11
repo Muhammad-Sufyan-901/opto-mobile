@@ -33,3 +33,8 @@ class AuthFailure extends Failure {
 class StorageFailure extends Failure {
   const StorageFailure(super.message);
 }
+
+// Failure from device location (GPS, permissions, services disabled)
+class LocationFailure extends Failure {
+  const LocationFailure(super.message);
+}
