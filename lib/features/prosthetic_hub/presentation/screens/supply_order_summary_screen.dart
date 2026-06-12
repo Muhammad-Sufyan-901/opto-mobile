@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/core/utils/currency_formatter.dart';
 import 'package:opto/core/widgets/buttons/app_button.dart';
 import 'package:opto/features/prosthetic_hub/domain/entities/supply_product.dart';
 import 'package:opto/features/prosthetic_hub/presentation/cubit/order_supplies_cubit.dart';
@@ -48,22 +49,6 @@ class _SummaryView extends StatefulWidget {
 }
 
 class _SummaryViewState extends State<_SummaryView> {
-  // ---------------------------------------------------------------------------
-  // HELPERS
-  // ---------------------------------------------------------------------------
-
-  /// Formats [priceIdr] using dots as thousands separators — e.g. 45000 → '45.000'.
-  String _formatPrice(int priceIdr) {
-    final raw = priceIdr.toString();
-    final buffer = StringBuffer();
-    final length = raw.length;
-    for (int i = 0; i < length; i++) {
-      if (i > 0 && (length - i) % 3 == 0) buffer.write('.');
-      buffer.write(raw[i]);
-    }
-    return buffer.toString();
-  }
-
   List<_LineItem> get _lineItems {
     final items = <_LineItem>[];
     for (final entry in widget.catalogState.cart.entries) {
@@ -99,7 +84,7 @@ class _SummaryViewState extends State<_SummaryView> {
       announce(
         context,
         'Order summary. $_totalItems item${_totalItems == 1 ? "" : "s"}. '
-        'Total Rp ${_formatPrice(_totalPrice)}. '
+        'Total Rp ${formatRupiah(_totalPrice)}. '
         'Double tap confirm to place your order.',
       );
     });
@@ -152,7 +137,7 @@ class _SummaryViewState extends State<_SummaryView> {
                         for (final item in lineItems) ...[
                           _OrderLineItem(
                             item: item,
-                            formatPrice: _formatPrice,
+                            formatPrice: formatRupiah,
                           ),
                           const SizedBox(height: AppDimensions.space12),
                         ],
@@ -164,7 +149,7 @@ class _SummaryViewState extends State<_SummaryView> {
 
                         // Total row
                         Semantics(
-                          label: 'Total: Rp ${_formatPrice(totalPrice)}',
+                          label: 'Total: Rp ${formatRupiah(totalPrice)}',
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -180,7 +165,7 @@ class _SummaryViewState extends State<_SummaryView> {
                               ),
                               ExcludeSemantics(
                                 child: Text(
-                                  'Rp ${_formatPrice(totalPrice)}',
+                                  'Rp ${formatRupiah(totalPrice)}',
                                   style:
                                       theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w700,

@@ -40,7 +40,7 @@ class SuppliesRepositoryMock implements SuppliesRepository {
       SupplyProduct(
         id: 'p3',
         name: 'Standard Storage Case',
-        type: SupplyProductType.selfCleaningCase,
+        type: SupplyProductType.storageCase,
         audioDescription:
             'Hard-shell storage case with padded interior. Fits all standard ocular prostheses.',
         priceIdr: 85000,

@@ -9,6 +9,7 @@ enum SupplyProductType {
   careKit,
   solution,
   cloth,
+  storageCase,
 }
 
 /// Human-readable display label for each [SupplyProductType].
@@ -18,6 +19,7 @@ extension SupplyProductTypeLabel on SupplyProductType {
         SupplyProductType.careKit => 'Care Kit',
         SupplyProductType.solution => 'Solution',
         SupplyProductType.cloth => 'Cloth',
+        SupplyProductType.storageCase => 'Storage Case',
       };
 }
 

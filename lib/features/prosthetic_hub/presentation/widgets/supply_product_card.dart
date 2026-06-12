@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/core/utils/currency_formatter.dart';
 import 'package:opto/features/prosthetic_hub/domain/entities/supply_product.dart';
 
 /// An accessible product card for the Order Supplies catalog.
@@ -29,22 +30,6 @@ class SupplyProductCard extends StatelessWidget {
   final VoidCallback onAdd;
   final VoidCallback onRemove;
 
-  // ---------------------------------------------------------------------------
-  // HELPERS
-  // ---------------------------------------------------------------------------
-
-  /// Formats [priceIdr] using dots as thousands separators — e.g. 45000 → '45.000'.
-  String _formatPrice(int priceIdr) {
-    final raw = priceIdr.toString();
-    final buffer = StringBuffer();
-    final length = raw.length;
-    for (int i = 0; i < length; i++) {
-      if (i > 0 && (length - i) % 3 == 0) buffer.write('.');
-      buffer.write(raw[i]);
-    }
-    return buffer.toString();
-  }
-
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -57,7 +42,7 @@ class SupplyProductCard extends StatelessWidget {
     final Color ink2 = ext?.ink2 ?? cs.onSurfaceVariant;
     final Color ink3 = ext?.ink3 ?? cs.onSurfaceVariant;
 
-    final String formattedPrice = 'Rp ${_formatPrice(product.priceIdr)}';
+    final String formattedPrice = 'Rp ${formatRupiah(product.priceIdr)}';
 
     final String semanticsLabel =
         '${product.name}. ${product.type.displayLabel}. $formattedPrice. '
@@ -107,6 +92,8 @@ class SupplyProductCard extends StatelessWidget {
                   // Product name
                   Text(
                     product.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: cs.onSurface,

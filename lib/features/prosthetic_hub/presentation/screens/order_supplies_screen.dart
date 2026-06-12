@@ -55,18 +55,7 @@ class _OrderSuppliesViewState extends State<_OrderSuppliesView> {
     return Scaffold(
       backgroundColor: cs.surface,
       body: SafeArea(
-        child: BlocListener<OrderSuppliesCubit, OrderSuppliesState>(
-          listener: (context, state) {
-            if (state is OrderSuppliesConfirmed) {
-              HapticPatterns.success();
-              announce(
-                context,
-                'Order placed. Your supplies will be delivered soon.',
-              );
-              context.pop();
-            }
-          },
-          child: Padding(
+        child: Padding(
             padding: const EdgeInsets.only(
               left: AppDimensions.screenPadding,
               right: AppDimensions.screenPadding,
@@ -90,7 +79,7 @@ class _OrderSuppliesViewState extends State<_OrderSuppliesView> {
                         OrderSuppliesSubmitting() =>
                           const Center(child: CircularProgressIndicator()),
                         OrderSuppliesConfirmed() =>
-                          // Handled by BlocListener (pops). Show spinner briefly.
+                          // Navigation handled by the summary screen. Show spinner briefly.
                           const Center(child: CircularProgressIndicator()),
                         OrderSuppliesError(:final message) =>
                           _ErrorView(message: message),
@@ -100,7 +89,6 @@ class _OrderSuppliesViewState extends State<_OrderSuppliesView> {
                 ),
               ],
             ),
-          ),
         ),
       ),
     );
