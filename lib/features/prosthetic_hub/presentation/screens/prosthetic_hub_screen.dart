@@ -49,7 +49,7 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Screen header: back + title ───────────────────────────────
-              ProstheticHeader(title: 'Prosthetic Hub'),
+              const ProstheticHeader(title: 'Prosthetic Hub'),
 
               const SizedBox(height: 14),
 
@@ -74,6 +74,15 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
                 ),
               ),
 
+              const SizedBox(height: AppDimensions.space12),
+              _HubLink(
+                icon: Icons.calendar_today_outlined,
+                title: 'Fitting appointments',
+                subtitle: '1 upcoming · Apr 18',
+                onTap: () {
+                  // TODO(prosthetic-hub): navigate to sub-screen
+                },
+              ),
               const SizedBox(height: AppDimensions.space12),
               _HubLink(
                 icon: Icons.menu_book_outlined,

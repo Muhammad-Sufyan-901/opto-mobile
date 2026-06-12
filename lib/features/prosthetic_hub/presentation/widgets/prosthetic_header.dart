@@ -50,7 +50,8 @@ class ProstheticHeader extends StatelessWidget {
 
         // ── Title (centered) ───────────────────────────────────────────────
         Expanded(
-          child: ExcludeSemantics(
+          child: Semantics(
+            header: true,
             child: Text(
               title,
               textAlign: TextAlign.center,
