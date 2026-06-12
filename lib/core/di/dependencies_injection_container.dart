@@ -254,4 +254,37 @@ Future<void> init() async {
   sl.registerFactory<EyeCareExercisesCubit>(
     () => EyeCareExercisesCubit(sl<DoctorDirectoryRepository>()),
   );
+
+  // ===============================================================
+  // ── PROSTHETIC HUB ──
+  // ===============================================================
+  // Mock repos use registerLazySingleton (stateless — safe to share).
+  // Cubits use registerFactory (fresh instance per pushed route).
+
+  // Care Guides
+  sl.registerLazySingleton<CareGuidesRepository>(
+    () => const CareGuidesRepositoryMock(),
+  );
+  sl.registerFactory<CareGuidesCubit>(
+    () => CareGuidesCubit(sl<CareGuidesRepository>()),
+  );
+
+  // Order Supplies
+  sl.registerLazySingleton<SuppliesRepository>(
+    () => const SuppliesRepositoryMock(),
+  );
+  sl.registerFactory<OrderSuppliesCubit>(
+    () => OrderSuppliesCubit(sl<SuppliesRepository>()),
+  );
+
+  // Message My Specialist
+  sl.registerLazySingleton<SpecialistRepository>(
+    () => const SpecialistRepositoryMock(),
+  );
+  sl.registerFactory<SpecialistDirectoryCubit>(
+    () => SpecialistDirectoryCubit(sl<SpecialistRepository>()),
+  );
+  sl.registerFactory<SpecialistChatCubit>(
+    () => SpecialistChatCubit(),
+  );
 }

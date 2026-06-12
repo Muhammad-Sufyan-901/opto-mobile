@@ -29,6 +29,13 @@ import 'package:opto/features/consultation/presentation/screens/consultation_his
 import 'package:opto/features/consultation/presentation/screens/doctor_profile_screen.dart';
 import 'package:opto/features/consultation/presentation/screens/non_verbal_consult_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/care_guides_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/care_guide_detail_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/order_supplies_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/supply_order_summary_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/specialist_list_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/specialist_profile_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/specialist_chat_screen.dart';
 import 'package:opto/features/connect/presentation/screens/community_screen.dart';
 import 'package:opto/features/connect/presentation/screens/compose_post_screen.dart';
 import 'package:opto/features/connect/presentation/screens/post_thread_screen.dart';
@@ -318,6 +325,65 @@ final GoRouter appRouter = GoRouter(
       builder: (BuildContext context, GoRouterState state) {
         return const ProstheticHubScreen();
       },
+    ),
+
+    // Screen 17a — Care guides list
+    GoRoute(
+      path: AppRoutes.prostheticCareGuides.path,
+      name: AppRoutes.prostheticCareGuides.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const CareGuidesScreen(),
+    ),
+
+    // Screen 17a-detail — Individual care guide
+    GoRoute(
+      path: AppRoutes.prostheticCareGuideDetail.path,
+      name: AppRoutes.prostheticCareGuideDetail.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const CareGuideDetailScreen(),
+    ),
+
+    // Screen 17b — Order supplies catalog
+    GoRoute(
+      path: AppRoutes.prostheticOrderSupplies.path,
+      name: AppRoutes.prostheticOrderSupplies.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const OrderSuppliesScreen(),
+    ),
+
+    // Screen 17b-summary — Order summary & consent
+    GoRoute(
+      path: AppRoutes.prostheticOrderSummary.path,
+      name: AppRoutes.prostheticOrderSummary.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const SupplyOrderSummaryScreen(),
+    ),
+
+    // Screen 17c — Specialist directory
+    GoRoute(
+      path: AppRoutes.prostheticSpecialists.path,
+      name: AppRoutes.prostheticSpecialists.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const SpecialistListScreen(),
+    ),
+
+    // Screen 17c-profile — Specialist profile
+    // Screen 17c-chat is nested here so GoRouter does not greedily match :id
+    // and shadow the /chat suffix with a sibling route.
+    GoRoute(
+      path: AppRoutes.prostheticSpecialistProfile.path,
+      name: AppRoutes.prostheticSpecialistProfile.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const SpecialistProfileScreen(),
+      routes: [
+        // Screen 17c-chat — 1:1 specialist chat room
+        GoRoute(
+          path: 'chat', // relative → resolves to /prosthetic-hub/specialists/:id/chat
+          name: AppRoutes.prostheticSpecialistChat.name,
+          builder: (BuildContext context, GoRouterState state) =>
+              const SpecialistChatScreen(),
+        ),
+      ],
     ),
 
     // Screen 18 — Consult

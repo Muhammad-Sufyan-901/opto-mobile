@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
-import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/features/prosthetic_hub/presentation/widgets/prosthetic_header.dart';
 
 /// Screen 17 — Prosthetic Hub
 ///
@@ -49,7 +50,7 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Screen header: back + title ───────────────────────────────
-              _ScreenHeader(cs: cs),
+              const ProstheticHeader(title: 'Prosthetic Hub'),
 
               const SizedBox(height: 14),
 
@@ -75,8 +76,6 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
               ),
 
               const SizedBox(height: AppDimensions.space12),
-
-              // ── Hub link rows ─────────────────────────────────────────────
               _HubLink(
                 icon: Icons.calendar_today_outlined,
                 title: 'Fitting appointments',
@@ -91,7 +90,7 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
                 title: 'Care guides',
                 subtitle: 'Cleaning, handling, sleep',
                 onTap: () {
-                  // TODO(prosthetic-hub): navigate to sub-screen
+                  context.push(AppRoutes.prostheticCareGuides.path);
                 },
               ),
               const SizedBox(height: AppDimensions.space12),
@@ -100,7 +99,7 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
                 title: 'Order supplies',
                 subtitle: 'Solution, cases & cloths',
                 onTap: () {
-                  // TODO(prosthetic-hub): navigate to sub-screen
+                  context.push(AppRoutes.prostheticOrderSupplies.path);
                 },
               ),
               const SizedBox(height: AppDimensions.space12),
@@ -109,7 +108,7 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
                 title: 'Message my specialist',
                 subtitle: 'Dr. Anwar · usually replies same day',
                 onTap: () {
-                  // TODO(prosthetic-hub): navigate to sub-screen
+                  context.push(AppRoutes.prostheticSpecialists.path);
                 },
               ),
             ],
@@ -123,70 +122,6 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
 // =============================================================================
 // PRIVATE WIDGETS
 // =============================================================================
-
-/// Top row: 48×48 back chevron circle on the left, centered title, 48×48
-/// placeholder span on the right to keep the title visually centred.
-class _ScreenHeader extends StatelessWidget {
-  const _ScreenHeader({required this.cs});
-
-  final ColorScheme cs;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    return Row(
-      children: [
-        // ── Back button ────────────────────────────────────────────────────
-        Semantics(
-          button: true,
-          label: 'Back',
-          child: GestureDetector(
-            onTap: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go(AppRoutes.home.path);
-              }
-            },
-            child: SizedBox(
-              width: AppDimensions.minTapTarget,
-              height: AppDimensions.minTapTarget,
-              child: Center(
-                child: ExcludeSemantics(
-                  child: Icon(
-                    Icons.chevron_left,
-                    size: 28,
-                    color: cs.onSurface,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-
-        // ── Title (centered) ───────────────────────────────────────────────
-        Expanded(
-          child: ExcludeSemantics(
-            child: Text(
-              'Prosthetic Hub',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: cs.onSurface,
-              ),
-            ),
-          ),
-        ),
-
-        // ── Trailing placeholder (mirrors back button for visual balance) ──
-        const SizedBox(
-          width: AppDimensions.minTapTarget,
-          height: AppDimensions.minTapTarget,
-        ),
-      ],
-    );
-  }
-}
 
 /// Blue-gradient status card showing prosthesis health and cleaning schedule.
 class _StatusCard extends StatelessWidget {
