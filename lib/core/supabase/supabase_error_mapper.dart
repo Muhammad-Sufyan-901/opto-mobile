@@ -27,9 +27,9 @@ class SupabaseErrorMapper {
   static Failure fromPostgrest(PostgrestException e) {
     final code = e.code;
 
-    // PGRST116: no rows returned (not necessarily an error, handle at call site)
+    // PGRST116: no rows returned (map to NotFoundFailure, not ServerFailure)
     if (code == 'PGRST116') {
-      return ServerFailure('Tidak ditemukan: ${e.message}');
+      return NotFoundFailure('Tidak ditemukan: ${e.message}');
     }
 
     // 42501 / RLS violation
@@ -39,9 +39,12 @@ class SupabaseErrorMapper {
       );
     }
 
-    // 23505: unique violation
+    // 23505: unique violation → ConflictFailure so BLoCs can show
+    // domain-specific messages (e.g. "slot already taken")
     if (code == '23505') {
-      return ServerFailure('Data sudah ada. Mohon gunakan nilai yang berbeda.');
+      return ConflictFailure(
+        'Data sudah ada atau slot tidak tersedia.',
+      );
     }
 
     // 23503: foreign key violation

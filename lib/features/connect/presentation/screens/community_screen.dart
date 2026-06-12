@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/features/connect/presentation/bloc/connect_feed_bloc.dart';
+import 'package:opto/features/connect/presentation/widgets/post_card.dart';
+import 'package:opto/features/connect/presentation/widgets/report_post_sheet.dart';
 import 'package:opto/features/home/presentation/widgets/home_bottom_nav.dart';
 
 /// Screen 19 — Community
@@ -14,19 +20,37 @@ import 'package:opto/features/home/presentation/widgets/home_bottom_nav.dart';
 ///
 /// Accessibility: TalkBack / VoiceOver announcement on mount, all interactive
 /// elements wrapped in [Semantics], decorative art excluded via [ExcludeSemantics].
-class CommunityScreen extends StatefulWidget {
+class CommunityScreen extends StatelessWidget {
   const CommunityScreen({super.key});
 
   @override
-  State<CommunityScreen> createState() => _CommunityScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider<ConnectFeedBloc>(
+      create: (_) => sl<ConnectFeedBloc>()
+        ..add(const ConnectFeedEvent.loadFeed())
+        ..add(const ConnectFeedEvent.subscribeFeed()),
+      child: const _CommunityView(),
+    );
+  }
 }
 
-class _CommunityScreenState extends State<CommunityScreen> {
+// =============================================================================
+// INNER STATEFUL VIEW
+// =============================================================================
+
+class _CommunityView extends StatefulWidget {
+  const _CommunityView();
+
+  @override
+  State<_CommunityView> createState() => _CommunityViewState();
+}
+
+class _CommunityViewState extends State<_CommunityView> {
   /// Index of the currently selected topic chip (0-based).
   int _activeChip = 0;
 
-  /// Like state for each post (post index → liked).
-  final Map<int, bool> _liked = {0: true, 1: false};
+  /// Tracks the last known post count to detect new Realtime posts.
+  int _lastKnownPostCount = 0;
 
   static const List<String> _topics = [
     'For you',
@@ -35,41 +59,12 @@ class _CommunityScreenState extends State<CommunityScreen> {
     'Tech tips',
   ];
 
-  static const List<_PostData> _posts = [
-    _PostData(
-      avatarColor: Color(0xFF2563D6),
-      initials: 'DW',
-      name: 'Dewi W.',
-      meta: 'Moderator · 2h',
-      body:
-          'Reminder: our weekly audio meet-up is tonight at 8. We\'ll share favorite TalkBack shortcuts — newcomers very welcome 💙',
-      likes: 24,
-      replies: 8,
-    ),
-    _PostData(
-      avatarColor: Color(0xFF1F8A5B),
-      initials: 'HS',
-      name: 'Hendra S.',
-      meta: '4h',
-      body:
-          'Just got my new prosthesis fitted. The Hub\'s cleaning reminders have been a lifesaver. What\'s everyone\'s routine?',
-      likes: 17,
-      replies: 12,
-    ),
-  ];
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       announce(context, 'Community. Showing posts for you.');
-    });
-  }
-
-  void _toggleLike(int index) {
-    setState(() {
-      _liked[index] = !(_liked[index] ?? false);
     });
   }
 
@@ -82,72 +77,209 @@ class _CommunityScreenState extends State<CommunityScreen> {
     final Color blueStrong = cs.secondary;
     final Color line = ext?.line ?? cs.outline;
     final Color ink2 = ext?.ink2 ?? cs.onSurfaceVariant;
-    final Color ink3 = ext?.ink3 ?? cs.onSurfaceVariant;
 
-    return Scaffold(
-      backgroundColor: cs.surface,
-      bottomNavigationBar: const HomeBottomNav(activeTab: 2),
-      floatingActionButton: _ComposeFab(cs: cs),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(
-              left: 22,
-              right: 22,
-              top: 14,
-              bottom: 96,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // ── Header row ─────────────────────────────────────────
-                _HeaderRow(
-                  cs: cs,
-                  blueTint: blueTint,
-                  blueStrong: blueStrong,
+    return BlocListener<ConnectFeedBloc, ConnectFeedState>(
+      listener: (context, state) {
+        if (state is FeedLoaded) {
+          final int newCount = state.posts.length;
+          if (newCount > _lastKnownPostCount && _lastKnownPostCount > 0) {
+            // A new post arrived via Realtime — announce it.
+            final newPost = state.posts.first;
+            announce(
+              context,
+              'New post from ${newPost.authorName ?? "someone"}.',
+            );
+          }
+          _lastKnownPostCount = newCount;
+        }
+      },
+      child: Scaffold(
+        backgroundColor: cs.surface,
+        bottomNavigationBar: const HomeBottomNav(activeTab: 2),
+        floatingActionButton: _ComposeFab(cs: cs),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              context
+                  .read<ConnectFeedBloc>()
+                  .add(const ConnectFeedEvent.loadFeed(reset: true));
+            },
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 22,
+                  right: 22,
+                  top: 14,
+                  bottom: 96,
                 ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                  // ── Header row ───────────────────────────────────────────
+                  _HeaderRow(
+                    cs: cs,
+                    blueTint: blueTint,
+                    blueStrong: blueStrong,
+                  ),
 
-                const SizedBox(height: 14),
+                  const SizedBox(height: 14),
 
-                // ── Topic chip row ─────────────────────────────────────
-                _TopicChipRow(
-                  topics: _topics,
-                  activeIndex: _activeChip,
-                  cs: cs,
-                  line: line,
-                  ink2: ink2,
-                  onChanged: (i) => setState(() => _activeChip = i),
-                ),
+                  // ── Topic chip row ───────────────────────────────────────
+                  _TopicChipRow(
+                    topics: _topics,
+                    activeIndex: _activeChip,
+                    cs: cs,
+                    line: line,
+                    ink2: ink2,
+                    onChanged: (i) {
+                      setState(() => _activeChip = i);
+                      context
+                          .read<ConnectFeedBloc>()
+                          .add(ConnectFeedEvent.changeTopicFilter(i));
+                    },
+                  ),
 
-                const SizedBox(height: 18),
+                  const SizedBox(height: 18),
 
-                // ── Post list ──────────────────────────────────────────
-                Column(
-                  children: List.generate(_posts.length, (i) {
-                    final post = _posts[i];
-                    final bool liked = _liked[i] ?? false;
+                  // ── Post list ────────────────────────────────────────────
+                  BlocBuilder<ConnectFeedBloc, ConnectFeedState>(
+                    builder: (context, state) {
+                      if (state is FeedLoading) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 48),
+                          child: Center(
+                            child: _LoadingIndicator(),
+                          ),
+                        );
+                      }
 
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: i < _posts.length - 1 ? 14 : 0,
-                      ),
-                      child: _PostCard(
-                        post: post,
-                        liked: liked,
-                        cs: cs,
-                        line: line,
-                        ink2: ink2,
-                        ink3: ink3,
-                        onLike: () => _toggleLike(i),
-                      ),
-                    );
-                  }),
-                ),
-              ],
+                      if (state is FeedError) {
+                        return _FeedError(
+                          message: state.message,
+                          onRetry: () => context
+                              .read<ConnectFeedBloc>()
+                              .add(const ConnectFeedEvent.loadFeed(reset: true)),
+                        );
+                      }
+
+                      if (state is FeedLoaded) {
+                        if (state.posts.isEmpty) {
+                          return const _EmptyFeed();
+                        }
+                        return Column(
+                          children: [
+                            for (int i = 0; i < state.posts.length; i++) ...[
+                              PostCard(
+                                post: state.posts[i],
+                                onLike: () => context
+                                    .read<ConnectFeedBloc>()
+                                    .add(ConnectFeedEvent.toggleLike(
+                                        state.posts[i].id)),
+                                onReply: () => context.push(
+                                    '/community/thread/${state.posts[i].id}'),
+                                onReport: () => ReportPostSheet.show(
+                                    context, state.posts[i].id),
+                              ),
+                              if (i < state.posts.length - 1)
+                                const SizedBox(height: 14),
+                            ],
+                            if (state.isLoadingMore)
+                              const Padding(
+                                padding: EdgeInsets.only(top: 16),
+                                child: Center(child: _LoadingIndicator()),
+                              ),
+                          ],
+                        );
+                      }
+
+                      // FeedInitial
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
+          ),
         ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// LOADING INDICATOR
+// =============================================================================
+
+class _LoadingIndicator extends StatelessWidget {
+  const _LoadingIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Loading posts',
+      child: const CircularProgressIndicator.adaptive(),
+    );
+  }
+}
+
+// =============================================================================
+// EMPTY STATE
+// =============================================================================
+
+class _EmptyFeed extends StatelessWidget {
+  const _EmptyFeed();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      child: Center(
+        child: Text(
+          'No posts yet. Be the first to share!',
+          style: theme.textTheme.bodyLarge,
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// FEED ERROR
+// =============================================================================
+
+class _FeedError extends StatelessWidget {
+  const _FeedError({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      child: Column(
+        children: [
+          Text(
+            message,
+            style: theme.textTheme.bodyLarge?.copyWith(color: cs.error),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          Semantics(
+            button: true,
+            label: 'Retry loading posts',
+            child: TextButton(
+              onPressed: onRetry,
+              child: const Text('Retry'),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -323,307 +455,6 @@ class _TopicChip extends StatelessWidget {
 }
 
 // =============================================================================
-// POST CARD
-// =============================================================================
-
-class _PostCard extends StatelessWidget {
-  const _PostCard({
-    required this.post,
-    required this.liked,
-    required this.cs,
-    required this.line,
-    required this.ink2,
-    required this.ink3,
-    required this.onLike,
-  });
-
-  final _PostData post;
-  final bool liked;
-  final ColorScheme cs;
-  final Color line;
-  final Color ink2;
-  final Color ink3;
-  final VoidCallback onLike;
-
-  @override
-  Widget build(BuildContext context) {
-    // Adjust the displayed like count relative to the seed state.
-    // _isInitiallyLiked == true  → seed already included +1; un-liking removes it.
-    // _isInitiallyLiked == false → seed did not include +1; liking adds it.
-    final int displayLikes =
-        post.likes +
-        (liked == _isInitiallyLiked
-            ? 0
-            : liked
-            ? 1
-            : -1);
-
-    return Semantics(
-      container: true,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: line, width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF142850).withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Post header ──────────────────────────────────────────────
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Avatar — decorative, announced via card container
-                ExcludeSemantics(
-                  child: Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: post.avatarColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Builder(builder: (context) {
-                        final theme = Theme.of(context);
-                        return Text(
-                          post.initials,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        );
-                      }),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                // Name + meta
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Builder(builder: (context) {
-                      final theme = Theme.of(context);
-                      return Text(
-                        post.name,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: cs.onSurface,
-                        ),
-                      );
-                    }),
-                    const SizedBox(height: 2),
-                    Builder(builder: (context) {
-                      final theme = Theme.of(context);
-                      return Text(
-                        post.meta,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: ink3,
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-              ],
-            ),
-
-            // ── Post body ────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Builder(builder: (context) {
-                final theme = Theme.of(context);
-                return Text(
-                  post.body,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: cs.onSurface,
-                    height: 1.5,
-                  ),
-                );
-              }),
-            ),
-
-            // ── Post actions ─────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.only(top: 14),
-              child: _PostActions(
-                likes: displayLikes,
-                replies: post.replies,
-                liked: liked,
-                cs: cs,
-                ink2: ink2,
-                onLike: onLike,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Whether this post was initially liked in the seed data.
-  /// Post 0 (Dewi W.) starts as liked, post 1 (Hendra S.) starts as not liked.
-  bool get _isInitiallyLiked => post.initials == 'DW';
-}
-
-// =============================================================================
-// POST ACTIONS ROW
-// =============================================================================
-
-class _PostActions extends StatelessWidget {
-  const _PostActions({
-    required this.likes,
-    required this.replies,
-    required this.liked,
-    required this.cs,
-    required this.ink2,
-    required this.onLike,
-  });
-
-  final int likes;
-  final int replies;
-  final bool liked;
-  final ColorScheme cs;
-  final Color ink2;
-  final VoidCallback onLike;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // Like button
-        Semantics(
-          button: true,
-          label: 'Like, $likes likes${liked ? ", liked" : ""}',
-          child: GestureDetector(
-            onTap: onLike,
-            child: SizedBox(
-              height: AppDimensions.minTapTarget,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ExcludeSemantics(
-                    child: Icon(
-                      liked ? Icons.favorite : Icons.favorite_border,
-                      size: 20,
-                      color: liked ? cs.error : ink2,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  ExcludeSemantics(
-                    child: Builder(builder: (context) {
-                      final theme = Theme.of(context);
-                      return Text(
-                        '$likes',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: liked ? cs.error : ink2,
-                        ),
-                      );
-                    }),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-
-        const SizedBox(width: 20),
-
-        // Reply button
-        Semantics(
-          button: true,
-          label: 'Reply, $replies replies',
-          child: GestureDetector(
-            onTap: () {
-              // TODO(community): open reply thread
-            },
-            child: SizedBox(
-              height: AppDimensions.minTapTarget,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ExcludeSemantics(
-                    child: Icon(
-                      Icons.reply_outlined,
-                      size: 20,
-                      color: ink2,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  ExcludeSemantics(
-                    child: Builder(builder: (context) {
-                      final theme = Theme.of(context);
-                      return Text(
-                        '$replies',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: ink2,
-                        ),
-                      );
-                    }),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-
-        // Spacer pushes Listen to the right
-        const Spacer(),
-
-        // Listen button
-        Semantics(
-          button: true,
-          label: 'Listen to post',
-          child: GestureDetector(
-            onTap: () {
-              // TODO(community): read post aloud via TTS
-            },
-            child: SizedBox(
-              height: AppDimensions.minTapTarget,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ExcludeSemantics(
-                    child: Icon(
-                      Icons.volume_up_outlined,
-                      size: 20,
-                      color: cs.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  ExcludeSemantics(
-                    child: Builder(builder: (context) {
-                      final theme = Theme.of(context);
-                      return Text(
-                        'Listen',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: cs.primary,
-                        ),
-                      );
-                    }),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// =============================================================================
 // COMPOSE FAB
 // =============================================================================
 
@@ -638,9 +469,7 @@ class _ComposeFab extends StatelessWidget {
       button: true,
       label: 'Create new post',
       child: GestureDetector(
-        onTap: () {
-          // TODO(community): open compose new post sheet
-        },
+        onTap: () => context.push('/community/compose'),
         child: ExcludeSemantics(
           child: Container(
             width: 60,
@@ -667,29 +496,4 @@ class _ComposeFab extends StatelessWidget {
       ),
     );
   }
-}
-
-// =============================================================================
-// DATA CLASSES
-// =============================================================================
-
-/// Immutable data for a community post card.
-class _PostData {
-  const _PostData({
-    required this.avatarColor,
-    required this.initials,
-    required this.name,
-    required this.meta,
-    required this.body,
-    required this.likes,
-    required this.replies,
-  });
-
-  final Color avatarColor;
-  final String initials;
-  final String name;
-  final String meta;
-  final String body;
-  final int likes;
-  final int replies;
 }

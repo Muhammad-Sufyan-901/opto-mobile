@@ -23,9 +23,15 @@ import 'package:opto/features/setup/presentation/screens/vision_profile_screen.d
 import 'package:opto/features/setup/presentation/screens/display_setup_screen.dart';
 import 'package:opto/features/setup/presentation/screens/voice_setup_screen.dart';
 import 'package:opto/features/setup/presentation/screens/permissions_setup_screen.dart';
+import 'package:opto/features/consultation/presentation/screens/booking_screen.dart';
 import 'package:opto/features/consultation/presentation/screens/consult_screen.dart';
+import 'package:opto/features/consultation/presentation/screens/consultation_history_screen.dart';
+import 'package:opto/features/consultation/presentation/screens/doctor_profile_screen.dart';
+import 'package:opto/features/consultation/presentation/screens/non_verbal_consult_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
 import 'package:opto/features/connect/presentation/screens/community_screen.dart';
+import 'package:opto/features/connect/presentation/screens/compose_post_screen.dart';
+import 'package:opto/features/connect/presentation/screens/post_thread_screen.dart';
 import 'package:opto/features/profile/presentation/screens/profile_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
 import 'package:opto/features/sos/presentation/screens/sos_active_screen.dart';
@@ -322,12 +328,62 @@ final GoRouter appRouter = GoRouter(
           const ConsultScreen(),
     ),
 
+    // Screen 18a — Doctor profile + availability
+    GoRoute(
+      path: AppRoutes.consultDoctorProfile.path,
+      name: AppRoutes.consultDoctorProfile.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const DoctorProfileScreen(),
+    ),
+
+    // Screen 18b — Booking flow (slot + mode + confirm)
+    GoRoute(
+      path: AppRoutes.consultBooking.path,
+      name: AppRoutes.consultBooking.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const BookingScreen(),
+    ),
+
+    // Screen 18c — Consultation history (🔒 medically sensitive)
+    GoRoute(
+      path: AppRoutes.consultHistory.path,
+      name: AppRoutes.consultHistory.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const ConsultationHistoryScreen(),
+    ),
+
+    // Screen 18d — Non-verbal consultation session (no video)
+    GoRoute(
+      path: AppRoutes.consultNonVerbal.path,
+      name: AppRoutes.consultNonVerbal.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const NonVerbalConsultScreen(),
+    ),
+
     // Screen 19 — Community
     GoRoute(
       path: AppRoutes.community.path,
       name: AppRoutes.community.name,
       builder: (BuildContext context, GoRouterState state) =>
           const CommunityScreen(),
+    ),
+
+    // Screen 19a — Compose new post
+    GoRoute(
+      path: AppRoutes.communityCompose.path,
+      name: AppRoutes.communityCompose.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const ComposePostScreen(),
+    ),
+
+    // Screen 19b — Post thread (replies)
+    GoRoute(
+      path: AppRoutes.communityThread.path,
+      name: AppRoutes.communityThread.name,
+      builder: (BuildContext context, GoRouterState state) {
+        final String postId = state.pathParameters['postId']!;
+        return PostThreadScreen(postId: postId);
+      },
     ),
 
     // Screen 20 — Profile

@@ -34,7 +34,16 @@ class StorageFailure extends Failure {
   const StorageFailure(super.message);
 }
 
-// Failure from device location (GPS, permissions, services disabled)
-class LocationFailure extends Failure {
-  const LocationFailure(super.message);
+// Failure when a requested resource does not exist (HTTP 404 / PGRST116).
+// BLoC presenters should show a "not found" or "no results" state rather
+// than a generic error.
+class NotFoundFailure extends Failure {
+  const NotFoundFailure(super.message);
+}
+
+// Failure when an operation conflicts with existing data (HTTP 409 / 23505).
+// Typical cause: booking a slot that has already been taken by another patient.
+// BLoC presenters should surface a human-readable "try another slot" message.
+class ConflictFailure extends Failure {
+  const ConflictFailure(super.message);
 }

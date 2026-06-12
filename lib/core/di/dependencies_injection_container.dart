@@ -3,15 +3,37 @@ import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:opto/core/accessibility/haptic_controller.dart';
+import 'package:opto/core/config/secure_storage_config.dart';
+import 'package:opto/core/utils/secure_storage_helper.dart';
 import 'package:opto/core/voice/intent_parser.dart';
 import 'package:opto/core/voice/speech_recognizer.dart';
 import 'package:opto/core/voice/voice_controller.dart';
-import 'package:opto/core/config/secure_storage_config.dart';
-import 'package:opto/core/utils/secure_storage_helper.dart';
 import 'package:opto/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:opto/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:opto/features/auth/domain/repositories/auth_repository.dart';
 import 'package:opto/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:opto/features/connect/data/datasources/connect_remote_data_source.dart';
+import 'package:opto/features/consultation/data/datasources/consultation_remote_data_source.dart';
+import 'package:opto/features/consultation/data/repositories/booking_repository_impl.dart';
+import 'package:opto/features/consultation/data/repositories/consultation_history_repository_impl.dart';
+import 'package:opto/features/consultation/data/repositories/doctor_directory_repository_impl.dart';
+import 'package:opto/features/consultation/domain/repositories/booking_repository.dart';
+import 'package:opto/features/consultation/domain/repositories/consultation_history_repository.dart';
+import 'package:opto/features/consultation/domain/repositories/doctor_directory_repository.dart';
+import 'package:opto/features/consultation/presentation/bloc/doctor_search_bloc.dart';
+import 'package:opto/features/consultation/presentation/cubit/booking_cubit.dart';
+import 'package:opto/features/consultation/presentation/cubit/consultation_history_cubit.dart';
+import 'package:opto/features/consultation/presentation/cubit/eye_care_exercises_cubit.dart';
+import 'package:opto/features/connect/data/repositories/connect_repository_impl.dart';
+import 'package:opto/features/connect/data/repositories/follow_repository_impl.dart';
+import 'package:opto/features/connect/data/repositories/report_repository_impl.dart';
+import 'package:opto/features/connect/domain/repositories/connect_repository.dart';
+import 'package:opto/features/connect/domain/repositories/follow_repository.dart';
+import 'package:opto/features/connect/domain/repositories/report_repository.dart';
+import 'package:opto/features/connect/presentation/bloc/compose_post_bloc.dart';
+import 'package:opto/features/connect/presentation/bloc/connect_feed_bloc.dart';
+import 'package:opto/features/connect/presentation/cubit/post_thread_cubit.dart';
+import 'package:opto/features/connect/presentation/cubit/report_cubit.dart';
 import 'package:opto/features/profile/data/datasources/profile_remote_data_source.dart';
 import 'package:opto/features/profile/data/repositories/accessibility_settings_repository_impl.dart';
 import 'package:opto/features/profile/data/repositories/caregiver_link_repository_impl.dart';
@@ -138,43 +160,98 @@ Future<void> init() async {
     () => ProfileBloc(sl<ProfileRepository>()),
   );
 
-  // ── Accessibility Map (Phase 3B) ──────────────────────────────────────────
-  // Location service is cross-cutting (reused by SOS in Phase 3E).
+  // ===============================================================
+  // ── CONNECT (COMMUNITY) ──
+  // ===============================================================
 
-  sl.registerLazySingleton<LocationService>(
-    () => const GeolocatorLocationService(),
+  // Data Sources
+  sl.registerLazySingleton<ConnectRemoteDataSource>(
+    () => ConnectRemoteDataSourceImpl(),
   );
 
-  sl.registerLazySingleton<MapRemoteDataSource>(
-    () => MapRemoteDataSourceImpl(),
-  );
-
-  sl.registerLazySingleton<PoiRepository>(
-    () => PoiRepositoryImpl(
-      remoteDataSource: sl<MapRemoteDataSource>(),
+  // Repositories
+  sl.registerFactory<ConnectRepository>(
+    () => ConnectRepositoryImpl(
+      remoteDataSource: sl<ConnectRemoteDataSource>(),
     ),
   );
 
-  sl.registerLazySingleton<ContributionsRepository>(
-    () => ContributionsRepositoryImpl(
-      remoteDataSource: sl<MapRemoteDataSource>(),
+  sl.registerLazySingleton<FollowRepository>(
+    () => FollowRepositoryImpl(
+      remoteDataSource: sl<ConnectRemoteDataSource>(),
     ),
   );
 
-  // NearbyPoisBloc is a singleton so the Map visual screen shares loaded state
-  // with the list screen without re-fetching.
-  sl.registerLazySingleton<NearbyPoisBloc>(
-    () => NearbyPoisBloc(sl<PoiRepository>()),
-  );
-
-  sl.registerFactory<PoiDetailCubit>(
-    () => PoiDetailCubit(
-      poiRepository: sl<PoiRepository>(),
-      contributionsRepository: sl<ContributionsRepository>(),
+  sl.registerLazySingleton<ReportRepository>(
+    () => ReportRepositoryImpl(
+      remoteDataSource: sl<ConnectRemoteDataSource>(),
     ),
   );
 
-  sl.registerFactory<AddPoiCubit>(
-    () => AddPoiCubit(sl<PoiRepository>()),
+  // BLoCs / Cubits — registerFactory so each screen gets a fresh instance
+  // with its own Realtime subscription lifecycle.
+  sl.registerFactory<ConnectFeedBloc>(
+    () => ConnectFeedBloc(sl<ConnectRepository>()),
+  );
+
+  sl.registerFactory<ComposePostBloc>(
+    () => ComposePostBloc(sl<ConnectRepository>()),
+  );
+
+  sl.registerFactory<PostThreadCubit>(
+    () => PostThreadCubit(sl<ConnectRepository>()),
+  );
+
+  sl.registerFactory<ReportCubit>(
+    () => ReportCubit(sl<ReportRepository>()),
+  );
+
+  // ===============================================================
+  // ── CONSULTATION (HEALTH & CONSULTATION) ──
+  // ===============================================================
+  // Repos use registerLazySingleton (no Realtime channel this phase, unlike
+  // connect which registers factories because it owns a Realtime channel
+  // per bloc instance).
+  // BLoCs/cubits use registerFactory — each pushed route gets a fresh instance.
+
+  // Data Source
+  sl.registerLazySingleton<ConsultationRemoteDataSource>(
+    () => ConsultationRemoteDataSourceImpl(),
+  );
+
+  // Repositories
+  sl.registerLazySingleton<DoctorDirectoryRepository>(
+    () => DoctorDirectoryRepositoryImpl(
+      remoteDataSource: sl<ConsultationRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerLazySingleton<BookingRepository>(
+    () => BookingRepositoryImpl(
+      remoteDataSource: sl<ConsultationRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerLazySingleton<ConsultationHistoryRepository>(
+    () => ConsultationHistoryRepositoryImpl(
+      remoteDataSource: sl<ConsultationRemoteDataSource>(),
+    ),
+  );
+
+  // BLoCs / Cubits
+  sl.registerFactory<DoctorSearchBloc>(
+    () => DoctorSearchBloc(sl<DoctorDirectoryRepository>()),
+  );
+
+  sl.registerFactory<BookingCubit>(
+    () => BookingCubit(sl<BookingRepository>()),
+  );
+
+  sl.registerFactory<ConsultationHistoryCubit>(
+    () => ConsultationHistoryCubit(sl<ConsultationHistoryRepository>()),
+  );
+
+  sl.registerFactory<EyeCareExercisesCubit>(
+    () => EyeCareExercisesCubit(sl<DoctorDirectoryRepository>()),
   );
 }
