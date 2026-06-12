@@ -48,7 +48,7 @@ class SpecialistChatCubit extends Cubit<SpecialistChatState> {
       sentAt: DateTime.now(),
     );
 
-    final updatedMessages = [
+    final updatedMessages = <ChatMessage>[
       ...(_rooms[specialistId] ?? []),
       userMessage,
     ];
@@ -78,7 +78,7 @@ class SpecialistChatCubit extends Cubit<SpecialistChatState> {
         sentAt: DateTime.now(),
       );
 
-      final withReply = [
+      final withReply = <ChatMessage>[
         ...(_rooms[specialistId] ?? []),
         replyMessage,
       ];
