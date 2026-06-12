@@ -164,7 +164,6 @@ class _ChatViewState extends State<_ChatView> {
             // ── Composer ──────────────────────────────────────────────────
             ChatComposer(
               onSend: (text) {
-                HapticPatterns.focusTick();
                 context.read<SpecialistChatCubit>().sendMessage(text);
               },
             ),

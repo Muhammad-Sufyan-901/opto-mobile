@@ -3,6 +3,7 @@
 // Text input row at the bottom of the specialist chat screen.
 // Calls [onSend] with the trimmed text and clears the field on send.
 import 'package:flutter/material.dart';
+import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 
@@ -41,6 +42,7 @@ class _ChatComposerState extends State<ChatComposer> {
   void _send() {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
+    HapticPatterns.focusTick();
     widget.onSend(text);
     _controller.clear();
     _focusNode.requestFocus();
