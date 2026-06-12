@@ -56,6 +56,30 @@ abstract class AppRoutes {
     name: 'communityThread',
   );
 
+  /// Screen 18a — Doctor profile and availability slots.
+  static const AppRoute consultDoctorProfile = AppRoute(
+    path: '/consult/doctor/:id',
+    name: 'consult_doctor_profile',
+  );
+
+  /// Screen 18b — Consultation booking flow (slot pick + mode + confirm).
+  static const AppRoute consultBooking = AppRoute(
+    path: '/consult/book',
+    name: 'consult_booking',
+  );
+
+  /// Screen 18c — Patient's consultation history (🔒 medically sensitive).
+  static const AppRoute consultHistory = AppRoute(
+    path: '/consult/history',
+    name: 'consult_history',
+  );
+
+  /// Screen 18d — Non-verbal consultation session (audio/text, no video).
+  static const AppRoute consultNonVerbal = AppRoute(
+    path: '/consult/session/non-verbal',
+    name: 'consult_non_verbal',
+  );
+
   /// Screen 20 — Profile & Settings (account + preferences).
   static const AppRoute profile = AppRoute(
     path: '/profile',

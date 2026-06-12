@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/features/consultation/presentation/bloc/doctor_search_bloc.dart';
+import 'package:opto/features/consultation/presentation/cubit/booking_cubit.dart';
+import 'package:opto/features/consultation/presentation/widgets/doctor_card.dart';
 import 'package:opto/features/home/presentation/widgets/home_bottom_nav.dart';
 
 /// Screen 18 — Health & Consultation
@@ -14,14 +20,41 @@ import 'package:opto/features/home/presentation/widgets/home_bottom_nav.dart';
 ///
 /// Layout: white Scaffold, SafeArea + SingleChildScrollView,
 /// bottom nav active at index 3 (Consult).
-class ConsultScreen extends StatefulWidget {
+///
+/// BLoC providers are injected here at the outer [StatelessWidget] shell;
+/// the inner [_ConsultView] consumes them.
+class ConsultScreen extends StatelessWidget {
   const ConsultScreen({super.key});
 
   @override
-  State<ConsultScreen> createState() => _ConsultScreenState();
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<DoctorSearchBloc>(
+          create: (_) => sl<DoctorSearchBloc>()
+            ..add(const DoctorSearchEvent.loadDoctors()),
+        ),
+        BlocProvider<BookingCubit>(
+          create: (_) => sl<BookingCubit>()..loadMyBookings(),
+        ),
+      ],
+      child: const _ConsultView(),
+    );
+  }
 }
 
-class _ConsultScreenState extends State<ConsultScreen> {
+// =============================================================================
+// INNER VIEW
+// =============================================================================
+
+class _ConsultView extends StatefulWidget {
+  const _ConsultView();
+
+  @override
+  State<_ConsultView> createState() => _ConsultViewState();
+}
+
+class _ConsultViewState extends State<_ConsultView> {
   @override
   void initState() {
     super.initState();
@@ -67,35 +100,59 @@ class _ConsultScreenState extends State<ConsultScreen> {
 
                 const SizedBox(height: AppDimensions.space12),
 
-                // ── Doctor list ────────────────────────────────────────────
-                _DoctorRow(
-                  avatarColor: const Color(0xFF1F8A5B),
-                  initials: 'SR',
-                  name: 'Dr. Sari Rahmawati',
-                  role: 'Low-vision specialist',
-                  status: 'Online',
-                  cs: cs,
-                  ext: ext,
-                ),
-                const SizedBox(height: AppDimensions.space12),
-                _DoctorRow(
-                  avatarColor: const Color(0xFF8A5CFF),
-                  initials: 'BP',
-                  name: 'Dr. Budi Pratama',
-                  role: 'Prosthetic fitting',
-                  status: 'Online',
-                  cs: cs,
-                  ext: ext,
-                ),
-                const SizedBox(height: AppDimensions.space12),
-                _DoctorRow(
-                  avatarColor: const Color(0xFFD97757),
-                  initials: 'MN',
-                  name: 'Dr. Maya Nuraini',
-                  role: 'Optometrist',
-                  status: 'In 30 min',
-                  cs: cs,
-                  ext: ext,
+                // ── Doctor list (real data from DoctorSearchBloc) ──────────
+                BlocBuilder<DoctorSearchBloc, DoctorSearchState>(
+                  builder: (context, state) {
+                    if (state is DoctorSearchLoading ||
+                        state is DoctorSearchInitial) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 32),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    if (state is DoctorSearchError) {
+                      return Column(
+                        children: [
+                          Text(
+                            state.message,
+                            style: theme.textTheme.bodyMedium
+                                ?.copyWith(color: cs.error),
+                          ),
+                          const SizedBox(height: 12),
+                          Semantics(
+                            button: true,
+                            label: 'Retry loading doctors',
+                            child: TextButton(
+                              onPressed: () => context
+                                  .read<DoctorSearchBloc>()
+                                  .add(const DoctorSearchEvent.loadDoctors()),
+                              child: const Text('Retry'),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+                    if (state is DoctorSearchLoaded) {
+                      if (state.doctors.isEmpty) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 32),
+                          child: Center(
+                              child: Text('No doctors available.')),
+                        );
+                      }
+                      return Column(
+                        children: [
+                          for (final doctor in state.doctors)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  bottom: AppDimensions.space12),
+                              child: DoctorCard(doctor: doctor),
+                            ),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
                 ),
 
                 const SizedBox(height: 18),
@@ -314,14 +371,25 @@ class _AppointmentCard extends StatelessWidget {
           // ── Action buttons ─────────────────────────────────────────────
           Row(
             children: [
-              // Join call (primary)
+              // Join call (coming soon stub)
               Expanded(
                 child: Semantics(
                   button: true,
-                  label: 'Join video call with Dr. Anwar Anggara',
+                  label: 'Video call with Dr. Anwar Anggara. Coming soon',
                   child: GestureDetector(
                     onTap: () {
-                      // TODO(consult): launch video call
+                      HapticPatterns.focusTick();
+                      SemanticsService.announce(
+                        'Video calls are coming soon. You can book a non-verbal consultation instead.',
+                        TextDirection.ltr,
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Video calls coming soon. Try non-verbal consultation.'),
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
                     },
                     child: Container(
                       height: 54,
@@ -419,11 +487,11 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    return ExcludeSemantics(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        ExcludeSemantics(
+          child: Text(
             'AVAILABLE NOW',
             style: theme.textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.w700,
@@ -431,166 +499,31 @@ class _SectionLabel extends StatelessWidget {
               color: cs.onSurfaceVariant,
             ),
           ),
-          Text(
-            'See all',
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: cs.primary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// A single doctor row with avatar, name, role, and availability status pill.
-class _DoctorRow extends StatelessWidget {
-  const _DoctorRow({
-    required this.avatarColor,
-    required this.initials,
-    required this.name,
-    required this.role,
-    required this.status,
-    required this.cs,
-    required this.ext,
-  });
-
-  final Color avatarColor;
-  final String initials;
-  final String name;
-  final String role;
-  final String status;
-  final ColorScheme cs;
-  final AppExtendedCustomColors? ext;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color line = ext?.line ?? cs.outline;
-    final Color ink2 = ext?.ink2 ?? cs.onSurfaceVariant;
-
-    return Semantics(
-      button: true,
-      label: '$name, $role, $status',
-      child: GestureDetector(
-        onTap: () {
-          // TODO(consult): navigate to doctor profile / booking
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            vertical: 13,
-            horizontal: 16,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusRow),
-            border: Border.all(color: line, width: 1.5),
-          ),
-          child: ExcludeSemantics(
-            child: Row(
-              children: [
-                // Avatar
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: avatarColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Builder(builder: (context) {
-                      final theme = Theme.of(context);
-                      return Text(
-                        initials,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      );
-                    }),
+        ),
+        Semantics(
+          button: true,
+          label: 'See all doctors',
+          child: GestureDetector(
+            onTap: () {
+              // TODO(consult): navigate to full doctor list
+            },
+            child: SizedBox(
+              height: AppDimensions.minTapTarget,
+              child: Center(
+                child: ExcludeSemantics(
+                  child: Text(
+                    'See all',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: cs.primary,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                // Name + role
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Builder(builder: (context) {
-                        final theme = Theme.of(context);
-                        return Text(
-                          name,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: cs.onSurface,
-                          ),
-                        );
-                      }),
-                      const SizedBox(height: 2),
-                      Builder(builder: (context) {
-                        final theme = Theme.of(context);
-                        return Text(
-                          role,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: ink2,
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Status pill
-                _StatusPill(status: status, cs: cs, ext: ext),
-              ],
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Pill-shaped availability badge — green for "Online", grey for unavailable.
-class _StatusPill extends StatelessWidget {
-  const _StatusPill({
-    required this.status,
-    required this.cs,
-    required this.ext,
-  });
-
-  final String status;
-  final ColorScheme cs;
-  final AppExtendedCustomColors? ext;
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isOnline = status == 'Online';
-
-    final Color bgColor = isOnline
-        ? (ext?.greenTint ?? cs.secondaryContainer)
-        : (ext?.line ?? cs.outline);
-
-    final Color textColor = isOnline
-        ? (ext?.green ?? cs.secondary)
-        : (ext?.ink3 ?? cs.onSurfaceVariant);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Builder(builder: (context) {
-        final theme = Theme.of(context);
-        return Text(
-          status,
-          style: theme.textTheme.labelSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: textColor,
-          ),
-        );
-      }),
+      ],
     );
   }
 }
@@ -608,7 +541,7 @@ class _BookCta extends StatelessWidget {
       label: 'Book a new appointment',
       child: InkWell(
         onTap: () {
-          // TODO(consult): open appointment booking flow
+          context.push(AppRoutes.consultBooking.path);
         },
         borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         child: Container(

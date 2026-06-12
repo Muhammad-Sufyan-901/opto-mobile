@@ -23,7 +23,11 @@ import 'package:opto/features/setup/presentation/screens/vision_profile_screen.d
 import 'package:opto/features/setup/presentation/screens/display_setup_screen.dart';
 import 'package:opto/features/setup/presentation/screens/voice_setup_screen.dart';
 import 'package:opto/features/setup/presentation/screens/permissions_setup_screen.dart';
+import 'package:opto/features/consultation/presentation/screens/booking_screen.dart';
 import 'package:opto/features/consultation/presentation/screens/consult_screen.dart';
+import 'package:opto/features/consultation/presentation/screens/consultation_history_screen.dart';
+import 'package:opto/features/consultation/presentation/screens/doctor_profile_screen.dart';
+import 'package:opto/features/consultation/presentation/screens/non_verbal_consult_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
 import 'package:opto/features/connect/presentation/screens/community_screen.dart';
 import 'package:opto/features/connect/presentation/screens/compose_post_screen.dart';
@@ -314,6 +318,38 @@ final GoRouter appRouter = GoRouter(
       name: AppRoutes.consult.name,
       builder: (BuildContext context, GoRouterState state) =>
           const ConsultScreen(),
+    ),
+
+    // Screen 18a — Doctor profile + availability
+    GoRoute(
+      path: AppRoutes.consultDoctorProfile.path,
+      name: AppRoutes.consultDoctorProfile.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const DoctorProfileScreen(),
+    ),
+
+    // Screen 18b — Booking flow (slot + mode + confirm)
+    GoRoute(
+      path: AppRoutes.consultBooking.path,
+      name: AppRoutes.consultBooking.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const BookingScreen(),
+    ),
+
+    // Screen 18c — Consultation history (🔒 medically sensitive)
+    GoRoute(
+      path: AppRoutes.consultHistory.path,
+      name: AppRoutes.consultHistory.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const ConsultationHistoryScreen(),
+    ),
+
+    // Screen 18d — Non-verbal consultation session (no video)
+    GoRoute(
+      path: AppRoutes.consultNonVerbal.path,
+      name: AppRoutes.consultNonVerbal.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const NonVerbalConsultScreen(),
     ),
 
     // Screen 19 — Community

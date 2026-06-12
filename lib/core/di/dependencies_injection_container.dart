@@ -13,6 +13,17 @@ import 'package:opto/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:opto/features/auth/domain/repositories/auth_repository.dart';
 import 'package:opto/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:opto/features/connect/data/datasources/connect_remote_data_source.dart';
+import 'package:opto/features/consultation/data/datasources/consultation_remote_data_source.dart';
+import 'package:opto/features/consultation/data/repositories/booking_repository_impl.dart';
+import 'package:opto/features/consultation/data/repositories/consultation_history_repository_impl.dart';
+import 'package:opto/features/consultation/data/repositories/doctor_directory_repository_impl.dart';
+import 'package:opto/features/consultation/domain/repositories/booking_repository.dart';
+import 'package:opto/features/consultation/domain/repositories/consultation_history_repository.dart';
+import 'package:opto/features/consultation/domain/repositories/doctor_directory_repository.dart';
+import 'package:opto/features/consultation/presentation/bloc/doctor_search_bloc.dart';
+import 'package:opto/features/consultation/presentation/cubit/booking_cubit.dart';
+import 'package:opto/features/consultation/presentation/cubit/consultation_history_cubit.dart';
+import 'package:opto/features/consultation/presentation/cubit/eye_care_exercises_cubit.dart';
 import 'package:opto/features/connect/data/repositories/connect_repository_impl.dart';
 import 'package:opto/features/connect/data/repositories/follow_repository_impl.dart';
 import 'package:opto/features/connect/data/repositories/report_repository_impl.dart';
@@ -184,5 +195,54 @@ Future<void> init() async {
 
   sl.registerFactory<ReportCubit>(
     () => ReportCubit(sl<ReportRepository>()),
+  );
+
+  // ===============================================================
+  // ── CONSULTATION (HEALTH & CONSULTATION) ──
+  // ===============================================================
+  // Repos use registerLazySingleton (no Realtime channel this phase, unlike
+  // connect which registers factories because it owns a Realtime channel
+  // per bloc instance).
+  // BLoCs/cubits use registerFactory — each pushed route gets a fresh instance.
+
+  // Data Source
+  sl.registerLazySingleton<ConsultationRemoteDataSource>(
+    () => ConsultationRemoteDataSourceImpl(),
+  );
+
+  // Repositories
+  sl.registerLazySingleton<DoctorDirectoryRepository>(
+    () => DoctorDirectoryRepositoryImpl(
+      remoteDataSource: sl<ConsultationRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerLazySingleton<BookingRepository>(
+    () => BookingRepositoryImpl(
+      remoteDataSource: sl<ConsultationRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerLazySingleton<ConsultationHistoryRepository>(
+    () => ConsultationHistoryRepositoryImpl(
+      remoteDataSource: sl<ConsultationRemoteDataSource>(),
+    ),
+  );
+
+  // BLoCs / Cubits
+  sl.registerFactory<DoctorSearchBloc>(
+    () => DoctorSearchBloc(sl<DoctorDirectoryRepository>()),
+  );
+
+  sl.registerFactory<BookingCubit>(
+    () => BookingCubit(sl<BookingRepository>()),
+  );
+
+  sl.registerFactory<ConsultationHistoryCubit>(
+    () => ConsultationHistoryCubit(sl<ConsultationHistoryRepository>()),
+  );
+
+  sl.registerFactory<EyeCareExercisesCubit>(
+    () => EyeCareExercisesCubit(sl<DoctorDirectoryRepository>()),
   );
 }
