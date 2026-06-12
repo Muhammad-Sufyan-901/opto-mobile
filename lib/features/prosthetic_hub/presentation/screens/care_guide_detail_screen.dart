@@ -20,7 +20,14 @@ class CareGuideDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final guide = GoRouterState.of(context).extra as CareGuide;
+    final guide = GoRouterState.of(context).extra;
+    if (guide is! CareGuide) {
+      // extra is missing or wrong type (e.g. after hot restart or deep link)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.canPop()) context.pop();
+      });
+      return const Scaffold(body: SizedBox.shrink());
+    }
     return _CareGuideDetailView(guide: guide);
   }
 }

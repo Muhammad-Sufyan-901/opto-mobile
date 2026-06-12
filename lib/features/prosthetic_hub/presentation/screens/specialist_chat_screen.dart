@@ -25,17 +25,17 @@ class SpecialistChatScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final specialist =
-        GoRouterState.of(context).extra as Specialist?;
-    if (specialist == null) {
-      return const Scaffold(
-        body: Center(child: Text('Specialist not found.')),
-      );
+    final extra = GoRouterState.of(context).extra;
+    if (extra is! Specialist) {
+      // extra is missing or wrong type (e.g. after hot restart or deep link)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.canPop()) context.pop();
+      });
+      return const Scaffold(body: SizedBox.shrink());
     }
     return BlocProvider<SpecialistChatCubit>(
-      create: (_) =>
-          sl<SpecialistChatCubit>()..openRoom(specialist.id),
-      child: _ChatView(specialist: specialist),
+      create: (_) => sl<SpecialistChatCubit>()..openRoom(extra.id),
+      child: _ChatView(specialist: extra),
     );
   }
 }

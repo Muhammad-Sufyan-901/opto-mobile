@@ -360,19 +360,22 @@ final GoRouter appRouter = GoRouter(
     ),
 
     // Screen 17c-profile — Specialist profile
+    // Screen 17c-chat is nested here so GoRouter does not greedily match :id
+    // and shadow the /chat suffix with a sibling route.
     GoRoute(
       path: AppRoutes.prostheticSpecialistProfile.path,
       name: AppRoutes.prostheticSpecialistProfile.name,
       builder: (BuildContext context, GoRouterState state) =>
           const SpecialistProfileScreen(),
-    ),
-
-    // Screen 17c-chat — 1:1 specialist chat room
-    GoRoute(
-      path: AppRoutes.prostheticSpecialistChat.path,
-      name: AppRoutes.prostheticSpecialistChat.name,
-      builder: (BuildContext context, GoRouterState state) =>
-          const SpecialistChatScreen(),
+      routes: [
+        // Screen 17c-chat — 1:1 specialist chat room
+        GoRoute(
+          path: 'chat', // relative → resolves to /prosthetic-hub/specialists/:id/chat
+          name: AppRoutes.prostheticSpecialistChat.name,
+          builder: (BuildContext context, GoRouterState state) =>
+              const SpecialistChatScreen(),
+        ),
+      ],
     ),
 
     // Screen 18 — Consult

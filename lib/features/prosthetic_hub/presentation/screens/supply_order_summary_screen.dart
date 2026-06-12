@@ -29,8 +29,14 @@ class SupplyOrderSummaryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final extra =
-        GoRouterState.of(context).extra as Map<String, dynamic>;
+    final extra = GoRouterState.of(context).extra;
+    if (extra is! Map<String, dynamic>) {
+      // extra is missing or wrong type (e.g. after hot restart or deep link)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.canPop()) context.pop();
+      });
+      return const Scaffold(body: SizedBox.shrink());
+    }
     final catalogState = extra['catalogState'] as OrderSuppliesCatalog;
     final cubit = extra['cubit'] as OrderSuppliesCubit;
     return BlocProvider<OrderSuppliesCubit>.value(

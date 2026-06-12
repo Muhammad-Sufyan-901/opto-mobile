@@ -1,17 +1,4 @@
 import 'package:get_it/get_it.dart';
-// Prosthetic Hub — Care Guides
-import 'package:opto/features/prosthetic_hub/data/repositories/care_guides_repository_mock.dart';
-import 'package:opto/features/prosthetic_hub/domain/repositories/care_guides_repository.dart';
-import 'package:opto/features/prosthetic_hub/presentation/cubit/care_guides_cubit.dart';
-// Prosthetic Hub — Order Supplies
-import 'package:opto/features/prosthetic_hub/data/repositories/supplies_repository_mock.dart';
-import 'package:opto/features/prosthetic_hub/domain/repositories/supplies_repository.dart';
-import 'package:opto/features/prosthetic_hub/presentation/cubit/order_supplies_cubit.dart';
-// Prosthetic Hub — Specialist
-import 'package:opto/features/prosthetic_hub/data/repositories/specialist_repository_mock.dart';
-import 'package:opto/features/prosthetic_hub/domain/repositories/specialist_repository.dart';
-import 'package:opto/features/prosthetic_hub/presentation/cubit/specialist_directory_cubit.dart';
-import 'package:opto/features/prosthetic_hub/presentation/cubit/specialist_chat_cubit.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -58,6 +45,19 @@ import 'package:opto/features/profile/domain/repositories/emergency_contact_repo
 import 'package:opto/features/profile/domain/repositories/profile_repository.dart';
 import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
+// Prosthetic Hub — Care Guides
+import 'package:opto/features/prosthetic_hub/data/repositories/care_guides_repository_mock.dart';
+import 'package:opto/features/prosthetic_hub/domain/repositories/care_guides_repository.dart';
+import 'package:opto/features/prosthetic_hub/presentation/cubit/care_guides_cubit.dart';
+// Prosthetic Hub — Order Supplies
+import 'package:opto/features/prosthetic_hub/data/repositories/supplies_repository_mock.dart';
+import 'package:opto/features/prosthetic_hub/domain/repositories/supplies_repository.dart';
+import 'package:opto/features/prosthetic_hub/presentation/cubit/order_supplies_cubit.dart';
+// Prosthetic Hub — Specialist
+import 'package:opto/features/prosthetic_hub/data/repositories/specialist_repository_mock.dart';
+import 'package:opto/features/prosthetic_hub/domain/repositories/specialist_repository.dart';
+import 'package:opto/features/prosthetic_hub/presentation/cubit/specialist_chat_cubit.dart';
+import 'package:opto/features/prosthetic_hub/presentation/cubit/specialist_directory_cubit.dart';
 
 // Service Locator
 final sl = GetIt.instance;
