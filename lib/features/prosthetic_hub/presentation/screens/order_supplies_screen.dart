@@ -9,6 +9,7 @@ import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/widgets/buttons/app_button.dart';
+import 'package:opto/features/prosthetic_hub/domain/entities/supply_product.dart';
 import 'package:opto/features/prosthetic_hub/presentation/cubit/order_supplies_cubit.dart';
 import 'package:opto/features/prosthetic_hub/presentation/widgets/prosthetic_header.dart';
 import 'package:opto/features/prosthetic_hub/presentation/widgets/supply_product_card.dart';
@@ -114,7 +115,7 @@ class _OrderSuppliesViewState extends State<_OrderSuppliesView> {
 class _CatalogView extends StatelessWidget {
   const _CatalogView({required this.products, required this.cart});
 
-  final List<dynamic> products;
+  final List<SupplyProduct> products;
   final Map<String, int> cart;
 
   @override
@@ -157,7 +158,10 @@ class _CatalogView extends StatelessWidget {
                   if (state is OrderSuppliesCatalog) {
                     context.push(
                       '/prosthetic-hub/order-supplies/summary',
-                      extra: state,
+                      extra: {
+                        'catalogState': state,
+                        'cubit': context.read<OrderSuppliesCubit>(),
+                      },
                     );
                   }
                 },
