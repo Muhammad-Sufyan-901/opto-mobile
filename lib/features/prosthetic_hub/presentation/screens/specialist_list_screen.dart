@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
+import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
@@ -141,7 +142,7 @@ class _SpecialistDirectory extends StatelessWidget {
               SpecialistCard(
                 specialist: recommended[i],
                 onTap: () => context.push(
-                  '/prosthetic-hub/specialists/${recommended[i].id}',
+                  '${AppRoutes.prostheticSpecialists.path}/${recommended[i].id}',
                   extra: recommended[i],
                 ),
               ),
@@ -166,7 +167,7 @@ class _SpecialistDirectory extends StatelessWidget {
             SpecialistCard(
               specialist: all[i],
               onTap: () => context.push(
-                '/prosthetic-hub/specialists/${all[i].id}',
+                '${AppRoutes.prostheticSpecialists.path}/${all[i].id}',
                 extra: all[i],
               ),
             ),

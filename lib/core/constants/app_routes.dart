@@ -32,6 +32,50 @@ abstract class AppRoutes {
     name: 'prosthetic_hub',
   );
 
+  // ── Prosthetic Hub sub-routes ─────────────────────────────────────────────
+
+  /// Screen 17a — Care guides list.
+  static const AppRoute prostheticCareGuides = AppRoute(
+    path: '/prosthetic-hub/care-guides',
+    name: 'prosthetic_care_guides',
+  );
+
+  /// Screen 17a-detail — Individual care guide.
+  static const AppRoute prostheticCareGuideDetail = AppRoute(
+    path: '/prosthetic-hub/care-guides/:id',
+    name: 'prosthetic_care_guide_detail',
+  );
+
+  /// Screen 17b — Order supplies catalog.
+  static const AppRoute prostheticOrderSupplies = AppRoute(
+    path: '/prosthetic-hub/order-supplies',
+    name: 'prosthetic_order_supplies',
+  );
+
+  /// Screen 17b-summary — Order summary & consent.
+  static const AppRoute prostheticOrderSummary = AppRoute(
+    path: '/prosthetic-hub/order-supplies/summary',
+    name: 'prosthetic_order_summary',
+  );
+
+  /// Screen 17c — Specialist directory.
+  static const AppRoute prostheticSpecialists = AppRoute(
+    path: '/prosthetic-hub/specialists',
+    name: 'prosthetic_specialists',
+  );
+
+  /// Screen 17c-profile — Specialist profile.
+  static const AppRoute prostheticSpecialistProfile = AppRoute(
+    path: '/prosthetic-hub/specialists/:id',
+    name: 'prosthetic_specialist_profile',
+  );
+
+  /// Screen 17c-chat — 1:1 specialist chat room.
+  static const AppRoute prostheticSpecialistChat = AppRoute(
+    path: '/prosthetic-hub/specialists/:id/chat',
+    name: 'prosthetic_specialist_chat',
+  );
+
   /// Screen 18 — Health & Consultation (booking & history).
   static const AppRoute consult = AppRoute(
     path: '/consult',

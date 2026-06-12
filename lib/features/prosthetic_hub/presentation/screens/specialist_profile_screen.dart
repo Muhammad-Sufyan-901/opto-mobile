@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
+import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/core/widgets/buttons/app_button.dart';
@@ -91,7 +92,7 @@ class _SpecialistProfileViewState extends State<_SpecialistProfileView> {
                 text: 'Message ${specialist.fullName}',
                 prefixIcon: Icons.message_outlined,
                 onPressed: () => context.push(
-                  '/prosthetic-hub/specialists/${specialist.id}/chat',
+                  '${AppRoutes.prostheticSpecialists.path}/${specialist.id}/chat',
                   extra: specialist,
                 ),
               ),

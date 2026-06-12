@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
+import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/core/utils/currency_formatter.dart';
@@ -108,7 +109,7 @@ class _SummaryViewState extends State<_SummaryView> {
             context,
             'Order confirmed. Your supplies will arrive in 3–5 days.',
           );
-          context.go('/prosthetic-hub');
+          context.go(AppRoutes.prostheticHub.path);
         }
       },
       child: Scaffold(

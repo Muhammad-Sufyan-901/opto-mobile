@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
+import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/features/prosthetic_hub/domain/entities/care_guide.dart';
 import 'package:opto/features/prosthetic_hub/presentation/cubit/care_guides_cubit.dart';
@@ -111,7 +112,7 @@ class _GuidesList extends StatelessWidget {
               guide: guides[i],
               onTap: () {
                 context.push(
-                  '/prosthetic-hub/care-guides/${guides[i].id}',
+                  '${AppRoutes.prostheticCareGuides.path}/${guides[i].id}',
                   extra: guides[i],
                 );
               },

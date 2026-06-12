@@ -1,4 +1,17 @@
 import 'package:get_it/get_it.dart';
+// Prosthetic Hub — Care Guides
+import 'package:opto/features/prosthetic_hub/data/repositories/care_guides_repository_mock.dart';
+import 'package:opto/features/prosthetic_hub/domain/repositories/care_guides_repository.dart';
+import 'package:opto/features/prosthetic_hub/presentation/cubit/care_guides_cubit.dart';
+// Prosthetic Hub — Order Supplies
+import 'package:opto/features/prosthetic_hub/data/repositories/supplies_repository_mock.dart';
+import 'package:opto/features/prosthetic_hub/domain/repositories/supplies_repository.dart';
+import 'package:opto/features/prosthetic_hub/presentation/cubit/order_supplies_cubit.dart';
+// Prosthetic Hub — Specialist
+import 'package:opto/features/prosthetic_hub/data/repositories/specialist_repository_mock.dart';
+import 'package:opto/features/prosthetic_hub/domain/repositories/specialist_repository.dart';
+import 'package:opto/features/prosthetic_hub/presentation/cubit/specialist_directory_cubit.dart';
+import 'package:opto/features/prosthetic_hub/presentation/cubit/specialist_chat_cubit.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -244,5 +257,38 @@ Future<void> init() async {
 
   sl.registerFactory<EyeCareExercisesCubit>(
     () => EyeCareExercisesCubit(sl<DoctorDirectoryRepository>()),
+  );
+
+  // ===============================================================
+  // ── PROSTHETIC HUB ──
+  // ===============================================================
+  // Mock repos use registerLazySingleton (stateless — safe to share).
+  // Cubits use registerFactory (fresh instance per pushed route).
+
+  // Care Guides
+  sl.registerLazySingleton<CareGuidesRepository>(
+    () => const CareGuidesRepositoryMock(),
+  );
+  sl.registerFactory<CareGuidesCubit>(
+    () => CareGuidesCubit(sl<CareGuidesRepository>()),
+  );
+
+  // Order Supplies
+  sl.registerLazySingleton<SuppliesRepository>(
+    () => const SuppliesRepositoryMock(),
+  );
+  sl.registerFactory<OrderSuppliesCubit>(
+    () => OrderSuppliesCubit(sl<SuppliesRepository>()),
+  );
+
+  // Message My Specialist
+  sl.registerLazySingleton<SpecialistRepository>(
+    () => const SpecialistRepositoryMock(),
+  );
+  sl.registerFactory<SpecialistDirectoryCubit>(
+    () => SpecialistDirectoryCubit(sl<SpecialistRepository>()),
+  );
+  sl.registerFactory<SpecialistChatCubit>(
+    () => SpecialistChatCubit(),
   );
 }

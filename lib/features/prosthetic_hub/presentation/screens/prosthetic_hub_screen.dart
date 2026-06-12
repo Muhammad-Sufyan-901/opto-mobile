@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
+import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/prosthetic_hub/presentation/widgets/prosthetic_header.dart';
@@ -89,7 +90,7 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
                 title: 'Care guides',
                 subtitle: 'Cleaning, handling, sleep',
                 onTap: () {
-                  context.push('/prosthetic-hub/care-guides');
+                  context.push(AppRoutes.prostheticCareGuides.path);
                 },
               ),
               const SizedBox(height: AppDimensions.space12),
@@ -98,7 +99,7 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
                 title: 'Order supplies',
                 subtitle: 'Solution, cases & cloths',
                 onTap: () {
-                  context.push('/prosthetic-hub/order-supplies');
+                  context.push(AppRoutes.prostheticOrderSupplies.path);
                 },
               ),
               const SizedBox(height: AppDimensions.space12),
@@ -107,7 +108,7 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
                 title: 'Message my specialist',
                 subtitle: 'Dr. Anwar · usually replies same day',
                 onTap: () {
-                  context.push('/prosthetic-hub/specialists');
+                  context.push(AppRoutes.prostheticSpecialists.path);
                 },
               ),
             ],

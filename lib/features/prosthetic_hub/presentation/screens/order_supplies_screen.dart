@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
+import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/widgets/buttons/app_button.dart';
@@ -145,7 +146,7 @@ class _CatalogView extends StatelessWidget {
                   final state = context.read<OrderSuppliesCubit>().state;
                   if (state is OrderSuppliesCatalog) {
                     context.push(
-                      '/prosthetic-hub/order-supplies/summary',
+                      AppRoutes.prostheticOrderSummary.path,
                       extra: {
                         'catalogState': state,
                         'cubit': context.read<OrderSuppliesCubit>(),
