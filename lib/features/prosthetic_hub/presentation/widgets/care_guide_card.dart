@@ -8,21 +8,6 @@ import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/prosthetic_hub/domain/entities/care_guide.dart';
 
-// Returns the human-readable display label for a [CareGuideCategory].
-String _categoryLabel(CareGuideCategory category) {
-  switch (category) {
-    case CareGuideCategory.insert:
-      return 'Inserting';
-    case CareGuideCategory.remove:
-      return 'Removing';
-    case CareGuideCategory.clean:
-      return 'Cleaning';
-    case CareGuideCategory.lubricate:
-      return 'Lubricating';
-    case CareGuideCategory.caseUse:
-      return 'Case Use';
-  }
-}
 
 /// An accessible, tappable card representing a single [CareGuide].
 ///
@@ -116,7 +101,7 @@ class CareGuideCard extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            _categoryLabel(guide.category),
+                            guide.category.displayLabel,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: ink2,
                             ),

@@ -110,3 +110,14 @@ class CareGuide {
         sortOrder,
       );
 }
+
+/// Human-readable display label for each [CareGuideCategory].
+extension CareGuideCategoryLabel on CareGuideCategory {
+  String get displayLabel => switch (this) {
+        CareGuideCategory.insert => 'Inserting',
+        CareGuideCategory.remove => 'Removing',
+        CareGuideCategory.clean => 'Cleaning',
+        CareGuideCategory.lubricate => 'Lubricating',
+        CareGuideCategory.caseUse => 'Case Use',
+      };
+}

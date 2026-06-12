@@ -11,48 +11,42 @@ import 'package:opto/core/widgets/buttons/app_button.dart';
 import 'package:opto/features/prosthetic_hub/domain/entities/care_guide.dart';
 import 'package:opto/features/prosthetic_hub/presentation/widgets/prosthetic_header.dart';
 
-/// Returns the human-readable display label for a [CareGuideCategory].
-String _categoryLabel(CareGuideCategory category) {
-  switch (category) {
-    case CareGuideCategory.insert:
-      return 'Inserting';
-    case CareGuideCategory.remove:
-      return 'Removing';
-    case CareGuideCategory.clean:
-      return 'Cleaning';
-    case CareGuideCategory.lubricate:
-      return 'Lubricating';
-    case CareGuideCategory.caseUse:
-      return 'Case Use';
-  }
-}
-
 /// Screen 17-C — Care Guide detail.
 ///
 /// Receives [CareGuide] via `GoRouterState.of(context).extra`.
 /// White Scaffold, SafeArea, no bottom nav.
-class CareGuideDetailScreen extends StatefulWidget {
+class CareGuideDetailScreen extends StatelessWidget {
   const CareGuideDetailScreen({super.key});
 
   @override
-  State<CareGuideDetailScreen> createState() => _CareGuideDetailScreenState();
+  Widget build(BuildContext context) {
+    final guide = GoRouterState.of(context).extra as CareGuide;
+    return _CareGuideDetailView(guide: guide);
+  }
 }
 
-class _CareGuideDetailScreenState extends State<CareGuideDetailScreen> {
-  late final CareGuide _guide;
+class _CareGuideDetailView extends StatefulWidget {
+  const _CareGuideDetailView({required this.guide});
 
+  final CareGuide guide;
+
+  @override
+  State<_CareGuideDetailView> createState() => _CareGuideDetailViewState();
+}
+
+class _CareGuideDetailViewState extends State<_CareGuideDetailView> {
   @override
   void initState() {
     super.initState();
-    _guide = GoRouterState.of(context).extra as CareGuide;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      announce(context, '${_guide.title} guide.');
+      announce(context, '${widget.guide.title} guide.');
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final CareGuide guide = widget.guide;
     final ThemeData theme = Theme.of(context);
     final ColorScheme cs = theme.colorScheme;
     final ext = theme.extension<AppExtendedCustomColors>();
@@ -67,15 +61,15 @@ class _CareGuideDetailScreenState extends State<CareGuideDetailScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(
-            left: 22,
-            right: 22,
+            left: AppDimensions.screenPadding,
+            right: AppDimensions.screenPadding,
             top: 16,
             bottom: 40,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ProstheticHeader(title: _guide.title),
+              ProstheticHeader(title: guide.title),
               const SizedBox(height: AppDimensions.space16),
               Expanded(
                 child: SingleChildScrollView(
@@ -93,12 +87,12 @@ class _CareGuideDetailScreenState extends State<CareGuideDetailScreen> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              _guide.durationLabel,
+                              guide.durationLabel,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: ink3,
                               ),
                             ),
-                            if (_guide.hasAudio) ...[
+                            if (guide.hasAudio) ...[
                               const SizedBox(width: 12),
                               _AudioBadge(
                                 blueTint: blueTint,
@@ -125,7 +119,7 @@ class _CareGuideDetailScreenState extends State<CareGuideDetailScreen> {
                             ),
                           ),
                           child: Text(
-                            _categoryLabel(_guide.category),
+                            guide.category.displayLabel,
                             style: theme.textTheme.labelSmall?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: blueStrong,
@@ -151,22 +145,16 @@ class _CareGuideDetailScreenState extends State<CareGuideDetailScreen> {
                       const SizedBox(height: AppDimensions.space12),
 
                       // ── Transcript ─────────────────────────────────────
-                      Semantics(
-                        label: _guide.transcript,
-                        child: ExcludeSemantics(
-                          excluding: false,
-                          child: Text(
-                            _guide.transcript.trim(),
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: cs.onSurface,
-                              height: 1.5,
-                            ),
-                          ),
+                      Text(
+                        guide.transcript.trim(),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: cs.onSurface,
+                          height: 1.5,
                         ),
                       ),
 
                       // ── Audio button (only if hasAudio) ───────────────
-                      if (_guide.hasAudio) ...[
+                      if (guide.hasAudio) ...[
                         const SizedBox(height: AppDimensions.space32),
                         AppButton.primary(
                           text: 'Play Audio Guide',
@@ -174,7 +162,7 @@ class _CareGuideDetailScreenState extends State<CareGuideDetailScreen> {
                           onPressed: () {
                             announce(
                               context,
-                              'Playing audio guide for ${_guide.title}.',
+                              'Playing audio guide for ${guide.title}.',
                             );
                           },
                         ),

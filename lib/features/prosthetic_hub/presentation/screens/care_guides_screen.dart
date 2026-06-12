@@ -4,8 +4,8 @@
 // navigates to [CareGuideDetailScreen] via GoRouter.
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/features/prosthetic_hub/domain/entities/care_guide.dart';
@@ -37,7 +37,7 @@ class _CareGuidesScreenState extends State<CareGuidesScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<CareGuidesCubit>(
-      create: (_) => GetIt.instance<CareGuidesCubit>()..load(),
+      create: (_) => sl<CareGuidesCubit>()..load(),
       child: const _CareGuidesView(),
     );
   }
@@ -56,8 +56,8 @@ class _CareGuidesView extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(
-            left: 22,
-            right: 22,
+            left: AppDimensions.screenPadding,
+            right: AppDimensions.screenPadding,
             top: 16,
             bottom: 40,
           ),
@@ -148,10 +148,13 @@ class _ErrorView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppDimensions.space16),
-            TextButton(
-              onPressed: () =>
-                  context.read<CareGuidesCubit>().load(),
-              child: const Text('Retry'),
+            Semantics(
+              button: true,
+              label: 'Retry loading care guides',
+              child: TextButton(
+                onPressed: () => context.read<CareGuidesCubit>().load(),
+                child: const Text('Retry'),
+              ),
             ),
           ],
         ),
