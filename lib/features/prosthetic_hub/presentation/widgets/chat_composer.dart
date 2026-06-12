@@ -108,7 +108,7 @@ class _ChatComposerState extends State<ChatComposer> {
                       vertical: AppDimensions.space12,
                     ),
                   ),
-                  onSubmitted: (_hasText) ? (_) => _send() : null,
+                  onSubmitted: _hasText ? (_) => _send() : null,
                 ),
               ),
             ),

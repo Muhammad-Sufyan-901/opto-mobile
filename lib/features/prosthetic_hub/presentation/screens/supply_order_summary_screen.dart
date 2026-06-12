@@ -5,6 +5,7 @@
 // The cubit instance is passed in via GoRouter's `extra` map so the same cubit
 // that owns the cart is used for submission — ensuring [OrderSuppliesSubmitting]
 // and [OrderSuppliesConfirmed] states are properly exercised.
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -37,8 +38,14 @@ class SupplyOrderSummaryScreen extends StatelessWidget {
       });
       return const Scaffold(body: SizedBox.shrink());
     }
-    final catalogState = extra['catalogState'] as OrderSuppliesCatalog;
-    final cubit = extra['cubit'] as OrderSuppliesCubit;
+    final catalogState = extra['catalogState'] as OrderSuppliesCatalog?;
+    final cubit = extra['cubit'] as OrderSuppliesCubit?;
+    if (catalogState == null || cubit == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.canPop()) context.pop();
+      });
+      return const Scaffold(body: SizedBox.shrink());
+    }
     return BlocProvider<OrderSuppliesCubit>.value(
       value: cubit,
       child: _SummaryView(catalogState: catalogState),
@@ -59,10 +66,10 @@ class _SummaryViewState extends State<_SummaryView> {
   List<_LineItem> get _lineItems {
     final items = <_LineItem>[];
     for (final entry in widget.catalogState.cart.entries) {
-      final product = widget.catalogState.products.firstWhere(
+      final product = widget.catalogState.products.firstWhereOrNull(
         (p) => p.id == entry.key,
-        orElse: () => throw StateError('Product ${entry.key} not found'),
       );
+      if (product == null) continue;
       items.add(_LineItem(product: product, qty: entry.value));
     }
     return items;
@@ -74,10 +81,10 @@ class _SummaryViewState extends State<_SummaryView> {
   int get _totalPrice {
     int total = 0;
     for (final entry in widget.catalogState.cart.entries) {
-      final product = widget.catalogState.products.firstWhere(
+      final product = widget.catalogState.products.firstWhereOrNull(
         (p) => p.id == entry.key,
-        orElse: () => throw StateError('Product ${entry.key} not found'),
       );
+      if (product == null) continue;
       total += product.priceIdr * entry.value;
     }
     return total;

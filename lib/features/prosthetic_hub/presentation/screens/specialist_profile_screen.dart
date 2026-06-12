@@ -91,8 +91,9 @@ class _SpecialistProfileViewState extends State<_SpecialistProfileView> {
               AppButton.primary(
                 text: 'Message ${specialist.fullName}',
                 prefixIcon: Icons.message_outlined,
-                onPressed: () => context.push(
-                  '${AppRoutes.prostheticSpecialists.path}/${specialist.id}/chat',
+                onPressed: () => context.pushNamed(
+                  AppRoutes.prostheticSpecialistChat.name,
+                  pathParameters: {'id': specialist.id},
                   extra: specialist,
                 ),
               ),

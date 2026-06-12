@@ -3,7 +3,6 @@
 // Per-specialist chat room — messages rendered as [ChatBubble]s, new messages
 // composed via [ChatComposer]. State is in-memory via [SpecialistChatCubit].
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
@@ -118,10 +117,9 @@ class _ChatViewState extends State<_ChatView> {
                       // Announce incoming specialist messages to screen reader.
                       if (msgs.isNotEmpty && !msgs.last.fromMe) {
                         final lastMsg = msgs.last;
-                        SemanticsService.sendAnnouncement(
-                          View.of(context),
+                        announce(
+                          context,
                           'Message from ${specialist.fullName}: ${lastMsg.text}',
-                          TextDirection.ltr,
                         );
                       }
                     }

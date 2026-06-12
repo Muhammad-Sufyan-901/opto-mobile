@@ -84,25 +84,27 @@ class SupplyProductCard extends StatelessWidget {
             const SizedBox(width: 14),
 
             // ── Text column ────────────────────────────────────────────────
+            // Excluded from semantics — the root Semantics label covers all
+            // text content (name, type, price, qty).
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Product name
-                  Text(
-                    product.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: cs.onSurface,
+              child: ExcludeSemantics(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Product name
+                    Text(
+                      product.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: cs.onSurface,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  // Type label + price (excluded from semantics — root covers them)
-                  ExcludeSemantics(
-                    child: Row(
+                    const SizedBox(height: 4),
+                    // Type label + price
+                    Row(
                       children: [
                         Text(
                           product.type.displayLabel,
@@ -125,8 +127,8 @@ class SupplyProductCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
 
