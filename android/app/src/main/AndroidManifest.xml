@@ -53,6 +53,12 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+    <!-- Location — used by Accessibility Map (nearby POIs) and Emergency SOS.
+         ACCESS_FINE_LOCATION → GPS-quality position for accurate bounding-box.
+         ACCESS_COARSE_LOCATION → network/cell fallback if GPS unavailable.
+         The user is prompted at runtime via geolocator / permission_handler. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.

@@ -32,6 +32,42 @@ abstract class AppRoutes {
     name: 'prosthetic_hub',
   );
 
+  // ── Accessibility Map sub-routes (Phase 3B) ──────────────────────────────
+
+  /// Screen — Accessibility Map: nearby POI list (primary accessible view).
+  static const AppRoute accessibilityMap = AppRoute(
+    path: '/map',
+    name: 'accessibility_map',
+  );
+
+  /// Accessibility Map → Optional flutter_map visual tile view.
+  ///
+  /// The map is decorative for screen readers; use [accessibilityMap] as the
+  /// canonical accessible entry point.
+  static const AppRoute accessibilityMapVisual = AppRoute(
+    path: '/map/visual',
+    name: 'accessibility_map_visual',
+  );
+
+  /// Accessibility Map → POI detail page.
+  ///
+  /// Navigate with:
+  /// ```dart
+  /// context.pushNamed(AppRoutes.poiDetail.name,
+  ///     pathParameters: {'poiId': id});
+  /// ```
+  /// ⚠️ Do NOT use `.path` directly — it contains a `:poiId` placeholder.
+  static const AppRoute poiDetail = AppRoute(
+    path: '/map/:poiId',
+    name: 'poi_detail',
+  );
+
+  /// Accessibility Map → Add a new accessible place form.
+  static const AppRoute addPoi = AppRoute(
+    path: '/map/add',
+    name: 'add_poi',
+  );
+
   /// Screen 18 — Health & Consultation (booking & history).
   static const AppRoute consult = AppRoute(
     path: '/consult',

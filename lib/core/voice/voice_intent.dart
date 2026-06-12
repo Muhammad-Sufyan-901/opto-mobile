@@ -45,12 +45,14 @@ final class OpenCommunityIntent extends VoiceIntent {
   const OpenCommunityIntent() : super(routePath: '/community');
 }
 
-/// Navigates to a named destination → /home
-/// Routes to /home until the Accessibility Map feature (Phase 3) is implemented.
-/// [slot] holds the extracted destination string.
+/// Navigates to a named destination → /map (Accessibility Map).
+///
+/// [slot] holds the extracted destination string from the STT phrase.
+/// Routes to the Accessibility Map nearby-list screen so users can find
+/// accessible places near the spoken destination.
 final class NavigateToIntent extends VoiceIntent {
   const NavigateToIntent({String? destination})
-      : super(routePath: '/home', slot: destination);
+      : super(routePath: '/map', slot: destination);
 }
 
 /// Triggers the Emergency SOS flow → /sos
