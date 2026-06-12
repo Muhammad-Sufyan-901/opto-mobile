@@ -32,48 +32,40 @@ abstract class AppRoutes {
     name: 'prosthetic_hub',
   );
 
-  // ── Prosthetic Hub sub-routes ─────────────────────────────────────────────
+  // ── Accessibility Map sub-routes (Phase 3B) ──────────────────────────────
 
-  /// Screen 17a — Care guides list.
-  static const AppRoute prostheticCareGuides = AppRoute(
-    path: '/prosthetic-hub/care-guides',
-    name: 'prosthetic_care_guides',
+  /// Screen — Accessibility Map: nearby POI list (primary accessible view).
+  static const AppRoute accessibilityMap = AppRoute(
+    path: '/map',
+    name: 'accessibility_map',
   );
 
-  /// Screen 17a-detail — Individual care guide.
-  static const AppRoute prostheticCareGuideDetail = AppRoute(
-    path: '/prosthetic-hub/care-guides/:id',
-    name: 'prosthetic_care_guide_detail',
+  /// Accessibility Map → Optional flutter_map visual tile view.
+  ///
+  /// The map is decorative for screen readers; use [accessibilityMap] as the
+  /// canonical accessible entry point.
+  static const AppRoute accessibilityMapVisual = AppRoute(
+    path: '/map/visual',
+    name: 'accessibility_map_visual',
   );
 
-  /// Screen 17b — Order supplies catalog.
-  static const AppRoute prostheticOrderSupplies = AppRoute(
-    path: '/prosthetic-hub/order-supplies',
-    name: 'prosthetic_order_supplies',
+  /// Accessibility Map → POI detail page.
+  ///
+  /// Navigate with:
+  /// ```dart
+  /// context.pushNamed(AppRoutes.poiDetail.name,
+  ///     pathParameters: {'poiId': id});
+  /// ```
+  /// ⚠️ Do NOT use `.path` directly — it contains a `:poiId` placeholder.
+  static const AppRoute poiDetail = AppRoute(
+    path: '/map/:poiId',
+    name: 'poi_detail',
   );
 
-  /// Screen 17b-summary — Order summary & consent.
-  static const AppRoute prostheticOrderSummary = AppRoute(
-    path: '/prosthetic-hub/order-supplies/summary',
-    name: 'prosthetic_order_summary',
-  );
-
-  /// Screen 17c — Specialist directory.
-  static const AppRoute prostheticSpecialists = AppRoute(
-    path: '/prosthetic-hub/specialists',
-    name: 'prosthetic_specialists',
-  );
-
-  /// Screen 17c-profile — Specialist profile.
-  static const AppRoute prostheticSpecialistProfile = AppRoute(
-    path: '/prosthetic-hub/specialists/:id',
-    name: 'prosthetic_specialist_profile',
-  );
-
-  /// Screen 17c-chat — 1:1 specialist chat room.
-  static const AppRoute prostheticSpecialistChat = AppRoute(
-    path: '/prosthetic-hub/specialists/:id/chat',
-    name: 'prosthetic_specialist_chat',
+  /// Accessibility Map → Add a new accessible place form.
+  static const AppRoute addPoi = AppRoute(
+    path: '/map/add',
+    name: 'add_poi',
   );
 
   /// Screen 18 — Health & Consultation (booking & history).
