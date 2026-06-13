@@ -135,6 +135,41 @@ class _ConnectingViewState extends State<_ConnectingView>
           padding: const EdgeInsets.all(AppDimensions.screenPadding - 4),
           child: Column(
             children: [
+              // ── Top bar with back button ───────────────────────────────
+              Row(
+                children: [
+                  Semantics(
+                    button: true,
+                    label: 'Go back',
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          _advanceTimer?.cancel();
+                          HapticPatterns.warning();
+                          SemanticsService.announce(
+                              'Consultation cancelled.', TextDirection.ltr);
+                          if (context.canPop()) context.pop();
+                        },
+                        borderRadius: BorderRadius.circular(24),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ExcludeSemantics(
+                            child: Icon(
+                              Icons.arrow_back_rounded,
+                              size: 24,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                ],
+              ),
+              const SizedBox(height: AppDimensions.space8),
+
               // ── E2E badge ──────────────────────────────────────────────
               Align(
                 alignment: Alignment.center,
@@ -192,11 +227,13 @@ class _ConnectingViewState extends State<_ConnectingView>
                                   ),
                                 ),
                           if (!_reduceMotion) const SizedBox(width: 9),
-                          Text(
-                            'Please wait — this usually takes a few seconds',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: ext?.ink3 ?? cs.onSurfaceVariant,
-                              fontWeight: FontWeight.w600,
+                          Flexible(
+                            child: Text(
+                              'Please wait — this usually takes a few seconds',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: ext?.ink3 ?? cs.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],

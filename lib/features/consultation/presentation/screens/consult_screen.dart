@@ -277,6 +277,30 @@ class _LargeTitleBar extends StatelessWidget {
             ),
             child: Row(
               children: [
+                // Back button
+                Semantics(
+                  button: true,
+                  label: 'Go back',
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticPatterns.focusTick();
+                      context.go(AppRoutes.home.path);
+                    },
+                    child: SizedBox(
+                      width: AppDimensions.minTapTarget,
+                      height: AppDimensions.minTapTarget,
+                      child: Center(
+                        child: ExcludeSemantics(
+                          child: Icon(
+                            Icons.arrow_back_rounded,
+                            size: AppDimensions.iconLg,
+                            color: cs.onSurface,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 const Spacer(),
                 // Listen button
                 Semantics(

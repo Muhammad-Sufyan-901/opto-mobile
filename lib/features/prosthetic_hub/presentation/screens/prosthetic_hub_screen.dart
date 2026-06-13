@@ -199,8 +199,8 @@ class _LargeAppBar extends StatelessWidget {
                     child: Center(
                       child: ExcludeSemantics(
                         child: Icon(
-                          Icons.chevron_left,
-                          size: 28,
+                          Icons.arrow_back_rounded,
+                          size: 24,
                           color: cs.onSurface,
                         ),
                       ),

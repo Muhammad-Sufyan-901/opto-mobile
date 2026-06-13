@@ -62,3 +62,155 @@ from (values
    'Lakukan dengan tangan bersih dan tekanan ringan. Bukan pengganti saran medis profesional.')
 ) as e(title,audio_guide_path,duration_seconds,medical_disclaimer)
 where not exists (select 1 from public.eye_care_exercises ec where ec.title = e.title);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Dokter & jadwal konsultasi
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Inserts 3 sample doctors into auth.users (fixed UUIDs → idempotent).
+-- The on_auth_user_created trigger (handle_new_user) automatically creates the
+-- matching public.profiles rows with full_name from raw_user_meta_data.
+--
+-- Dev-only password for all seed doctors: OptoDoc@2026!
+-- ⚠️  Never use these accounts or this password in production.
+
+insert into auth.users (
+  id, instance_id, aud, role,
+  email, encrypted_password, email_confirmed_at,
+  created_at, updated_at,
+  raw_app_meta_data, raw_user_meta_data
+)
+values
+  (
+    'd9f4a3b2-1c5e-4d7f-8a09-6b3e2c1d0f5a',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated', 'authenticated',
+    'dr.andi@opto.dev',
+    crypt('OptoDoc@2026!', gen_salt('bf', 10)),
+    now(), now(), now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{"full_name":"dr. Andi Pratama, Sp.M"}'::jsonb
+  ),
+  (
+    'e8c3b2a1-0d4f-5e6c-9b07-5a2d1c0e3f4b',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated', 'authenticated',
+    'dr.siti@opto.dev',
+    crypt('OptoDoc@2026!', gen_salt('bf', 10)),
+    now(), now(), now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{"full_name":"dr. Siti Rahayu, Sp.M"}'::jsonb
+  ),
+  (
+    'f7b2a190-9e3d-4c5b-8a06-4c1b0e9d2f3c',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated', 'authenticated',
+    'ahmad.okularis@opto.dev',
+    crypt('OptoDoc@2026!', gen_salt('bf', 10)),
+    now(), now(), now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{"full_name":"Ahmad Fauzi, Okularis"}'::jsonb
+  )
+on conflict (id) do nothing;
+
+-- Set role = 'doctor' on the auto-created profiles.
+-- The prevent_role_change trigger calls is_admin() → auth.uid(), which returns
+-- null under the postgres seed role, so is_admin() = false and the trigger
+-- would raise an exception. Disable it for this update only, then re-enable.
+alter table public.profiles disable trigger profiles_no_role_escalation;
+update public.profiles
+set role = 'doctor'
+where id in (
+  'd9f4a3b2-1c5e-4d7f-8a09-6b3e2c1d0f5a',
+  'e8c3b2a1-0d4f-5e6c-9b07-5a2d1c0e3f4b',
+  'f7b2a190-9e3d-4c5b-8a06-4c1b0e9d2f3c'
+)
+  and role <> 'doctor'; -- skip if already set (idempotent)
+alter table public.profiles enable trigger profiles_no_role_escalation;
+
+-- Insert doctor rows. Cross-join with the seeded clinic so clinic_id is
+-- resolved by name (not hardcoded UUID).
+insert into public.doctors (profile_id, specialty, clinic_id, is_verified)
+select v.profile_id::uuid, v.specialty, c.id, true
+from (values
+  ('d9f4a3b2-1c5e-4d7f-8a09-6b3e2c1d0f5a', 'Spesialis Mata'),
+  ('e8c3b2a1-0d4f-5e6c-9b07-5a2d1c0e3f4b', 'Spesialis Mata'),
+  ('f7b2a190-9e3d-4c5b-8a06-4c1b0e9d2f3c', 'Okularis')
+) as v(profile_id, specialty)
+cross join (select id from public.clinics where name = 'Klinik Mata Surya' limit 1) as c
+where not exists (
+  select 1 from public.doctors d where d.profile_id = v.profile_id::uuid
+);
+
+-- Insert availability slots (3 per doctor, spread over the next 10 days).
+-- Idempotent: entire insert skipped if the doctor already has any slots.
+insert into public.doctor_availability (doctor_id, slot_start, slot_end, is_booked)
+select d.id, v.slot_start, v.slot_end, false
+from public.doctors d
+join (values
+  ('d9f4a3b2-1c5e-4d7f-8a09-6b3e2c1d0f5a'::uuid,
+   now() + interval '3 days'  + interval '9 hours',
+   now() + interval '3 days'  + interval '10 hours'),
+  ('d9f4a3b2-1c5e-4d7f-8a09-6b3e2c1d0f5a'::uuid,
+   now() + interval '5 days'  + interval '14 hours',
+   now() + interval '5 days'  + interval '15 hours'),
+  ('d9f4a3b2-1c5e-4d7f-8a09-6b3e2c1d0f5a'::uuid,
+   now() + interval '8 days'  + interval '10 hours',
+   now() + interval '8 days'  + interval '11 hours'),
+  ('e8c3b2a1-0d4f-5e6c-9b07-5a2d1c0e3f4b'::uuid,
+   now() + interval '2 days'  + interval '8 hours',
+   now() + interval '2 days'  + interval '9 hours'),
+  ('e8c3b2a1-0d4f-5e6c-9b07-5a2d1c0e3f4b'::uuid,
+   now() + interval '4 days'  + interval '13 hours',
+   now() + interval '4 days'  + interval '14 hours'),
+  ('e8c3b2a1-0d4f-5e6c-9b07-5a2d1c0e3f4b'::uuid,
+   now() + interval '9 days'  + interval '9 hours',
+   now() + interval '9 days'  + interval '10 hours'),
+  ('f7b2a190-9e3d-4c5b-8a06-4c1b0e9d2f3c'::uuid,
+   now() + interval '1 day'   + interval '10 hours',
+   now() + interval '1 day'   + interval '11 hours'),
+  ('f7b2a190-9e3d-4c5b-8a06-4c1b0e9d2f3c'::uuid,
+   now() + interval '6 days'  + interval '11 hours',
+   now() + interval '6 days'  + interval '12 hours'),
+  ('f7b2a190-9e3d-4c5b-8a06-4c1b0e9d2f3c'::uuid,
+   now() + interval '10 days' + interval '14 hours',
+   now() + interval '10 days' + interval '15 hours')
+) as v(profile_id, slot_start, slot_end) on d.profile_id = v.profile_id
+where not exists (
+  select 1 from public.doctor_availability da where da.doctor_id = d.id
+);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Accessibility POIs — Surabaya seed
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 5 initial POIs so the map is not empty on first launch.
+-- created_by = null (nullable FK, on delete set null) — seeded by system.
+-- attributes jsonb keys match the attributes read aloud by Aura in
+-- accessibility_map/data/datasources/map_remote_data_source.dart.
+
+insert into public.accessibility_pois (name, lat, lng, attributes, verified_count, created_by)
+select p.name, p.lat, p.lng, p.attributes::jsonb, p.verified_count, null
+from (values
+  ('Stasiun Surabaya Gubeng',
+   -7.2649, 112.7508,
+   '{"ramp":true,"elevator":true,"tactile_path":true,"wheelchair":true,"accessible_toilet":false}',
+   3),
+  ('RS Mata Undaan Surabaya',
+   -7.2510, 112.7438,
+   '{"ramp":true,"elevator":false,"tactile_path":true,"wheelchair":true,"accessible_toilet":true}',
+   2),
+  ('Tunjungan Plaza Surabaya',
+   -7.2575, 112.7380,
+   '{"ramp":true,"elevator":true,"tactile_path":false,"wheelchair":true,"accessible_toilet":true}',
+   5),
+  ('Taman Bungkul',
+   -7.2937, 112.7376,
+   '{"ramp":true,"elevator":false,"tactile_path":true,"wheelchair":true,"accessible_toilet":true}',
+   4),
+  ('Bandara Juanda Terminal 1',
+   -7.3799, 112.7867,
+   '{"ramp":true,"elevator":true,"tactile_path":true,"wheelchair":true,"accessible_toilet":true}',
+   8)
+) as p(name, lat, lng, attributes, verified_count)
+where not exists (
+  select 1 from public.accessibility_pois poi where poi.name = p.name
+);

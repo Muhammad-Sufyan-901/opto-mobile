@@ -53,6 +53,10 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+    <!-- Internet — required for all Supabase network calls (Auth, PostgREST,
+         Storage, Realtime). Without this, the OS cannot resolve the Supabase
+         hostname, producing errno = 7 / "No address associated with hostname". -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- Location — used by Accessibility Map (nearby POIs) and Emergency SOS.
          ACCESS_FINE_LOCATION → GPS-quality position for accurate bounding-box.
          ACCESS_COARSE_LOCATION → network/cell fallback if GPS unavailable.
