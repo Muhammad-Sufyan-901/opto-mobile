@@ -34,6 +34,12 @@ abstract class AppRoutes {
 
   // ── Prosthetic Hub sub-routes (Phase 3A) ─────────────────────────────────
 
+  /// Screen 17-L — Log today's prosthetic care.
+  static const AppRoute prostheticCareLog = AppRoute(
+    path: '/prosthetic-hub/log-care',
+    name: 'prosthetic_care_log',
+  );
+
   /// Screen 17a — Care guides list.
   static const AppRoute prostheticCareGuides = AppRoute(
     path: '/prosthetic-hub/care-guides',

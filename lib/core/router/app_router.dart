@@ -30,6 +30,7 @@ import 'package:opto/features/consultation/presentation/screens/doctor_profile_s
 import 'package:opto/features/consultation/presentation/screens/non_verbal_consult_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/care_guides_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/care_log_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/care_guide_detail_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/order_supplies_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/supply_order_summary_screen.dart';
@@ -325,6 +326,14 @@ final GoRouter appRouter = GoRouter(
       builder: (BuildContext context, GoRouterState state) {
         return const ProstheticHubScreen();
       },
+    ),
+
+    // Screen 17-L — Log today's care
+    GoRoute(
+      path: AppRoutes.prostheticCareLog.path,
+      name: AppRoutes.prostheticCareLog.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const CareLogScreen(),
     ),
 
     // Screen 17a — Care guides list

@@ -348,9 +348,8 @@ class _StatusCard extends StatelessWidget {
                 button: true,
                 label: 'Log today\'s care',
                 child: GestureDetector(
-                  onTap: () {
-                    // TODO(prosthetic-hub): open care logging flow
-                  },
+                  onTap: () =>
+                      context.push(AppRoutes.prostheticCareLog.path),
                   child: Container(
                     height: 54,
                     decoration: BoxDecoration(
