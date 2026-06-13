@@ -177,6 +177,39 @@ abstract class AppRoutes {
     name: 'consult_non_verbal',
   );
 
+  /// Screen 18e — Pre-consult intake (symptom chips, voice note, photo attach).
+  ///
+  /// Navigate with `GoRouterState.extra = {'doctor': DoctorEntity}`.
+  static const AppRoute consultIntake = AppRoute(
+    path: '/consult/intake',
+    name: 'consult_intake',
+  );
+
+  /// Screen 18f — Connecting / waiting for doctor to join.
+  ///
+  /// Navigate with `GoRouterState.extra = {'doctor': DoctorEntity}`.
+  static const AppRoute consultConnecting = AppRoute(
+    path: '/consult/connecting',
+    name: 'consult_connecting',
+  );
+
+  /// Screen 18g — Live consultation call room (voice-first; visual stub).
+  ///
+  /// Navigate with `GoRouterState.extra = {'doctor': DoctorEntity}`.
+  static const AppRoute consultCallRoom = AppRoute(
+    path: '/consult/session/call',
+    name: 'consult_call_room',
+  );
+
+  /// Screen 18h — Post-consult summary and e-prescription.
+  ///
+  /// Navigate with `GoRouterState.extra = {'doctor': DoctorEntity}`.
+  /// 🔒 Medically sensitive — session-only, never cached.
+  static const AppRoute consultSummary = AppRoute(
+    path: '/consult/summary',
+    name: 'consult_summary',
+  );
+
   /// Screen 20 — Profile & Settings (account + preferences).
   static const AppRoute profile = AppRoute(
     path: '/profile',

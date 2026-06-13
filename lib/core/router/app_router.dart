@@ -24,10 +24,14 @@ import 'package:opto/features/setup/presentation/screens/display_setup_screen.da
 import 'package:opto/features/setup/presentation/screens/voice_setup_screen.dart';
 import 'package:opto/features/setup/presentation/screens/permissions_setup_screen.dart';
 import 'package:opto/features/consultation/presentation/screens/booking_screen.dart';
+import 'package:opto/features/consultation/presentation/screens/call_room_screen.dart';
+import 'package:opto/features/consultation/presentation/screens/connecting_screen.dart';
 import 'package:opto/features/consultation/presentation/screens/consult_screen.dart';
 import 'package:opto/features/consultation/presentation/screens/consultation_history_screen.dart';
 import 'package:opto/features/consultation/presentation/screens/doctor_profile_screen.dart';
+import 'package:opto/features/consultation/presentation/screens/intake_screen.dart';
 import 'package:opto/features/consultation/presentation/screens/non_verbal_consult_screen.dart';
+import 'package:opto/features/consultation/presentation/screens/summary_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/care_guides_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/care_log_screen.dart';
@@ -433,6 +437,38 @@ final GoRouter appRouter = GoRouter(
       name: AppRoutes.consultNonVerbal.name,
       builder: (BuildContext context, GoRouterState state) =>
           const NonVerbalConsultScreen(),
+    ),
+
+    // Screen 18e — Pre-consult intake (C4)
+    GoRoute(
+      path: AppRoutes.consultIntake.path,
+      name: AppRoutes.consultIntake.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const IntakeScreen(),
+    ),
+
+    // Screen 18f — Connecting / waiting room (C5)
+    GoRoute(
+      path: AppRoutes.consultConnecting.path,
+      name: AppRoutes.consultConnecting.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const ConnectingScreen(),
+    ),
+
+    // Screen 18g — Live call room (C6)
+    GoRoute(
+      path: AppRoutes.consultCallRoom.path,
+      name: AppRoutes.consultCallRoom.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const CallRoomScreen(),
+    ),
+
+    // Screen 18h — Consult summary & e-prescription (C7)
+    GoRoute(
+      path: AppRoutes.consultSummary.path,
+      name: AppRoutes.consultSummary.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const SummaryScreen(),
     ),
 
     // Screen 19 — Community

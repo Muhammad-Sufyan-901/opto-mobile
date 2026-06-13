@@ -27,6 +27,8 @@ class BookingSummaryCard extends StatelessWidget {
   /// Returns a human-readable label for [ConsultMode].
   static String modeLabel(ConsultMode mode) {
     switch (mode) {
+      case ConsultMode.voice:
+        return 'Voice call';
       case ConsultMode.video:
         return 'Video call (coming soon)';
       case ConsultMode.nonVerbal:

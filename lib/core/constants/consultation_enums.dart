@@ -9,15 +9,18 @@ library;
 ///
 /// Mirrors the `consult_mode` Postgres enum.
 enum ConsultMode {
+  voice,
   video,
   nonVerbal,
   inPerson;
 
   /// Parses a raw Postgres string value to a [ConsultMode].
-  /// Postgres values: 'video', 'non_verbal', 'in_person'.
-  /// Falls back to [ConsultMode.video] for unknown values.
+  /// Postgres values: 'voice', 'video', 'non_verbal', 'in_person'.
+  /// Falls back to [ConsultMode.voice] for unknown values.
   static ConsultMode fromString(String? value) {
     switch (value?.toLowerCase()) {
+      case 'voice':
+        return ConsultMode.voice;
       case 'video':
         return ConsultMode.video;
       case 'non_verbal':
@@ -25,13 +28,16 @@ enum ConsultMode {
       case 'in_person':
         return ConsultMode.inPerson;
       default:
-        return ConsultMode.video;
+        return ConsultMode.voice;
     }
   }
 
   /// Canonical DB string (maps to Postgres enum value).
+  // TODO(db): add 'voice' to the `consult_mode` Postgres enum (migration A-5).
   String get dbValue {
     switch (this) {
+      case ConsultMode.voice:
+        return 'voice';
       case ConsultMode.video:
         return 'video';
       case ConsultMode.nonVerbal:
