@@ -43,11 +43,21 @@ class HomeTopBar extends StatelessWidget {
                     width: AppDimensions.minTapTarget,
                     height: AppDimensions.minTapTarget,
                     child: Center(
-                      child: ExcludeSemantics(
-                        child: Icon(
-                          Icons.menu,
-                          size: AppDimensions.iconLg,
-                          color: cs.onSurface,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: cs.surfaceContainerHighest.withValues(alpha: 0.6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: ExcludeSemantics(
+                            child: Icon(
+                              Icons.menu,
+                              size: AppDimensions.iconLg,
+                              color: cs.onSurface,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -83,34 +93,44 @@ class HomeTopBar extends StatelessWidget {
                   child: SizedBox(
                     width: AppDimensions.minTapTarget,
                     height: AppDimensions.minTapTarget,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      alignment: Alignment.center,
-                      children: [
-                        ExcludeSemantics(
-                          child: Icon(
-                            Icons.notifications_outlined,
-                            size: AppDimensions.iconLg,
-                            color: cs.onSurface,
-                          ),
+                    child: Center(
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: cs.surfaceContainerHighest.withValues(alpha: 0.6),
+                          shape: BoxShape.circle,
                         ),
-                        // Red dot badge (9dp) — error colour
-                        Positioned(
-                          top: 9,
-                          right: 9,
-                          child: ExcludeSemantics(
-                            child: Container(
-                              width: 9,
-                              height: 9,
-                              decoration: BoxDecoration(
-                                color: cs.error,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: cs.surface, width: 2),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          alignment: Alignment.center,
+                          children: [
+                            ExcludeSemantics(
+                              child: Icon(
+                                Icons.notifications_outlined,
+                                size: AppDimensions.iconLg,
+                                color: cs.onSurface,
                               ),
                             ),
-                          ),
+                            // Red dot badge (9dp) — error colour
+                            Positioned(
+                              top: 6,
+                              right: 6,
+                              child: ExcludeSemantics(
+                                child: Container(
+                                  width: 9,
+                                  height: 9,
+                                  decoration: BoxDecoration(
+                                    color: cs.error,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: cs.surface, width: 2),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
