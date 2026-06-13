@@ -5,14 +5,15 @@ import 'package:opto/core/themes/app_custom_colors.dart';
 /// Aura Voice quick-launch pill on the Opto Home screen.
 ///
 /// A tappable banner that opens the Aura Voice listening screen.
-/// Visually: blue-tint background with a blue mic chip (+ glow ring),
-/// heading text, subtitle, and a decorative 5-bar waveform.
+/// Visually: blue-tint background, a blue mic chip (+ glow ring),
+/// heading text in secondary (blue-strong) colour, subtitle, and a
+/// decorative 5-bar waveform.
 ///
 /// Accessibility: rendered as a `Semantics` button with the label
 /// "Aura Voice. Tap to speak." per `design_system.md §12.1`.
 ///
-/// Design: `.aura`, `.aura-ic`, `.aura-txt`, `.aura-wave` in
-/// `Opto Onboarding.html` (Dashboard section).
+/// Design: `.aura`, `.aura-ic`, `.aura-txt`, `.aura-wave`
+/// in `Android Home Dashboard.html` (V1 Card Stack).
 class AuraVoiceCard extends StatelessWidget {
   const AuraVoiceCard({super.key, this.onTap});
 
@@ -34,30 +35,27 @@ class AuraVoiceCard extends StatelessWidget {
         onTap: onTap,
         child: Container(
           constraints: const BoxConstraints(minHeight: 66),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
           decoration: BoxDecoration(
+            // No border — borderless blueTint background per V1 spec.
             color: blueTint,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: cs.primary.withValues(alpha: 0.28),
-              width: 1.5,
-            ),
           ),
           child: Row(
             children: [
-              // ── Mic icon chip (blue circle + glow spread) ─────────────
+              // ── Mic icon chip (46dp circle + glow spread) ─────────────
               ExcludeSemantics(
                 child: Container(
-                  width: 42,
-                  height: 42,
+                  width: 46,
+                  height: 46,
                   decoration: BoxDecoration(
                     color: cs.primary,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: cs.primary.withValues(alpha: 0.14),
+                        color: cs.primary.withValues(alpha: 0.16),
                         blurRadius: 0,
-                        spreadRadius: 6,
+                        spreadRadius: 5,
                       ),
                     ],
                   ),
@@ -75,19 +73,20 @@ class AuraVoiceCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Aura Voice',
+                        'Ask Opto anything',
                         style: theme.textTheme.titleLarge?.copyWith(
-                          color: cs.onSurface,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 19,
+                          // Secondary = blue-strong / onpc per token mapping.
+                          color: cs.secondary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
                         ),
                       ),
-                      const SizedBox(height: 1),
+                      const SizedBox(height: 2),
                       Text(
-                        'Tap and ask Opto anything',
+                        'Read text, identify objects, navigate',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: ink2,
-                          fontSize: 14,
+                          fontSize: 13.5,
                         ),
                       ),
                     ],

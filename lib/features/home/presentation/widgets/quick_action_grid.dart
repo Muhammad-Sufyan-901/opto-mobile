@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
-import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/core/constants/app_routes.dart';
 
-/// Quick-actions 2×2 grid for the Opto Home screen.
+/// Quick-actions 2×2 grid for the Opto Home screen — **V1 Card Stack** style.
 ///
 /// Four tappable tiles leading to the main Opto modules.
-/// Each tile has a blue-primary background with a centred semi-transparent
-/// white icon chip, a white title, and a white sub-label.
+/// Each tile has a Material-3 **surface-container background** (light grey),
+/// a **blue-tint rounded icon chip** at the top, and left-aligned dark text.
 ///
-/// This is the user's final design iteration — the tiles use a **blue
-/// primary background, white text, and a centred icon** per `chats/chat2.md`:
-/// "change the quick action theme on home screen to be have blue primary
-/// background and white text and then move the icon to center".
+/// Design: `.tiles`, `.tile`, `.tile-ic`, `.tile-lbl`, `.tile-sub`
+/// in `Android Home Dashboard.html` (V1 Card Stack).
 ///
-/// Design: `.qgrid`, `.qtile`, `.qtile-ic`, `.qtile-label`, `.qtile-sub`
-/// in `Opto Onboarding.html` (Dashboard section).
+/// The section "Quick actions" label is rendered by the parent [HomeScreen]
+/// via [HomeSectionHeader]; this widget renders tiles only.
 class QuickActionGrid extends StatelessWidget {
   const QuickActionGrid({super.key});
 
@@ -26,73 +25,52 @@ class QuickActionGrid extends StatelessWidget {
       label: 'Vision AI',
       sub: 'See & read for me',
       semanticLabel: 'Vision AI. See and read for me.',
-      route: '/vision-ai',
+      route: AppRoutes.visionAi,
     ),
     _QuickAction(
       icon: Icons.accessibility_new,
       label: 'Prosthetic Hub',
       sub: 'Care & fitting',
       semanticLabel: 'Prosthetic Hub. Care and fitting.',
-      route: '/prosthetic-hub',
+      route: AppRoutes.prostheticHub,
     ),
     _QuickAction(
       icon: Icons.medical_services_outlined,
-      label: 'Consult Doctor',
+      label: 'Consult',
       sub: 'Book or call',
-      semanticLabel: 'Consult Doctor. Book or call.',
-      route: '/consult',
+      semanticLabel: 'Consult. Book or call.',
+      route: AppRoutes.consult,
     ),
     _QuickAction(
       icon: Icons.forum_outlined,
       label: 'Community',
       sub: 'Talk & share',
       semanticLabel: 'Community. Talk and share.',
-      route: '/community',
+      route: AppRoutes.community,
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final ext = Theme.of(context).extension<AppExtendedCustomColors>();
-    final Color ink3 =
-        ext?.ink3 ?? Theme.of(context).colorScheme.onSurfaceVariant;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // "QUICK ACTIONS" section eyebrow label
-        ExcludeSemantics(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 14),
-            child: Text(
-              'QUICK ACTIONS',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.3,
-                color: ink3,
-                height: 1.2,
-              ),
-            ),
-          ),
-        ),
-
         // Row 1
         Row(
           children: [
             Expanded(child: _QuickActionTile(action: _actions[0])),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(child: _QuickActionTile(action: _actions[1])),
           ],
         ),
 
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
 
         // Row 2
         Row(
           children: [
             Expanded(child: _QuickActionTile(action: _actions[2])),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(child: _QuickActionTile(action: _actions[3])),
           ],
         ),
@@ -116,69 +94,69 @@ class _QuickActionTile extends StatelessWidget {
       button: true,
       label: action.semanticLabel,
       child: GestureDetector(
-        onTap: () => context.go(action.route),
+        onTap: () {
+          HapticPatterns.tabNav();
+          context.go(action.route.path);
+        },
         child: Container(
-          constraints: const BoxConstraints(minHeight: 120),
-          padding: const EdgeInsets.all(AppDimensions.cardPadding),
+          constraints: const BoxConstraints(minHeight: 118),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: cs.primary,
             borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-            border: Border.all(color: cs.primary, width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: cs.primary.withValues(alpha: 0.55),
+                color: cs.primary.withValues(alpha: 0.35),
                 blurRadius: 20,
-                offset: const Offset(0, 8),
                 spreadRadius: -8,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Semi-transparent white icon chip
+              // Semi-transparent white icon chip (48×48, radius 14)
               ExcludeSemantics(
                 child: Container(
-                  width: 52,
-                  height: 52,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(action.icon, size: 26, color: Colors.white),
+                  child: Icon(action.icon, size: AppDimensions.iconLg, color: Colors.white),
                 ),
               ),
 
               const SizedBox(height: 14),
 
-              // White title
+              // White title + subtitle — left-aligned
               ExcludeSemantics(
-                child: Text(
-                  action.label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    height: 1.3,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 2),
-
-              // White sub-label
-              ExcludeSemantics(
-                child: Text(
-                  action.sub,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.85),
-                    fontSize: 13.5,
-                    height: 1.35,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      action.label,
+                      style: const TextStyle(
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      action.sub,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white.withValues(alpha: 0.85),
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -196,7 +174,7 @@ class _QuickAction {
   final String label;
   final String sub;
   final String semanticLabel;
-  final String route;
+  final AppRoute route;
 
   const _QuickAction({
     required this.icon,

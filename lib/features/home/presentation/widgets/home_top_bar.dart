@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 
-/// Top bar of the Opto Home screen.
+/// Top app bar of the Opto Home screen — **V1 Card Stack** layout.
 ///
-/// Left  — greeting ("Good morning" / user name).
-/// Right — notification bell chip (with unread dot badge) + user avatar circle.
+/// Row: menu icon · "Opto" title · bell icon (with unread dot) · avatar "R".
+/// Below the row: greeting block ("Good morning," / **"Rian"** as a heading).
 ///
-/// Design: `.topbar`, `.greet-hi`, `.greet-name`, `.icon-btn`,
-/// `.badge`, `.avatar` in `Opto Onboarding.html` (Dashboard section).
+/// Design: `.tb`, `.tb-icon`, `.tb-title`, `.tb-badge`, `.tb-avatar`,
+/// `.greet`, `.greet-lead`, `.greet-name` in `Android Home Dashboard.html`.
 class HomeTopBar extends StatelessWidget {
   const HomeTopBar({super.key});
 
@@ -19,36 +19,129 @@ class HomeTopBar extends StatelessWidget {
     final ColorScheme cs = theme.colorScheme;
     final ext = theme.extension<AppExtendedCustomColors>();
 
-    final Color blueTint = ext?.blueTint ?? cs.primaryContainer;
-    final Color blueStrong = cs.secondary;
     final Color ink2 = ext?.ink2 ?? cs.onSurfaceVariant;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // ── Greeting (heading for screen-readers) ────────────────────
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+        // ── App-bar row ────────────────────────────────────────────────
+        SizedBox(
+          height: 60,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // "Good morning" — secondary body text
-              Text(
-                'Good morning',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: ink2,
-                  height: 1.3,
+              // Menu icon button (48×48 tap target)
+              Semantics(
+                label: 'Menu',
+                button: true,
+                child: GestureDetector(
+                  onTap: () {
+                    // TODO: open navigation drawer / side menu.
+                  },
+                  child: SizedBox(
+                    width: AppDimensions.minTapTarget,
+                    height: AppDimensions.minTapTarget,
+                    child: Center(
+                      child: ExcludeSemantics(
+                        child: Icon(
+                          Icons.menu,
+                          size: AppDimensions.iconLg,
+                          color: cs.onSurface,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              // Name — headline / H1 for this screen
+
+              // "Opto" title — 22/w600
+              Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: ExcludeSemantics(
+                  child: Text(
+                    'Opto',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: cs.onSurface,
+                    ),
+                  ),
+                ),
+              ),
+
+              const Spacer(),
+
+              // Notification bell (48×48) with unread dot badge
               Semantics(
-                header: true,
-                child: Text(
-                  'Rian',
-                  style: theme.textTheme.headlineLarge?.copyWith(
-                    color: cs.onSurface,
-                    fontWeight: FontWeight.w700,
-                    height: 1.12,
+                label: 'Notifications. 1 unread.',
+                button: true,
+                child: GestureDetector(
+                  onTap: () {
+                    // TODO: open notifications panel.
+                  },
+                  child: SizedBox(
+                    width: AppDimensions.minTapTarget,
+                    height: AppDimensions.minTapTarget,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.center,
+                      children: [
+                        ExcludeSemantics(
+                          child: Icon(
+                            Icons.notifications_outlined,
+                            size: AppDimensions.iconLg,
+                            color: cs.onSurface,
+                          ),
+                        ),
+                        // Red dot badge (9dp) — error colour
+                        Positioned(
+                          top: 9,
+                          right: 9,
+                          child: ExcludeSemantics(
+                            child: Container(
+                              width: 9,
+                              height: 9,
+                              decoration: BoxDecoration(
+                                color: cs.error,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: cs.surface, width: 2),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Avatar — 44dp blue circle with initials
+              Semantics(
+                label: 'Profile — Rian',
+                button: true,
+                child: GestureDetector(
+                  onTap: () {
+                    // TODO: navigate to profile screen.
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: cs.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: ExcludeSemantics(
+                      child: Text(
+                        'R',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -56,87 +149,35 @@ class HomeTopBar extends StatelessWidget {
           ),
         ),
 
-        // ── Notification bell ─────────────────────────────────────────
-        Semantics(
-          label: 'Notifications. 1 unread.',
-          button: true,
-          child: GestureDetector(
-            onTap: () {
-              // TODO: open notifications panel
-            },
-            child: SizedBox(
-              width: AppDimensions.minTapTarget,
-              height: AppDimensions.minTapTarget,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // Bell circle
-                  Container(
-                    width: AppDimensions.minTapTarget,
-                    height: AppDimensions.minTapTarget,
-                    decoration: BoxDecoration(
-                      color: blueTint,
-                      shape: BoxShape.circle,
-                    ),
-                    child: ExcludeSemantics(
-                      child: Icon(
-                        Icons.notifications_outlined,
-                        size: AppDimensions.iconLg,
-                        color: blueStrong,
-                      ),
-                    ),
-                  ),
-                  // Unread dot badge — 9dp circle, danger colour, 2dp white ring.
-                  Positioned(
-                    top: 11,
-                    right: 12,
-                    child: ExcludeSemantics(
-                      child: Container(
-                        width: 9,
-                        height: 9,
-                        decoration: BoxDecoration(
-                          color: cs.error,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: cs.surface, width: 2),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+        // ── Greeting block ─────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.only(left: 2, top: 2, bottom: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // "Good morning," — secondary body text (on-surface-variant)
+              Text(
+                'Good morning,',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: ink2,
+                  height: 1.3,
+                ),
               ),
-            ),
-          ),
-        ),
-
-        const SizedBox(width: 12),
-
-        // ── Avatar — 52dp blue circle with initials ───────────────────
-        Semantics(
-          label: 'Profile — Rian',
-          button: true,
-          child: GestureDetector(
-            onTap: () {
-              // TODO: navigate to profile screen
-            },
-            child: Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: cs.primary,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: ExcludeSemantics(
+              // Name — H1 heading for this screen (28/w600)
+              Semantics(
+                header: true,
                 child: Text(
-                  'R',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
+                  'Rian',
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
+                    height: 1.12,
+                    letterSpacing: -0.3,
                   ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ],
