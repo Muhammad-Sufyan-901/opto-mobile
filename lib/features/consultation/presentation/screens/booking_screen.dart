@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,6 +10,7 @@ import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/constants/consultation_enums.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
+import 'package:opto/core/widgets/calendars/app_calendar.dart';
 import 'package:opto/features/consultation/domain/entities/doctor_availability_entity.dart';
 import 'package:opto/features/consultation/domain/entities/doctor_entity.dart';
 import 'package:opto/features/consultation/presentation/bloc/doctor_search_bloc.dart';
@@ -71,13 +73,90 @@ class _BookingViewState extends State<_BookingView> {
   /// Availability slots grouped by calendar day.
   List<_DateGroup> _dateGroups = [];
 
+  /// The date selected from the calendar widget.
+  DateTime? _calendarSelectedDate;
+
+  /// Controllers for the HH:MM time input.
+  final TextEditingController _hourController = TextEditingController();
+  final TextEditingController _minuteController = TextEditingController();
+  final FocusNode _hourFocus = FocusNode();
+  final FocusNode _minuteFocus = FocusNode();
+
   @override
   void initState() {
     super.initState();
+    _calendarSelectedDate = DateTime.now();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       announce(context, 'Choose a time. Select a date and time slot for your consultation with ${widget.doctor.fullName ?? 'the doctor'}.');
     });
+  }
+
+  @override
+  void dispose() {
+    _hourController.dispose();
+    _minuteController.dispose();
+    _hourFocus.dispose();
+    _minuteFocus.dispose();
+    super.dispose();
+  }
+
+  /// Called when the user picks a date from the calendar.
+  void _onCalendarDateChanged(DateTime date) {
+    setState(() {
+      _calendarSelectedDate = date;
+      _selectedSlot = null;
+    });
+
+    // Find matching date group index
+    for (int i = 0; i < _dateGroups.length; i++) {
+      final g = _dateGroups[i];
+      if (g.date.year == date.year &&
+          g.date.month == date.month &&
+          g.date.day == date.day) {
+        setState(() => _selectedDateIdx = i);
+        return;
+      }
+    }
+
+    SemanticsService.announce(
+      'Selected ${_monthName(date.month)} ${date.day}, ${date.year}.',
+      TextDirection.ltr,
+    );
+  }
+
+  /// Applies the manually entered time to pick a matching slot.
+  void _applyManualTime() {
+    final hourText = _hourController.text.trim();
+    final minuteText = _minuteController.text.trim();
+    if (hourText.isEmpty || minuteText.isEmpty) return;
+
+    final hour = int.tryParse(hourText);
+    final minute = int.tryParse(minuteText);
+    if (hour == null || minute == null) return;
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return;
+
+    if (_dateGroups.isEmpty) return;
+    final currentGroup = _dateGroups[_selectedDateIdx];
+    // Find a slot matching the entered time
+    for (final slot in currentGroup.slots) {
+      final local = slot.slotStart.toLocal();
+      if (local.hour == hour && local.minute == minute && !slot.isBooked) {
+        HapticPatterns.focusTick();
+        setState(() => _selectedSlot = slot);
+        SemanticsService.announce(
+          '${_formatTime(slot.slotStart)} selected.',
+          TextDirection.ltr,
+        );
+        return;
+      }
+    }
+
+    // No matching slot found
+    SemanticsService.announce(
+      'No available slot at ${hourText.padLeft(2, '0')}:${minuteText.padLeft(2, '0')}.',
+      TextDirection.ltr,
+    );
   }
 
   void _buildGroups(List<DoctorAvailabilityEntity> slots) {
@@ -288,33 +367,23 @@ class _BookingViewState extends State<_BookingView> {
 
                               const SizedBox(height: AppDimensions.space20),
 
-                              // ── Date strip ─────────────────────────────
+                              // ── Time input with ":" separator ────────
                               _SectionLabel(
-                                label: 'SELECT A DATE',
+                                label: 'SELECT TIME',
                                 cs: cs,
                                 theme: theme,
                               ),
                               const SizedBox(height: AppDimensions.space12),
 
-                              BlocBuilder<DoctorSearchBloc, DoctorSearchState>(
-                                builder: (context, state) {
-                                  final loading = state is DoctorSearchLoading ||
-                                      state is DoctorSearchInitial;
-                                  if (loading && _dateGroups.isEmpty) {
-                                    return const _DateStripSkeleton();
-                                  }
-                                  return _DateStrip(
-                                    groups: _dateGroups,
-                                    selectedIdx: _selectedDateIdx,
-                                    onSelect: (i) => setState(() {
-                                      _selectedDateIdx = i;
-                                      _selectedSlot = null;
-                                    }),
-                                    cs: cs,
-                                    ext: ext,
-                                    theme: theme,
-                                  );
-                                },
+                              _TimeInputField(
+                                hourController: _hourController,
+                                minuteController: _minuteController,
+                                hourFocus: _hourFocus,
+                                minuteFocus: _minuteFocus,
+                                onSubmitted: _applyManualTime,
+                                cs: cs,
+                                ext: ext,
+                                theme: theme,
                               ),
 
                               const SizedBox(height: AppDimensions.space20),
@@ -329,7 +398,11 @@ class _BookingViewState extends State<_BookingView> {
                                   selectedSlot: _selectedSlot,
                                   onSlotTap: (s) {
                                     HapticPatterns.focusTick();
-                                    setState(() => _selectedSlot = s);
+                                    setState(() {
+                                      _selectedSlot = s;
+                                      _hourController.text = s.slotStart.toLocal().hour.toString().padLeft(2, '0');
+                                      _minuteController.text = s.slotStart.toLocal().minute.toString().padLeft(2, '0');
+                                    });
                                     SemanticsService.announce(
                                       '${_formatTime(s.slotStart)} selected.',
                                       TextDirection.ltr,
@@ -348,7 +421,11 @@ class _BookingViewState extends State<_BookingView> {
                                   selectedSlot: _selectedSlot,
                                   onSlotTap: (s) {
                                     HapticPatterns.focusTick();
-                                    setState(() => _selectedSlot = s);
+                                    setState(() {
+                                      _selectedSlot = s;
+                                      _hourController.text = s.slotStart.toLocal().hour.toString().padLeft(2, '0');
+                                      _minuteController.text = s.slotStart.toLocal().minute.toString().padLeft(2, '0');
+                                    });
                                     SemanticsService.announce(
                                       '${_formatTime(s.slotStart)} selected.',
                                       TextDirection.ltr,
@@ -359,8 +436,33 @@ class _BookingViewState extends State<_BookingView> {
                                   theme: theme,
                                 ),
 
-                                const SizedBox(height: AppDimensions.space32),
+                                const SizedBox(height: AppDimensions.space20),
                               ],
+
+                              // ── Calendar widget ─────────────────────────
+                              _SectionLabel(
+                                label: 'SELECT A DATE',
+                                cs: cs,
+                                theme: theme,
+                              ),
+                              const SizedBox(height: AppDimensions.space12),
+
+                              Center(
+                                child: AppCalendar(
+                                  mode: AppCalendarMode.single,
+                                  initialDate: DateTime.now(),
+                                  selectedDate: _calendarSelectedDate,
+                                  onDateChanged: _onCalendarDateChanged,
+                                  selectableDayPredicate: (date) {
+                                    // Only allow today and future dates
+                                    final now = DateTime.now();
+                                    final today = DateTime(now.year, now.month, now.day);
+                                    return !date.isBefore(today);
+                                  },
+                                ),
+                              ),
+
+                              const SizedBox(height: AppDimensions.space32),
                             ],
                           ),
                         ),
@@ -584,6 +686,241 @@ class _SectionLabel extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _TimeInputField extends StatelessWidget {
+  const _TimeInputField({
+    required this.hourController,
+    required this.minuteController,
+    required this.hourFocus,
+    required this.minuteFocus,
+    required this.onSubmitted,
+    required this.cs,
+    required this.ext,
+    required this.theme,
+  });
+
+  final TextEditingController hourController;
+  final TextEditingController minuteController;
+  final FocusNode hourFocus;
+  final FocusNode minuteFocus;
+  final VoidCallback onSubmitted;
+  final ColorScheme cs;
+  final AppExtendedCustomColors? ext;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color line = ext?.line ?? cs.outline;
+    final Color blueTint = ext?.blueTint ?? cs.primaryContainer;
+
+    return Semantics(
+      label: 'Enter appointment time. Hours and minutes separated by colon.',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: blueTint,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: line, width: 1.5),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Clock icon
+            ExcludeSemantics(
+              child: Icon(
+                Icons.access_time_rounded,
+                size: AppDimensions.iconLg,
+                color: cs.primary,
+              ),
+            ),
+            const SizedBox(width: 16),
+
+            // Hour field
+            SizedBox(
+              width: 56,
+              child: ExcludeSemantics(
+                child: TextField(
+                  controller: hourController,
+                  focusNode: hourFocus,
+                  textAlign: TextAlign.center,
+                  keyboardType: TextInputType.number,
+                  maxLength: 2,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    _TimeValueFormatter(max: 23),
+                  ],
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: cs.onSurface,
+                    letterSpacing: 2,
+                    fontSize: 28,
+                  ),
+                  decoration: InputDecoration(
+                    counterText: '',
+                    hintText: '00',
+                    hintStyle: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: (ext?.ink3 ?? cs.onSurfaceVariant)
+                          .withValues(alpha: 0.35),
+                      letterSpacing: 2,
+                      fontSize: 28,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 4,
+                    ),
+                    filled: true,
+                    fillColor: cs.surface,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: line, width: 1.5),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: line, width: 1.5),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: cs.primary, width: 2),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    if (value.length == 2) {
+                      minuteFocus.requestFocus();
+                    }
+                  },
+                  onSubmitted: (_) => onSubmitted(),
+                ),
+              ),
+            ),
+
+            // Colon separator
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: ExcludeSemantics(
+                child: Text(
+                  ':',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: cs.primary,
+                    fontSize: 32,
+                  ),
+                ),
+              ),
+            ),
+
+            // Minute field
+            SizedBox(
+              width: 56,
+              child: ExcludeSemantics(
+                child: TextField(
+                  controller: minuteController,
+                  focusNode: minuteFocus,
+                  textAlign: TextAlign.center,
+                  keyboardType: TextInputType.number,
+                  maxLength: 2,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    _TimeValueFormatter(max: 59),
+                  ],
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: cs.onSurface,
+                    letterSpacing: 2,
+                    fontSize: 28,
+                  ),
+                  decoration: InputDecoration(
+                    counterText: '',
+                    hintText: '00',
+                    hintStyle: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: (ext?.ink3 ?? cs.onSurfaceVariant)
+                          .withValues(alpha: 0.35),
+                      letterSpacing: 2,
+                      fontSize: 28,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 4,
+                    ),
+                    filled: true,
+                    fillColor: cs.surface,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: line, width: 1.5),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: line, width: 1.5),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: cs.primary, width: 2),
+                    ),
+                  ),
+                  onSubmitted: (_) => onSubmitted(),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 16),
+
+            // Apply button
+            Semantics(
+              button: true,
+              label: 'Apply entered time',
+              child: GestureDetector(
+                onTap: onSubmitted,
+                child: Container(
+                  width: AppDimensions.minTapTarget,
+                  height: AppDimensions.minTapTarget,
+                  decoration: BoxDecoration(
+                    color: cs.primary,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: cs.primary.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const ExcludeSemantics(
+                    child: Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Formatter that clamps numeric input to a maximum value (e.g. 23 for hours, 59 for minutes).
+class _TimeValueFormatter extends TextInputFormatter {
+  _TimeValueFormatter({required this.max});
+
+  final int max;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) return newValue;
+    final intVal = int.tryParse(newValue.text);
+    if (intVal == null) return oldValue;
+    if (intVal > max) return oldValue;
+    return newValue;
   }
 }
 
