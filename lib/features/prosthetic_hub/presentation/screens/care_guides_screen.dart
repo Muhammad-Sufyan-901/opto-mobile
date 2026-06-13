@@ -1,17 +1,20 @@
-// Screen: Care Guides list
+// Screen: Care Guides list (M3 redesign)
 //
-// Shows all available care guides grouped by category. Tapping a card
-// navigates to [CareGuideDetailScreen] via GoRouter.
+// Featured "Recommended today" card for the daily clean guide, followed by
+// an "All guides" section of restyled row cards.
+// BLoC wiring, routing, and error handling are unchanged.
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
-import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/prosthetic_hub/domain/entities/care_guide.dart';
 import 'package:opto/features/prosthetic_hub/presentation/cubit/care_guides_cubit.dart';
 import 'package:opto/features/prosthetic_hub/presentation/widgets/care_guide_card.dart';
+import 'package:opto/features/prosthetic_hub/presentation/widgets/featured_guide_card.dart';
 import 'package:opto/features/prosthetic_hub/presentation/widgets/prosthetic_header.dart';
 
 /// Screen 17-B — Care Guides list.
@@ -66,6 +69,20 @@ class _CareGuidesView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const ProstheticHeader(title: 'Care Guides'),
+              const SizedBox(height: 4),
+              // Subtitle
+              ExcludeSemantics(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 2),
+                  child: Text(
+                    'Cleaning, handling & storage',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: cs.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: AppDimensions.space16),
               Expanded(
                 child: BlocBuilder<CareGuidesCubit, CareGuidesState>(
@@ -95,7 +112,14 @@ class _CareGuidesView extends StatelessWidget {
 // PRIVATE WIDGETS
 // =============================================================================
 
-/// Scrollable list of [CareGuideCard]s separated by [AppDimensions.space12].
+void _openGuide(BuildContext context, CareGuide guide) {
+  context.push(
+    '${AppRoutes.prostheticCareGuides.path}/${guide.id}',
+    extra: guide,
+  );
+}
+
+/// Featured card + "All guides" section list.
 class _GuidesList extends StatelessWidget {
   const _GuidesList({required this.guides});
 
@@ -103,21 +127,66 @@ class _GuidesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme cs = theme.colorScheme;
+    final ext = theme.extension<AppExtendedCustomColors>();
+    final Color ink3 = ext?.ink3 ?? cs.onSurfaceVariant;
+
+    if (guides.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    // Pick the "clean" guide as featured if present, else use the first.
+    final CareGuide featured = guides.firstWhere(
+      (g) => g.category == CareGuideCategory.clean,
+      orElse: () => guides.first,
+    );
+    // All guides still shown below (including featured).
+    final List<CareGuide> allGuides = guides;
+
     return SingleChildScrollView(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (int i = 0; i < guides.length; i++) ...[
+          // ── Daily routine section ────────────────────────────────────────
+          ExcludeSemantics(
+            child: Text(
+              'DAILY ROUTINE',
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.4,
+                color: ink3,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppDimensions.space12),
+          FeaturedGuideCard(
+            guide: featured,
+            onTap: () => _openGuide(context, featured),
+          ),
+
+          const SizedBox(height: AppDimensions.sectionGap),
+
+          // ── All guides section ───────────────────────────────────────────
+          ExcludeSemantics(
+            child: Text(
+              'ALL GUIDES',
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.4,
+                color: ink3,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppDimensions.space12),
+          for (int i = 0; i < allGuides.length; i++) ...[
             if (i > 0) const SizedBox(height: AppDimensions.space12),
             CareGuideCard(
-              guide: guides[i],
-              onTap: () {
-                context.push(
-                  '${AppRoutes.prostheticCareGuides.path}/${guides[i].id}',
-                  extra: guides[i],
-                );
-              },
+              guide: allGuides[i],
+              onTap: () => _openGuide(context, allGuides[i]),
             ),
           ],
+          const SizedBox(height: AppDimensions.space24),
         ],
       ),
     );

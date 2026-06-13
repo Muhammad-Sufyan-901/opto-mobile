@@ -1,7 +1,8 @@
 // Widget: SupplyProductCard
 //
-// Single row card in the Order Supplies catalog. Matches the visual style of
-// [CareGuideCard] — bordered container, icon chip, text column, qty controls.
+// Restyled for the M3 redesign — square image placeholder with a short type
+// label, product name, type description, blue price, and a stepper pill.
+// Mirrors the `.hb-sup` layout from the design.
 import 'package:flutter/material.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
@@ -10,12 +11,9 @@ import 'package:opto/features/prosthetic_hub/domain/entities/supply_product.dart
 
 /// An accessible product card for the Order Supplies catalog.
 ///
-/// Shows product name, type label, price, and a quantity control.
-/// When [qty] == 0, only a `+` button is shown. When [qty] > 0, a
-/// `[−] qty [+]` row replaces it.
-///
-/// Semantics: the root [Semantics] announces name, type, price, and qty state.
-/// Decorative elements are wrapped in [ExcludeSemantics].
+/// Shows a square image chip, product name, type label, price, and a quantity
+/// stepper pill. When [qty] is 0 only the `+` is shown; once the user taps it
+/// the pill expands to `[−] qty [+]`.
 class SupplyProductCard extends StatelessWidget {
   const SupplyProductCard({
     super.key,
@@ -30,6 +28,15 @@ class SupplyProductCard extends StatelessWidget {
   final VoidCallback onAdd;
   final VoidCallback onRemove;
 
+  /// Derives a short 1–6 char label from the product type for the image chip.
+  String _chipLabel(SupplyProductType type) => switch (type) {
+        SupplyProductType.solution => 'Saline',
+        SupplyProductType.selfCleaningCase => 'SC\nCase',
+        SupplyProductType.storageCase => 'Case',
+        SupplyProductType.careKit => 'Kit',
+        SupplyProductType.cloth => 'Cloth',
+      };
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -37,9 +44,8 @@ class SupplyProductCard extends StatelessWidget {
     final ext = theme.extension<AppExtendedCustomColors>();
 
     final Color blueTint = ext?.blueTint ?? cs.primaryContainer;
-    final Color blueStrong = cs.secondary;
+    final Color onTint = cs.onPrimaryContainer;
     final Color line = ext?.line ?? cs.outline;
-    final Color ink2 = ext?.ink2 ?? cs.onSurfaceVariant;
     final Color ink3 = ext?.ink3 ?? cs.onSurfaceVariant;
 
     final String formattedPrice = 'Rp ${formatRupiah(product.priceIdr)}';
@@ -51,81 +57,71 @@ class SupplyProductCard extends StatelessWidget {
     return Semantics(
       label: semanticsLabel,
       child: Container(
-        constraints: const BoxConstraints(minHeight: AppDimensions.minTapTarget),
         padding: const EdgeInsets.symmetric(
           vertical: 15,
           horizontal: AppDimensions.space16,
         ),
         decoration: BoxDecoration(
-          color: cs.surface,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusRow),
+          color: blueTint,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard + 2),
           border: Border.all(color: line, width: 1.5),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // ── Leading icon chip (48×48) ──────────────────────────────────
+            // ── Image chip ─────────────────────────────────────────────────
             ExcludeSemantics(
               child: Container(
-                width: AppDimensions.minTapTarget,
-                height: AppDimensions.minTapTarget,
+                width: 58,
+                height: 58,
                 decoration: BoxDecoration(
-                  color: blueTint,
-                  borderRadius: BorderRadius.circular(13),
+                  color: cs.primaryContainer,
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(
-                  Icons.inventory_2_outlined,
-                  size: 22,
-                  color: blueStrong,
+                alignment: Alignment.center,
+                child: Text(
+                  _chipLabel(product.type),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                    height: 1.3,
+                    color: onTint,
+                  ),
                 ),
               ),
             ),
 
-            const SizedBox(width: 14),
+            const SizedBox(width: 15),
 
             // ── Text column ────────────────────────────────────────────────
-            // Excluded from semantics — the root Semantics label covers all
-            // text content (name, type, price, qty).
             Expanded(
               child: ExcludeSemantics(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Product name
                     Text(
                       product.name,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: cs.onSurface,
+                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    // Type label + price
-                    Row(
-                      children: [
-                        Text(
-                          product.type.displayLabel,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: ink2,
-                          ),
-                        ),
-                        Text(
-                          ' · ',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: ink3,
-                          ),
-                        ),
-                        Text(
-                          formattedPrice,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: ink3,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 2),
+                    Text(
+                      product.type.displayLabel,
+                      style: theme.textTheme.bodySmall?.copyWith(color: ink3),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      formattedPrice,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: cs.primary,
+                      ),
                     ),
                   ],
                 ),
@@ -134,85 +130,108 @@ class SupplyProductCard extends StatelessWidget {
 
             const SizedBox(width: 8),
 
-            // ── Quantity control ───────────────────────────────────────────
-            if (qty == 0)
-              // Single + button when nothing in cart
-              Semantics(
-                button: true,
-                label: 'Add ${product.name}',
-                excludeSemantics: true,
-                child: SizedBox(
-                  width: AppDimensions.minTapTarget,
-                  height: AppDimensions.minTapTarget,
-                  child: IconButton(
-                    icon: Icon(Icons.add, color: blueStrong),
-                    onPressed: onAdd,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: AppDimensions.minTapTarget,
-                      minHeight: AppDimensions.minTapTarget,
-                    ),
-                  ),
-                ),
-              )
-            else
-              // [−] qty [+] row when item is in cart
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Semantics(
-                    button: true,
-                    label: 'Remove one ${product.name} from cart',
-                    excludeSemantics: true,
-                    child: SizedBox(
-                      width: AppDimensions.minTapTarget,
-                      height: AppDimensions.minTapTarget,
-                      child: IconButton(
-                        icon: Icon(Icons.remove, color: blueStrong),
-                        onPressed: onRemove,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(
-                          minWidth: AppDimensions.minTapTarget,
-                          minHeight: AppDimensions.minTapTarget,
-                        ),
-                      ),
-                    ),
-                  ),
-                  ExcludeSemantics(
-                    child: SizedBox(
-                      width: 28,
-                      child: Text(
-                        '$qty',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: cs.onSurface,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Semantics(
-                    button: true,
-                    label: 'Add ${product.name}',
-                    excludeSemantics: true,
-                    child: SizedBox(
-                      width: AppDimensions.minTapTarget,
-                      height: AppDimensions.minTapTarget,
-                      child: IconButton(
-                        icon: Icon(Icons.add, color: blueStrong),
-                        onPressed: onAdd,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(
-                          minWidth: AppDimensions.minTapTarget,
-                          minHeight: AppDimensions.minTapTarget,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            // ── Stepper pill ───────────────────────────────────────────────
+            _StepperPill(
+              qty: qty,
+              onAdd: onAdd,
+              onRemove: onRemove,
+              productName: product.name,
+              line: line,
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The `[− qty +]` pill stepper (or just `[+]` when qty = 0).
+class _StepperPill extends StatelessWidget {
+  const _StepperPill({
+    required this.qty,
+    required this.onAdd,
+    required this.onRemove,
+    required this.productName,
+    required this.line,
+  });
+
+  final int qty;
+  final VoidCallback onAdd;
+  final VoidCallback onRemove;
+  final String productName;
+  final Color line;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme cs = Theme.of(context).colorScheme;
+
+    return Container(
+      height: 42,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: line, width: 1.5),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (qty > 0) ...[
+            Semantics(
+              button: true,
+              label: 'Remove one $productName from cart',
+              excludeSemantics: true,
+              child: SizedBox(
+                width: AppDimensions.minTapTarget,
+                height: AppDimensions.minTapTarget,
+                child: IconButton(
+                  icon: const Icon(Icons.remove, size: 20),
+                  color: cs.primary,
+                  onPressed: onRemove,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: AppDimensions.minTapTarget,
+                    minHeight: AppDimensions.minTapTarget,
+                  ),
+                ),
+              ),
+            ),
+            ExcludeSemantics(
+              child: SizedBox(
+                width: 28,
+                child: Text(
+                  '$qty',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+          ],
+          Semantics(
+            button: true,
+            label: 'Add $productName',
+            excludeSemantics: true,
+            child: SizedBox(
+              width: AppDimensions.minTapTarget,
+              height: AppDimensions.minTapTarget,
+              child: IconButton(
+                icon: Icon(
+                  Icons.add,
+                  size: 20,
+                  color: cs.primary,
+                ),
+                onPressed: onAdd,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                  minWidth: AppDimensions.minTapTarget,
+                  minHeight: AppDimensions.minTapTarget,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

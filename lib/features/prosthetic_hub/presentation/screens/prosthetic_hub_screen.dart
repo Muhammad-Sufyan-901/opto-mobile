@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
-import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
+import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
-import 'package:opto/features/prosthetic_hub/presentation/widgets/prosthetic_header.dart';
+import 'package:opto/features/home/presentation/widgets/home_bottom_nav.dart';
 
-/// Screen 17 — Prosthetic Hub
+/// Screen 17 — Prosthetic Hub (M3 redesign)
 ///
-/// Accessibility-first overview of the user's ocular prosthesis care status,
-/// with quick links to fitting appointments, care guides, supply ordering, and
-/// specialist messaging.
-///
-/// Layout: white Scaffold, SafeArea + SingleChildScrollView, no bottom nav.
+/// Simplified hero status card (no ring/streak) + 2-tile quick-actions grid
+/// linking to Care Guides and Order Supplies only. Specialist / appointment
+/// links removed per scope decision.
 class ProstheticHubScreen extends StatefulWidget {
   const ProstheticHubScreen({super.key});
 
@@ -35,81 +33,123 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
     final ThemeData theme = Theme.of(context);
     final ColorScheme cs = theme.colorScheme;
     final ext = theme.extension<AppExtendedCustomColors>();
+    final Color ink3 = ext?.ink3 ?? cs.onSurfaceVariant;
 
     return Scaffold(
       backgroundColor: cs.surface,
+      bottomNavigationBar: const HomeBottomNav(activeTab: -1),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.only(
-            left: 22,
-            right: 22,
-            top: 14,
+            left: 18,
+            right: 18,
+            top: 0,
             bottom: 24,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Screen header: back + title ───────────────────────────────
-              const ProstheticHeader(title: 'Prosthetic Hub'),
+              // ── Large M3 app bar ──────────────────────────────────────────
+              _LargeAppBar(
+                onListenTap: () => announce(
+                  context,
+                  'Right eye prosthesis. Next cleaning in 1 day. '
+                  'Last cleaned 6 days ago. Status: Healthy.',
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Hero status card ──────────────────────────────────────────
+              _StatusCard(cs: cs),
 
               const SizedBox(height: 14),
 
-              // ── Status card ───────────────────────────────────────────────
-              _StatusCard(cs: cs),
+              // ── Listen pill ───────────────────────────────────────────────
+              Semantics(
+                button: true,
+                label: 'Listen to today\'s summary.',
+                child: GestureDetector(
+                  onTap: () => announce(
+                    context,
+                    'Right eye prosthesis. Next cleaning in 1 day. '
+                    'Last cleaned 6 days ago. Status: Healthy.',
+                  ),
+                  child: Container(
+                    height: 40,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: cs.primaryContainer,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.volume_up_outlined,
+                          size: 17,
+                          color: cs.onPrimaryContainer,
+                        ),
+                        const SizedBox(width: 8),
+                        ExcludeSemantics(
+                          child: Text(
+                            'Listen to today\'s summary',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: cs.onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ExcludeSemantics(
+                          child: _MiniWave(color: cs.onPrimaryContainer),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
 
               const SizedBox(height: AppDimensions.sectionGap),
 
-              // ── "Care & support" section label ────────────────────────────
+              // ── "Quick actions" label ─────────────────────────────────────
               ExcludeSemantics(
-                child: Row(
-                  children: [
-                    Text(
-                      'CARE & SUPPORT',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.6,
-                        color: ext?.ink3 ?? cs.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'QUICK ACTIONS',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.4,
+                    color: ink3,
+                  ),
                 ),
               ),
 
               const SizedBox(height: AppDimensions.space12),
-              _HubLink(
-                icon: Icons.calendar_today_outlined,
-                title: 'Fitting appointments',
-                subtitle: '1 upcoming · Apr 18',
-                onTap: () {
-                  // TODO(prosthetic-hub): navigate to sub-screen
-                },
-              ),
-              const SizedBox(height: AppDimensions.space12),
-              _HubLink(
-                icon: Icons.menu_book_outlined,
-                title: 'Care guides',
-                subtitle: 'Cleaning, handling, sleep',
-                onTap: () {
-                  context.push(AppRoutes.prostheticCareGuides.path);
-                },
-              ),
-              const SizedBox(height: AppDimensions.space12),
-              _HubLink(
-                icon: Icons.inventory_2_outlined,
-                title: 'Order supplies',
-                subtitle: 'Solution, cases & cloths',
-                onTap: () {
-                  context.push(AppRoutes.prostheticOrderSupplies.path);
-                },
-              ),
-              const SizedBox(height: AppDimensions.space12),
-              _HubLink(
-                icon: Icons.message_outlined,
-                title: 'Message my specialist',
-                subtitle: 'Dr. Anwar · usually replies same day',
-                onTap: () {
-                  context.push(AppRoutes.prostheticSpecialists.path);
-                },
+
+              // ── 2-tile grid ───────────────────────────────────────────────
+              Row(
+                children: [
+                  Expanded(
+                    child: _QuickTile(
+                      icon: Icons.menu_book_outlined,
+                      label: 'Care Guides',
+                      sub: 'Cleaning & handling',
+                      onTap: () =>
+                          context.push(AppRoutes.prostheticCareGuides.path),
+                    ),
+                  ),
+                  const SizedBox(width: 13),
+                  Expanded(
+                    child: _QuickTile(
+                      icon: Icons.inventory_2_outlined,
+                      label: 'Order Supplies',
+                      sub: 'Restock anytime',
+                      onTap: () =>
+                          context.push(AppRoutes.prostheticOrderSupplies.path),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -123,7 +163,105 @@ class _ProstheticHubScreenState extends State<ProstheticHubScreen> {
 // PRIVATE WIDGETS
 // =============================================================================
 
-/// Blue-gradient status card showing prosthesis health and cleaning schedule.
+/// Large M3 app bar: icon row (back + actions) + large heading below.
+class _LargeAppBar extends StatelessWidget {
+  const _LargeAppBar({required this.onListenTap});
+
+  final VoidCallback onListenTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme cs = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Icon row
+          Row(
+            children: [
+              Semantics(
+                button: true,
+                label: 'Back',
+                child: GestureDetector(
+                  onTap: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go(AppRoutes.home.path);
+                    }
+                  },
+                  child: SizedBox(
+                    width: AppDimensions.minTapTarget,
+                    height: AppDimensions.minTapTarget,
+                    child: Center(
+                      child: ExcludeSemantics(
+                        child: Icon(
+                          Icons.chevron_left,
+                          size: 28,
+                          color: cs.onSurface,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Semantics(
+                button: true,
+                label: 'Listen to hub summary',
+                child: GestureDetector(
+                  onTap: onListenTap,
+                  child: SizedBox(
+                    width: AppDimensions.minTapTarget,
+                    height: AppDimensions.minTapTarget,
+                    child: Center(
+                      child: ExcludeSemantics(
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: cs.primaryContainer,
+                          ),
+                          child: Icon(
+                            Icons.volume_up_outlined,
+                            size: 22,
+                            color: cs.onPrimaryContainer,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Large heading
+          Semantics(
+            header: true,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Text(
+                'Prosthetic Hub',
+                style: theme.textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1.0,
+                  height: 1.1,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Blue-gradient hero status card (simplified — no ring/streak per design decision).
 class _StatusCard extends StatelessWidget {
   const _StatusCard({required this.cs});
 
@@ -131,140 +269,112 @@ class _StatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
     return Semantics(
       button: true,
       label:
-          'Prosthetic status: Healthy. Next cleaning in 1 day. Last cleaned 6 days ago. Double tap to log care.',
+          'Prosthetic status: Healthy. Next cleaning in 1 day. '
+          'Last cleaned 6 days ago. Double tap to log care.',
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
+            stops: const [0.0, 0.78],
             colors: [cs.primary, cs.secondary],
           ),
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: cs.primary.withValues(alpha: 0.60),
-              blurRadius: 30,
-              offset: const Offset(0, 14),
-              spreadRadius: -10,
+              color: cs.primary.withValues(alpha: 0.64),
+              blurRadius: 46,
+              offset: const Offset(0, 22),
+              spreadRadius: -18,
             ),
           ],
         ),
-        padding: const EdgeInsets.all(AppDimensions.cardPaddingLarge),
+        padding: const EdgeInsets.all(24),
         child: ExcludeSemantics(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Top row: Healthy chip + prosthesis type ────────────────
+              // Eyebrow + chip row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // "Healthy" chip
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.20),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.verified_outlined,
-                          size: 18,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Healthy',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Prosthesis type
                   Text(
-                    'Right eye prosthesis',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.85),
+                    'RIGHT EYE PROSTHESIS',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.0,
+                      color: Colors.white.withValues(alpha: 0.82),
                     ),
                   ),
+                  _HealthyChip(),
                 ],
               ),
 
-              const SizedBox(height: 18),
+              const SizedBox(height: 9),
 
-              // ── Title ──────────────────────────────────────────────────
-              Text(
+              // Title
+              const Text(
                 'Next cleaning in 1 day',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.4,
+                  height: 1.15,
                   color: Colors.white,
                 ),
               ),
 
-              const SizedBox(height: 6),
+              const SizedBox(height: 5),
 
-              // ── Subtitle ───────────────────────────────────────────────
+              // Subtitle
               Text(
-                'Last cleaned 6 days ago. Tap to log today\'s care.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.90),
-                  height: 1.4,
+                'Last cleaned 6 days ago',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white.withValues(alpha: 0.9),
                 ),
               ),
 
               const SizedBox(height: 18),
 
-              // ── "Log care" button ──────────────────────────────────────
+              // Log care button
               Semantics(
                 button: true,
-                label: 'Log today care',
-                child: Container(
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: () {
-                        // TODO(prosthetic-hub): open care logging flow
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.space16,
+                label: 'Log today\'s care',
+                child: GestureDetector(
+                  onTap: () {
+                    // TODO(prosthetic-hub): open care logging flow
+                  },
+                  child: Container(
+                    height: 54,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(27),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Log today\'s care',
+                          style: TextStyle(
+                            fontSize: 16.5,
+                            fontWeight: FontWeight.w700,
+                            color: cs.secondary,
+                          ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Log care',
-                              style: theme.textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: cs.secondary,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(
-                              Icons.arrow_forward,
-                              size: AppDimensions.iconMd,
-                              color: cs.secondary,
-                            ),
-                          ],
+                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.arrow_forward,
+                          size: 20,
+                          color: cs.secondary,
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
@@ -277,19 +387,76 @@ class _StatusCard extends StatelessWidget {
   }
 }
 
-/// A single "Care & support" link row with a blue-tint icon chip, title,
-/// subtitle, and a trailing chevron.
-class _HubLink extends StatelessWidget {
-  const _HubLink({
+/// Translucent "Healthy" chip shown inside the hero card.
+class _HealthyChip extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.22),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.shield_outlined, size: 14, color: Colors.white),
+          SizedBox(width: 6),
+          Text(
+            'Healthy',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Decorative mini waveform shown inside the "Listen" pill.
+class _MiniWave extends StatelessWidget {
+  const _MiniWave({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    const heights = [8.0, 14.0, 6.0, 16.0, 10.0];
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        for (final h in heights) ...[
+          Container(
+            width: 2.5,
+            height: h,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 2.5),
+        ],
+      ],
+    );
+  }
+}
+
+/// A quick-action tile (2-column grid cell).
+class _QuickTile extends StatelessWidget {
+  const _QuickTile({
     required this.icon,
-    required this.title,
-    required this.subtitle,
+    required this.label,
+    required this.sub,
     required this.onTap,
   });
 
   final IconData icon;
-  final String title;
-  final String subtitle;
+  final String label;
+  final String sub;
   final VoidCallback onTap;
 
   @override
@@ -297,75 +464,57 @@ class _HubLink extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme cs = theme.colorScheme;
     final ext = theme.extension<AppExtendedCustomColors>();
-
     final Color blueTint = ext?.blueTint ?? cs.primaryContainer;
-    final Color blueStrong = cs.secondary;
     final Color line = ext?.line ?? cs.outline;
-    final Color ink2 = ext?.ink2 ?? cs.onSurfaceVariant;
-    final Color ink3 = ext?.ink3 ?? cs.onSurfaceVariant;
 
     return Semantics(
       button: true,
-      label: '$title. $subtitle',
+      label: '$label. $sub',
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            vertical: 15,
-            horizontal: AppDimensions.space16,
-          ),
+          constraints: const BoxConstraints(minHeight: 124),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: cs.surface,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusRow),
+            color: blueTint,
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(color: line, width: 1.5),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Leading icon chip (48×48, radius 13) ──────────────────
               ExcludeSemantics(
                 child: Container(
-                  width: AppDimensions.minTapTarget,
-                  height: AppDimensions.minTapTarget,
+                  width: 50,
+                  height: 50,
                   decoration: BoxDecoration(
-                    color: blueTint,
-                    borderRadius: BorderRadius.circular(13),
+                    color: cs.primaryContainer,
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(icon, size: 22, color: blueStrong),
+                  child: Icon(icon, size: 24, color: cs.onPrimaryContainer),
                 ),
               ),
-
-              const SizedBox(width: 14),
-
-              // ── Text column ────────────────────────────────────────────
-              Expanded(
-                child: ExcludeSemantics(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        title,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: cs.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: ink2,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // ── Trailing chevron ───────────────────────────────────────
+              const SizedBox(height: 16),
               ExcludeSemantics(
-                child: Icon(Icons.chevron_right, size: 22, color: ink3),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      sub,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

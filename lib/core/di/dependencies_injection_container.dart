@@ -13,6 +13,16 @@ import 'package:opto/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:opto/features/auth/domain/repositories/auth_repository.dart';
 import 'package:opto/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:opto/features/connect/data/datasources/connect_remote_data_source.dart';
+import 'package:opto/features/prosthetic_hub/domain/repositories/care_guides_repository.dart';
+import 'package:opto/features/prosthetic_hub/domain/repositories/supplies_repository.dart';
+import 'package:opto/features/prosthetic_hub/domain/repositories/specialist_repository.dart';
+import 'package:opto/features/prosthetic_hub/data/repositories/care_guides_repository_mock.dart';
+import 'package:opto/features/prosthetic_hub/data/repositories/supplies_repository_mock.dart';
+import 'package:opto/features/prosthetic_hub/data/repositories/specialist_repository_mock.dart';
+import 'package:opto/features/prosthetic_hub/presentation/cubit/care_guides_cubit.dart';
+import 'package:opto/features/prosthetic_hub/presentation/cubit/order_supplies_cubit.dart';
+import 'package:opto/features/prosthetic_hub/presentation/cubit/specialist_directory_cubit.dart';
+import 'package:opto/features/prosthetic_hub/presentation/cubit/specialist_chat_cubit.dart';
 import 'package:opto/features/consultation/data/datasources/consultation_remote_data_source.dart';
 import 'package:opto/features/consultation/data/repositories/booking_repository_impl.dart';
 import 'package:opto/features/consultation/data/repositories/consultation_history_repository_impl.dart';
@@ -45,15 +55,6 @@ import 'package:opto/features/profile/domain/repositories/emergency_contact_repo
 import 'package:opto/features/profile/domain/repositories/profile_repository.dart';
 import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
-import 'package:opto/core/location/location.dart';
-import 'package:opto/features/accessibility_map/data/datasources/map_remote_data_source.dart';
-import 'package:opto/features/accessibility_map/data/repositories/contributions_repository_impl.dart';
-import 'package:opto/features/accessibility_map/data/repositories/poi_repository_impl.dart';
-import 'package:opto/features/accessibility_map/domain/repositories/contributions_repository.dart';
-import 'package:opto/features/accessibility_map/domain/repositories/poi_repository.dart';
-import 'package:opto/features/accessibility_map/presentation/bloc/add_poi/add_poi_cubit.dart';
-import 'package:opto/features/accessibility_map/presentation/bloc/nearby_pois/nearby_pois_bloc.dart';
-import 'package:opto/features/accessibility_map/presentation/bloc/poi_detail/poi_detail_cubit.dart';
 
 // Service Locator
 final sl = GetIt.instance;

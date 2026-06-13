@@ -47,3 +47,10 @@ class NotFoundFailure extends Failure {
 class ConflictFailure extends Failure {
   const ConflictFailure(super.message);
 }
+
+// Failure from device location service (GPS unavailable, permission denied).
+// BLoC presenters should fall back to distance-agnostic results rather than
+// blocking the user on a location error.
+class LocationFailure extends Failure {
+  const LocationFailure(super.message);
+}

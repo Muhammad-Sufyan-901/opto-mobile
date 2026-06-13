@@ -1,10 +1,8 @@
-// Screen: Supply Order Summary
+// Screen: Supply Order Summary (light M3 restyle)
 //
-// Shows the order line items and total, reads the summary aloud on entry, and
-// lets the user confirm (place) the order via [OrderSuppliesCubit.confirmOrder].
-// The cubit instance is passed in via GoRouter's `extra` map so the same cubit
-// that owns the cart is used for submission — ensuring [OrderSuppliesSubmitting]
-// and [OrderSuppliesConfirmed] states are properly exercised.
+// Rounded line-item rows + summary block matching the new token/radius language.
+// All logic unchanged: extra guard, BlocProvider.value, announce(), BlocListener
+// → HapticPatterns.success() + context.go(hub), confirmOrder() loading state.
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,7 +12,6 @@ import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/core/utils/currency_formatter.dart';
-import 'package:opto/core/widgets/buttons/app_button.dart';
 import 'package:opto/features/prosthetic_hub/domain/entities/supply_product.dart';
 import 'package:opto/features/prosthetic_hub/presentation/cubit/order_supplies_cubit.dart';
 import 'package:opto/features/prosthetic_hub/presentation/widgets/prosthetic_header.dart';
@@ -32,7 +29,6 @@ class SupplyOrderSummaryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final extra = GoRouterState.of(context).extra;
     if (extra is! Map<String, dynamic>) {
-      // extra is missing or wrong type (e.g. after hot restart or deep link)
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.canPop()) context.pop();
       });
@@ -110,9 +106,12 @@ class _SummaryViewState extends State<_SummaryView> {
     final ColorScheme cs = theme.colorScheme;
     final ext = theme.extension<AppExtendedCustomColors>();
     final Color line = ext?.line ?? cs.outline;
+    final Color green = ext?.green ?? cs.tertiary;
+    final Color blueTint = ext?.blueTint ?? cs.primaryContainer;
 
     final lineItems = _lineItems;
     final totalPrice = _totalPrice;
+    final String totalFormatted = 'Rp ${formatRupiah(totalPrice)}';
 
     return BlocListener<OrderSuppliesCubit, OrderSuppliesState>(
       listener: (context, state) {
@@ -141,59 +140,64 @@ class _SummaryViewState extends State<_SummaryView> {
                 const ProstheticHeader(title: 'Order Summary'),
                 const SizedBox(height: AppDimensions.space24),
 
-                // ── Line items ────────────────────────────────────────────────
+                // ── Line items ───────────────────────────────────────────
                 Expanded(
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Items list
+                        // Item rows
                         for (final item in lineItems) ...[
-                          _OrderLineItem(
-                            item: item,
-                            formatPrice: formatRupiah,
-                          ),
+                          _OrderLineItem(item: item),
                           const SizedBox(height: AppDimensions.space12),
                         ],
 
-                        // Divider before total
-                        Divider(color: line, thickness: 1.5),
+                        const SizedBox(height: AppDimensions.space8),
 
-                        const SizedBox(height: AppDimensions.space12),
-
-                        // Total row
+                        // ── Summary block ──────────────────────────────
                         Semantics(
-                          label: 'Total: Rp ${formatRupiah(totalPrice)}',
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              ExcludeSemantics(
-                                child: Text(
-                                  'Total',
-                                  style:
-                                      theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: cs.onSurface,
-                                  ),
-                                ),
+                          label: 'Order total: $totalFormatted. Delivery free.',
+                          child: Container(
+                            padding: const EdgeInsets.all(
+                              AppDimensions.cardPaddingLarge,
+                            ),
+                            decoration: BoxDecoration(
+                              color: blueTint,
+                              borderRadius: BorderRadius.circular(
+                                AppDimensions.radiusCard + 4,
                               ),
-                              ExcludeSemantics(
-                                child: Text(
-                                  'Rp ${formatRupiah(totalPrice)}',
-                                  style:
-                                      theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: cs.onSurface,
+                              border: Border.all(color: line, width: 1.5),
+                            ),
+                            child: ExcludeSemantics(
+                              child: Column(
+                                children: [
+                                  _SumRow(
+                                    label: 'Subtotal',
+                                    value: totalFormatted,
                                   ),
-                                ),
+                                  const SizedBox(height: 10),
+                                  _SumRow(
+                                    label: 'Delivery',
+                                    value: 'Free',
+                                    valueColor: green,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Divider(color: line, thickness: 1.5),
+                                  const SizedBox(height: 4),
+                                  _SumRow(
+                                    label: 'Total',
+                                    value: totalFormatted,
+                                    bold: true,
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
 
-                        const SizedBox(height: AppDimensions.space32),
+                        const SizedBox(height: AppDimensions.space24),
 
-                        // ── Consent notice ─────────────────────────────────
+                        // ── Consent notice ────────────────────────────
                         Text(
                           'By confirming, you consent to this order. '
                           'The summary above will be read aloud for your review.',
@@ -210,17 +214,47 @@ class _SummaryViewState extends State<_SummaryView> {
                   ),
                 ),
 
-                // ── Confirm button ────────────────────────────────────────────
+                // ── Confirm button ───────────────────────────────────────
                 BlocBuilder<OrderSuppliesCubit, OrderSuppliesState>(
                   builder: (context, state) {
-                    return AppButton.primary(
-                      text: 'Confirm & Place Order',
-                      prefixIcon: Icons.check_circle_outline,
-                      isLoading: state is OrderSuppliesSubmitting,
-                      onPressed: state is OrderSuppliesSubmitting
-                          ? null
-                          : () =>
-                              context.read<OrderSuppliesCubit>().confirmOrder(),
+                    final bool isLoading = state is OrderSuppliesSubmitting;
+                    return Semantics(
+                      button: true,
+                      label: 'Confirm and place order',
+                      child: SizedBox(
+                        height: AppDimensions.buttonHeight,
+                        child: FilledButton.icon(
+                          onPressed: isLoading
+                              ? null
+                              : () => context
+                                  .read<OrderSuppliesCubit>()
+                                  .confirmOrder(),
+                          icon: isLoading
+                              ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: cs.onPrimary,
+                                  ),
+                                )
+                              : const Icon(Icons.check_circle_outline, size: 20),
+                          label: const Text('Confirm & Place Order'),
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(
+                              double.infinity,
+                              AppDimensions.buttonHeight,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
                     );
                   },
                 ),
@@ -237,7 +271,6 @@ class _SummaryViewState extends State<_SummaryView> {
 // PRIVATE DATA + WIDGETS
 // =============================================================================
 
-/// Holds a resolved product reference and quantity for rendering.
 class _LineItem {
   const _LineItem({required this.product, required this.qty});
 
@@ -245,65 +278,110 @@ class _LineItem {
   final int qty;
 }
 
-/// A single order line row: product name × qty = subtotal.
+/// A single order line row inside a tinted card.
 class _OrderLineItem extends StatelessWidget {
-  const _OrderLineItem({
-    required this.item,
-    required this.formatPrice,
-  });
+  const _OrderLineItem({required this.item});
 
   final _LineItem item;
-  final String Function(int) formatPrice;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme cs = theme.colorScheme;
     final ext = theme.extension<AppExtendedCustomColors>();
+    final Color line = ext?.line ?? cs.outline;
+    final Color blueTint = ext?.blueTint ?? cs.primaryContainer;
     final Color ink2 = ext?.ink2 ?? cs.onSurfaceVariant;
 
     final int subtotal = item.product.priceIdr * item.qty;
-    final String subtotalFormatted = 'Rp ${formatPrice(subtotal)}';
+    final String subtotalFormatted = 'Rp ${formatRupiah(subtotal)}';
 
     return Semantics(
       label:
           '${item.product.name}, quantity ${item.qty}, subtotal $subtotalFormatted',
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Product name + qty
-          Expanded(
-            child: ExcludeSemantics(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.product.name,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: cs.onSurface,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.space16,
+          vertical: 14,
+        ),
+        decoration: BoxDecoration(
+          color: blueTint,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+          border: Border.all(color: line, width: 1.5),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: ExcludeSemantics(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.product.name,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  Text(
-                    '× ${item.qty}',
-                    style: theme.textTheme.bodySmall?.copyWith(color: ink2),
-                  ),
-                ],
+                    Text(
+                      '× ${item.qty}',
+                      style: theme.textTheme.bodySmall?.copyWith(color: ink2),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          // Subtotal
-          ExcludeSemantics(
-            child: Text(
-              subtotalFormatted,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: cs.onSurface,
+            ExcludeSemantics(
+              child: Text(
+                subtotalFormatted,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: cs.primary,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+}
+
+/// A single summary row (label + value).
+class _SumRow extends StatelessWidget {
+  const _SumRow({
+    required this.label,
+    required this.value,
+    this.valueColor,
+    this.bold = false,
+  });
+
+  final String label;
+  final String value;
+  final Color? valueColor;
+  final bool bold;
+
+  @override
+  Widget build(BuildContext context) {
+    final base = bold
+        ? Theme.of(context).textTheme.titleMedium!.copyWith(
+              fontWeight: FontWeight.w800,
+            )
+        : Theme.of(context).textTheme.bodyMedium!.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            );
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: base),
+        Text(
+          value,
+          style: base.copyWith(
+            color: valueColor ?? base.color,
+            fontWeight: bold ? FontWeight.w800 : FontWeight.w700,
+          ),
+        ),
+      ],
     );
   }
 }

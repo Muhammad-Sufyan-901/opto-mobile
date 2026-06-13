@@ -19,6 +19,9 @@ class CareGuidesRepositoryMock implements CareGuidesRepository {
         id: 'guide-insert',
         title: 'Inserting Your Prosthesis',
         category: CareGuideCategory.insert,
+        hasAudio: true,
+        durationLabel: '~3 min',
+        sortOrder: 1,
         transcript: '''
 Step 1: Wash your hands thoroughly with soap and warm water for at least 20 seconds. Dry with a clean lint-free towel.
 
@@ -40,9 +43,48 @@ Step 9: Check that the pupil (iris detail) is oriented correctly — typically c
 
 If you experience pain, resistance, or the prosthesis does not seat easily, do not force it. Consult your ocularist.
 ''',
-        hasAudio: true,
-        durationLabel: '~3 min',
-        sortOrder: 1,
+        steps: [
+          CareGuideStep(
+            title: 'Wash your hands',
+            body:
+                'Wash thoroughly with soap and warm water for at least 20 seconds. Dry with a clean lint-free towel.',
+          ),
+          CareGuideStep(
+            title: 'Prepare a soft surface',
+            body:
+                'Place a clean towel or soft cloth over a flat surface in case the prosthesis slips from your fingers.',
+          ),
+          CareGuideStep(
+            title: 'Apply lubricating solution',
+            body: 'Apply 1–2 drops of approved lubricating solution to the prosthesis.',
+            tip: 'Never use tap water or saliva — they introduce bacteria and can damage the surface.',
+          ),
+          CareGuideStep(
+            title: 'Hold correctly',
+            body:
+                'Hold the prosthesis between your thumb and forefinger with the flat side facing you and the notched end (if present) pointing toward the nose.',
+          ),
+          CareGuideStep(
+            title: 'Open the eyelid',
+            body:
+                'With your free hand, gently pull down the lower eyelid using your middle finger.',
+          ),
+          CareGuideStep(
+            title: 'Slide in the upper edge',
+            body:
+                'Tilt your head slightly forward and look down. Slide the upper edge of the prosthesis under the upper eyelid first.',
+          ),
+          CareGuideStep(
+            title: 'Seat the lower edge',
+            body:
+                'Gently push the lower edge of the prosthesis down and behind the lower eyelid until it sits comfortably in the socket.',
+          ),
+          CareGuideStep(
+            title: 'Center and check',
+            body:
+                'Blink a few times naturally to center the prosthesis. Check that the pupil (iris detail) is oriented correctly — typically centered and slightly upward.',
+          ),
+        ],
       ),
 
       // 2 — Removing
@@ -50,6 +92,9 @@ If you experience pain, resistance, or the prosthesis does not seat easily, do n
         id: 'guide-remove',
         title: 'Removing Your Prosthesis',
         category: CareGuideCategory.remove,
+        hasAudio: true,
+        durationLabel: '~2 min',
+        sortOrder: 2,
         transcript: '''
 Step 1: Wash your hands thoroughly with soap and warm water. Dry completely.
 
@@ -71,9 +116,38 @@ Step 9: Inspect the socket in a mirror. Clean the socket gently with a clean dam
 
 Contact your ocularist if removal causes pain or if the prosthesis appears scratched or damaged.
 ''',
-        hasAudio: true,
-        durationLabel: '~2 min',
-        sortOrder: 2,
+        steps: [
+          CareGuideStep(
+            title: 'Wash your hands',
+            body: 'Wash thoroughly with soap and warm water. Dry completely before touching your prosthesis.',
+          ),
+          CareGuideStep(
+            title: 'Prepare a catch surface',
+            body:
+                'Place a soft cloth or folded towel over your lap or a flat surface to catch the prosthesis safely.',
+          ),
+          CareGuideStep(
+            title: 'Open the eyelid',
+            body:
+                'Look upward. With one hand, gently pull down the lower eyelid using your index or middle finger.',
+          ),
+          CareGuideStep(
+            title: 'Use removal tool or finger',
+            body:
+                'Moisten a rubber suction cup and apply it to the prosthesis iris, or hook your fingertip under the lower edge of the prosthesis.',
+          ),
+          CareGuideStep(
+            title: 'Ease it out',
+            body:
+                'Apply gentle downward pressure while looking up. The prosthesis will slide out from under the lower eyelid into your cupped hand.',
+            tip: 'If removal causes pain or resistance, stop immediately and contact your ocularist.',
+          ),
+          CareGuideStep(
+            title: 'Store immediately',
+            body:
+                'Rinse the prosthesis under clean running water and place it in its storage case filled with fresh saline or approved storage solution.',
+          ),
+        ],
       ),
 
       // 3 — Cleaning
@@ -81,6 +155,9 @@ Contact your ocularist if removal causes pain or if the prosthesis appears scrat
         id: 'guide-clean',
         title: 'Daily Cleaning Routine',
         category: CareGuideCategory.clean,
+        hasAudio: true,
+        durationLabel: '~4 min',
+        sortOrder: 3,
         transcript: '''
 Step 1: Remove the prosthesis following the Removal guide steps. Wash your hands before handling.
 
@@ -104,9 +181,39 @@ Step 10: Clean your storage case with warm water and allow it to air-dry complet
 
 Aim to perform a full cleaning at least once a week or whenever discharge or discomfort increases.
 ''',
-        hasAudio: true,
-        durationLabel: '~4 min',
-        sortOrder: 3,
+        steps: [
+          CareGuideStep(
+            title: 'Remove and wash hands',
+            body:
+                'Remove the prosthesis following the Removal guide. Wash your hands thoroughly before handling it.',
+          ),
+          CareGuideStep(
+            title: 'Soak in saline',
+            body:
+                'Fill a clean bowl with warm sterile saline solution and let the prosthesis soak for 2–3 minutes to loosen debris.',
+          ),
+          CareGuideStep(
+            title: 'Gently wipe the surface',
+            body:
+                'Using a soft cotton pad or lint-free cloth, wipe the entire surface in circular motions. Pay attention to mucous build-up on the edges and back.',
+            tip: 'Never use toothpaste, alcohol, or household cleaners — they permanently etch the acrylic surface.',
+          ),
+          CareGuideStep(
+            title: 'Rinse thoroughly',
+            body:
+                'Rinse under clean lukewarm running water for at least 30 seconds. The surface should appear clear and scratch-free.',
+          ),
+          CareGuideStep(
+            title: 'Lubricate before reinserting',
+            body:
+                'Apply 1–2 drops of approved lubricant before re-inserting. If storing overnight, place in fresh solution instead.',
+          ),
+          CareGuideStep(
+            title: 'Clean the storage case',
+            body:
+                'Rinse the case with warm water and allow it to air-dry completely before refilling with fresh solution.',
+          ),
+        ],
       ),
 
       // 4 — Lubrication
@@ -114,6 +221,9 @@ Aim to perform a full cleaning at least once a week or whenever discharge or dis
         id: 'guide-lubricate',
         title: 'Lubrication Guide',
         category: CareGuideCategory.lubricate,
+        hasAudio: false,
+        durationLabel: '~2 min',
+        sortOrder: 4,
         transcript: '''
 Why lubrication matters: The prosthesis does not produce natural tears. Regular lubrication reduces friction, prevents socket irritation, and extends the surface life of the prosthesis.
 
@@ -139,9 +249,30 @@ What to avoid: Do not use contact lens rewetting drops, medicated eye drops, or 
 
 If dryness persists despite regular lubrication, consult your ocularist — the prosthesis may need polishing or refitting.
 ''',
-        hasAudio: false,
-        durationLabel: '~2 min',
-        sortOrder: 4,
+        steps: [
+          CareGuideStep(
+            title: 'Wash your hands',
+            body: 'Wash and dry your hands thoroughly before touching your prosthesis.',
+          ),
+          CareGuideStep(
+            title: 'Tilt and look up',
+            body: 'Tilt your head back slightly and look upward.',
+          ),
+          CareGuideStep(
+            title: 'Open the lower lid',
+            body: 'Gently pull down the lower eyelid with one finger.',
+          ),
+          CareGuideStep(
+            title: 'Apply drops',
+            body:
+                'Apply 1–2 drops of your ocularist-recommended lubricating drops onto the visible prosthesis surface or into the lower eyelid pocket.',
+            tip: 'Use only preservative-free artificial tears. Avoid contact lens rewetting drops, medicated drops, or oil-based preparations.',
+          ),
+          CareGuideStep(
+            title: 'Blink to distribute',
+            body: 'Blink naturally 3–4 times to spread the lubricant evenly across the surface.',
+          ),
+        ],
       ),
 
       // 5 — Case use
@@ -149,6 +280,9 @@ If dryness persists despite regular lubrication, consult your ocularist — the 
         id: 'guide-case',
         title: 'Using Your Storage Case',
         category: CareGuideCategory.caseUse,
+        hasAudio: false,
+        durationLabel: '~1 min',
+        sortOrder: 5,
         transcript: '''
 Your storage case keeps the prosthesis safe, moist, and clean during the hours you are not wearing it — typically during sleep.
 
@@ -170,9 +304,38 @@ Step 8: Inspect the case for cracks, stains, or odor regularly. Replace it every
 
 Reminder: Never leave the prosthesis dry in the case overnight. A dry prosthesis can develop micro-cracks over time.
 ''',
-        hasAudio: false,
-        durationLabel: '~1 min',
-        sortOrder: 5,
+        steps: [
+          CareGuideStep(
+            title: 'Clean first',
+            body: 'Before storing, clean the prosthesis following the Cleaning guide.',
+          ),
+          CareGuideStep(
+            title: 'Fill with fresh solution',
+            body:
+                'Fill the case completely with fresh sterile saline or your ocularist-recommended storage solution.',
+            tip: 'Never use tap water — it contains bacteria that can damage the surface and irritate the socket.',
+          ),
+          CareGuideStep(
+            title: 'Place the prosthesis',
+            body:
+                'Place the prosthesis with the convex (curved front) surface facing upward, or lying flat if your case has no curved holder.',
+          ),
+          CareGuideStep(
+            title: 'Close and store',
+            body:
+                'Close the lid securely and store at room temperature, away from direct sunlight and extreme heat.',
+          ),
+          CareGuideStep(
+            title: 'Replace solution daily',
+            body:
+                'Replace the solution every day — never top up old solution, as bacteria can grow in stagnant liquid.',
+          ),
+          CareGuideStep(
+            title: 'Weekly case cleaning',
+            body:
+                'Wash the case with warm water and mild soap weekly. Rinse thoroughly and air-dry before refilling. Replace the case every 3 months.',
+          ),
+        ],
       ),
     ];
   }

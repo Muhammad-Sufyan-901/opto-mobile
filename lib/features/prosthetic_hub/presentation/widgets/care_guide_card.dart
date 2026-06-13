@@ -1,19 +1,17 @@
 // Widget: CareGuideCard
 //
-// Single row card in the Care Guides list. Mirrors the visual style of
-// [_HubLink] in `prosthetic_hub_screen.dart` — icon chip, title, meta row,
-// optional audio chip, trailing chevron.
+// Restyled for the M3 redesign — mini illustration thumbnail, large title,
+// meta row with step count + duration, and a trailing chevron.
+// Mirrors the `.hb-grow` layout from the design.
 import 'package:flutter/material.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/prosthetic_hub/domain/entities/care_guide.dart';
+import 'package:opto/features/prosthetic_hub/presentation/widgets/guide_illustration.dart';
 
-
-/// An accessible, tappable card representing a single [CareGuide].
+/// An accessible, tappable row card representing a single [CareGuide].
 ///
-/// Semantics label: "{title}. {durationLabel}[. Audio available]".
-/// All decorative icons/chips are wrapped in [ExcludeSemantics].
-/// Minimum tap target is 48dp.
+/// Semantics label: "{title}. {stepCount} steps · {durationLabel}[. Audio available]".
 class CareGuideCard extends StatelessWidget {
   const CareGuideCard({
     super.key,
@@ -29,15 +27,17 @@ class CareGuideCard extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme cs = theme.colorScheme;
     final ext = theme.extension<AppExtendedCustomColors>();
-
-    final Color blueTint = ext?.blueTint ?? cs.primaryContainer;
-    final Color blueStrong = cs.secondary;
     final Color line = ext?.line ?? cs.outline;
-    final Color ink2 = ext?.ink2 ?? cs.onSurfaceVariant;
+    final Color blueTint = ext?.blueTint ?? cs.primaryContainer;
     final Color ink3 = ext?.ink3 ?? cs.onSurfaceVariant;
 
+    final int stepCount = guide.steps.length;
+    final String metaText = stepCount > 0
+        ? '$stepCount step${stepCount == 1 ? '' : 's'} · ${guide.durationLabel}'
+        : guide.durationLabel;
+
     final String semanticsLabel =
-        '${guide.title}. ${guide.durationLabel}'
+        '${guide.title}. $metaText'
         '${guide.hasAudio ? '. Audio available' : ''}';
 
     return Semantics(
@@ -46,135 +46,71 @@ class CareGuideCard extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          // Enforce a minimum tap target height.
-          constraints: const BoxConstraints(
-            minHeight: AppDimensions.minTapTarget,
-          ),
-          padding: const EdgeInsets.symmetric(
-            vertical: 15,
-            horizontal: AppDimensions.space16,
-          ),
+          padding: const EdgeInsets.all(13),
           decoration: BoxDecoration(
-            color: cs.surface,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusRow),
+            color: blueTint,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard + 2),
             border: Border.all(color: line, width: 1.5),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // ── Leading icon chip (48×48, radius 13) ────────────────────
+              // ── Mini illustration thumbnail ──────────────────────────────
               ExcludeSemantics(
-                child: Container(
-                  width: AppDimensions.minTapTarget,
-                  height: AppDimensions.minTapTarget,
-                  decoration: BoxDecoration(
-                    color: blueTint,
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                  child: Icon(
-                    Icons.menu_book_outlined,
-                    size: 22,
-                    color: blueStrong,
-                  ),
+                child: GuideIllustration(
+                  mini: true,
+                  icon: Icons.remove_red_eye_outlined,
                 ),
               ),
 
-              const SizedBox(width: 14),
+              const SizedBox(width: 15),
 
-              // ── Text + meta column ────────────────────────────────────────
+              // ── Text column ──────────────────────────────────────────────
               Expanded(
                 child: ExcludeSemantics(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Title
                       Text(
                         guide.title,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: cs.onSurface,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.2,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      // Meta row: category label + duration
+                      const SizedBox(height: 5),
                       Row(
                         children: [
-                          Text(
-                            guide.category.displayLabel,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: ink2,
+                          if (guide.hasAudio) ...[
+                            Icon(
+                              Icons.volume_up_outlined,
+                              size: 15,
+                              color: cs.primary,
                             ),
-                          ),
+                            const SizedBox(width: 5),
+                          ],
                           Text(
-                            ' · ',
+                            metaText,
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: ink3,
-                            ),
-                          ),
-                          Text(
-                            guide.durationLabel,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: ink3,
+                              fontWeight: FontWeight.w600,
+                              color: cs.onSurfaceVariant,
                             ),
                           ),
                         ],
                       ),
-                      // Optional audio chip
-                      if (guide.hasAudio) ...[
-                        const SizedBox(height: 6),
-                        _AudioChip(blueStrong: blueStrong, blueTint: blueTint),
-                      ],
                     ],
                   ),
                 ),
               ),
 
-              // ── Trailing chevron ──────────────────────────────────────────
+              // ── Trailing chevron ─────────────────────────────────────────
               ExcludeSemantics(
                 child: Icon(Icons.chevron_right, size: 22, color: ink3),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Small "Audio" label chip shown on guides that have an audio version.
-class _AudioChip extends StatelessWidget {
-  const _AudioChip({required this.blueStrong, required this.blueTint});
-
-  final Color blueStrong;
-  final Color blueTint;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: blueTint,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.headphones_outlined,
-            size: AppDimensions.iconSm,
-            color: blueStrong,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            'Audio',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: blueStrong,
-            ),
-          ),
-        ],
       ),
     );
   }

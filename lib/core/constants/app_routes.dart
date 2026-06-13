@@ -32,6 +32,61 @@ abstract class AppRoutes {
     name: 'prosthetic_hub',
   );
 
+  // ── Prosthetic Hub sub-routes (Phase 3A) ─────────────────────────────────
+
+  /// Screen 17a — Care guides list.
+  static const AppRoute prostheticCareGuides = AppRoute(
+    path: '/prosthetic-hub/care-guides',
+    name: 'prosthetic_care_guides',
+  );
+
+  /// Screen 17a-detail — Individual care guide.
+  ///
+  /// Navigate by appending `/${guide.id}` to [prostheticCareGuides.path];
+  /// receive the [CareGuide] via `GoRouterState.extra`.
+  static const AppRoute prostheticCareGuideDetail = AppRoute(
+    path: '/prosthetic-hub/care-guides/:id',
+    name: 'prosthetic_care_guide_detail',
+  );
+
+  /// Screen 17b — Order supplies catalog.
+  static const AppRoute prostheticOrderSupplies = AppRoute(
+    path: '/prosthetic-hub/order-supplies',
+    name: 'prosthetic_order_supplies',
+  );
+
+  /// Screen 17b-summary — Order summary & consent.
+  ///
+  /// Receive cart data via `GoRouterState.extra`.
+  static const AppRoute prostheticOrderSummary = AppRoute(
+    path: '/prosthetic-hub/order-supplies/summary',
+    name: 'prosthetic_order_summary',
+  );
+
+  /// Screen 17c — Specialist directory.
+  static const AppRoute prostheticSpecialists = AppRoute(
+    path: '/prosthetic-hub/specialists',
+    name: 'prosthetic_specialists',
+  );
+
+  /// Screen 17c-profile — Specialist profile.
+  ///
+  /// Navigate by appending `/${specialist.id}` to [prostheticSpecialists.path];
+  /// receive the [Specialist] via `GoRouterState.extra`.
+  static const AppRoute prostheticSpecialistProfile = AppRoute(
+    path: '/prosthetic-hub/specialists/:id',
+    name: 'prosthetic_specialist_profile',
+  );
+
+  /// Screen 17c-chat — 1:1 specialist chat room (nested under profile).
+  ///
+  /// Push by name with `pathParameters: {'id': specialist.id}`.
+  /// Resolves to `/prosthetic-hub/specialists/:id/chat`.
+  static const AppRoute prostheticSpecialistChat = AppRoute(
+    path: 'chat', // relative — nested inside prostheticSpecialistProfile route
+    name: 'prosthetic_specialist_chat',
+  );
+
   // ── Accessibility Map sub-routes (Phase 3B) ──────────────────────────────
 
   /// Screen — Accessibility Map: nearby POI list (primary accessible view).
