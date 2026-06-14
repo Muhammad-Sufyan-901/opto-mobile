@@ -88,9 +88,15 @@ class MemberProfileCubit extends Cubit<MemberProfileState> {
     ));
 
     try {
-      await _member.toggleFollow(profile.id);
-    } catch (_) {
-      // Revert to the state before the optimistic update.
+      final serverIsFollowing = await _member.toggleFollow(profile.id);
+      // Reconcile with server's authoritative result.
+      emit(MemberProfileState.loaded(
+        profile: profile.copyWith(isFollowedByMe: serverIsFollowing),
+        contributions: current.contributions,
+      ));
+    } catch (e) {
+      // Briefly surface the error then revert to pre-optimistic state.
+      emit(MemberProfileState.error(message: 'Could not update follow status. Please try again.'));
       emit(MemberProfileState.loaded(
         profile: profile,
         contributions: current.contributions,

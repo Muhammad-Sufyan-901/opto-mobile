@@ -101,8 +101,10 @@ class CircleDetailCubit extends Cubit<CircleDetailState> {
       } else {
         await _circles.joinCircle(circle.id);
       }
-    } catch (_) {
-      // Revert to the state before the optimistic update.
+    } catch (e) {
+      // Briefly surface the error (for snackbar / screen-reader announcement),
+      // then restore the pre-optimistic state.
+      emit(CircleDetailState.error(message: 'Could not update circle membership. Please try again.'));
       emit(CircleDetailState.loaded(
         circle: circle,
         recentThreads: current.recentThreads,
