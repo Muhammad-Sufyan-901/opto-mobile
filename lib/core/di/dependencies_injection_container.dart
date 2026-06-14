@@ -34,14 +34,21 @@ import 'package:opto/features/consultation/presentation/bloc/doctor_search_bloc.
 import 'package:opto/features/consultation/presentation/cubit/booking_cubit.dart';
 import 'package:opto/features/consultation/presentation/cubit/consultation_history_cubit.dart';
 import 'package:opto/features/consultation/presentation/cubit/eye_care_exercises_cubit.dart';
+import 'package:opto/features/connect/data/repositories/circles_repository_impl.dart';
 import 'package:opto/features/connect/data/repositories/connect_repository_impl.dart';
 import 'package:opto/features/connect/data/repositories/follow_repository_impl.dart';
+import 'package:opto/features/connect/data/repositories/member_repository_impl.dart';
 import 'package:opto/features/connect/data/repositories/report_repository_impl.dart';
+import 'package:opto/features/connect/domain/repositories/circles_repository.dart';
 import 'package:opto/features/connect/domain/repositories/connect_repository.dart';
 import 'package:opto/features/connect/domain/repositories/follow_repository.dart';
+import 'package:opto/features/connect/domain/repositories/member_repository.dart';
 import 'package:opto/features/connect/domain/repositories/report_repository.dart';
 import 'package:opto/features/connect/presentation/bloc/compose_post_bloc.dart';
 import 'package:opto/features/connect/presentation/bloc/connect_feed_bloc.dart';
+import 'package:opto/features/connect/presentation/cubit/circle_detail_cubit.dart';
+import 'package:opto/features/connect/presentation/cubit/community_home_cubit.dart';
+import 'package:opto/features/connect/presentation/cubit/member_profile_cubit.dart';
 import 'package:opto/features/connect/presentation/cubit/post_thread_cubit.dart';
 import 'package:opto/features/connect/presentation/cubit/report_cubit.dart';
 import 'package:opto/features/profile/data/datasources/profile_remote_data_source.dart';
@@ -205,6 +212,38 @@ Future<void> init() async {
 
   sl.registerFactory<ReportCubit>(
     () => ReportCubit(sl<ReportRepository>()),
+  );
+
+  sl.registerLazySingleton<CirclesRepository>(
+    () => CirclesRepositoryImpl(
+      remoteDataSource: sl<ConnectRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerLazySingleton<MemberRepository>(
+    () => MemberRepositoryImpl(
+      remoteDataSource: sl<ConnectRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerFactory<CommunityHomeCubit>(
+    () => CommunityHomeCubit(
+      circlesRepository: sl<CirclesRepository>(),
+      connectRepository: sl<ConnectRepository>(),
+    ),
+  );
+
+  sl.registerFactory<CircleDetailCubit>(
+    () => CircleDetailCubit(
+      circlesRepository: sl<CirclesRepository>(),
+      connectRepository: sl<ConnectRepository>(),
+    ),
+  );
+
+  sl.registerFactory<MemberProfileCubit>(
+    () => MemberProfileCubit(
+      memberRepository: sl<MemberRepository>(),
+    ),
   );
 
   // ===============================================================

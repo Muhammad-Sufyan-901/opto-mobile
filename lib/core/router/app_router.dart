@@ -41,9 +41,12 @@ import 'package:opto/features/prosthetic_hub/presentation/screens/supply_order_s
 import 'package:opto/features/prosthetic_hub/presentation/screens/specialist_list_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/specialist_profile_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/specialist_chat_screen.dart';
+import 'package:opto/features/connect/presentation/screens/circle_detail_screen.dart';
+import 'package:opto/features/connect/presentation/screens/community_home_screen.dart';
 import 'package:opto/features/connect/presentation/screens/community_screen.dart';
 import 'package:opto/features/connect/presentation/screens/compose_post_screen.dart';
 import 'package:opto/features/connect/domain/entities/post_entity.dart';
+import 'package:opto/features/connect/presentation/screens/member_profile_screen.dart';
 import 'package:opto/features/connect/presentation/screens/post_thread_screen.dart';
 import 'package:opto/features/profile/presentation/screens/profile_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
@@ -472,10 +475,18 @@ final GoRouter appRouter = GoRouter(
           const SummaryScreen(),
     ),
 
-    // Screen 19 — Community
+    // Screen 19 — Community Home (K1)
     GoRoute(
       path: AppRoutes.community.path,
       name: AppRoutes.community.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const CommunityHomeScreen(),
+    ),
+
+    // Screen 19-feed — Community Feed (K2 — full post list)
+    GoRoute(
+      path: AppRoutes.communityFeed.path,
+      name: AppRoutes.communityFeed.name,
       builder: (BuildContext context, GoRouterState state) =>
           const CommunityScreen(),
     ),
@@ -500,6 +511,28 @@ final GoRouter appRouter = GoRouter(
             ? state.extra as PostEntity
             : null;
         return PostThreadScreen(postId: postId, seedPost: seedPost);
+      },
+    ),
+
+    // Screen 19c — Circle Detail (K5)
+    GoRoute(
+      path: AppRoutes.communityCircle.path,
+      name: AppRoutes.communityCircle.name,
+      builder: (BuildContext context, GoRouterState state) {
+        final String slug = Uri.decodeComponent(
+          state.pathParameters['slug']!,
+        );
+        return CircleDetailScreen(slug: slug);
+      },
+    ),
+
+    // Screen 19d — Member Profile (K7)
+    GoRoute(
+      path: AppRoutes.communityMember.path,
+      name: AppRoutes.communityMember.name,
+      builder: (BuildContext context, GoRouterState state) {
+        final String memberId = state.pathParameters['id']!;
+        return MemberProfileScreen(memberId: memberId);
       },
     ),
 

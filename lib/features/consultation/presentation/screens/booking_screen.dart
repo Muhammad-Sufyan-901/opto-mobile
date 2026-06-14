@@ -136,25 +136,42 @@ class _BookingViewState extends State<_BookingView> {
     if (hour == null || minute == null) return;
     if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return;
 
-    if (_dateGroups.isEmpty) return;
-    final currentGroup = _dateGroups[_selectedDateIdx];
-    // Find a slot matching the entered time
-    for (final slot in currentGroup.slots) {
-      final local = slot.slotStart.toLocal();
-      if (local.hour == hour && local.minute == minute && !slot.isBooked) {
-        HapticPatterns.focusTick();
-        setState(() => _selectedSlot = slot);
-        SemanticsService.announce(
-          '${_formatTime(slot.slotStart)} selected.',
-          TextDirection.ltr,
-        );
-        return;
+    final timeLabel =
+        '${hourText.padLeft(2, '0')}:${minuteText.padLeft(2, '0')}';
+
+    // Try to find an exact match in the loaded slot grid first.
+    if (_dateGroups.isNotEmpty) {
+      final currentGroup = _dateGroups[_selectedDateIdx];
+      for (final slot in currentGroup.slots) {
+        final local = slot.slotStart.toLocal();
+        if (local.hour == hour && local.minute == minute && !slot.isBooked) {
+          HapticPatterns.focusTick();
+          setState(() => _selectedSlot = slot);
+          SemanticsService.announce(
+            '$timeLabel selected.',
+            TextDirection.ltr,
+          );
+          return;
+        }
       }
     }
 
-    // No matching slot found
+    // No pre-existing slot matched — build a synthetic one from the calendar
+    // date and entered time so the Continue button becomes enabled.
+    final base = _calendarSelectedDate ?? DateTime.now();
+    final slotStart = DateTime(base.year, base.month, base.day, hour, minute);
+    final syntheticSlot = DoctorAvailabilityEntity(
+      id: 'manual-${slotStart.millisecondsSinceEpoch}',
+      doctorId: widget.doctor.id,
+      slotStart: slotStart,
+      slotEnd: slotStart.add(const Duration(minutes: 30)),
+      isBooked: false,
+    );
+
+    HapticPatterns.focusTick();
+    setState(() => _selectedSlot = syntheticSlot);
     SemanticsService.announce(
-      'No available slot at ${hourText.padLeft(2, '0')}:${minuteText.padLeft(2, '0')}.',
+      '$timeLabel on ${_monthName(base.month)} ${base.day} selected.',
       TextDirection.ltr,
     );
   }
@@ -299,11 +316,34 @@ class _BookingViewState extends State<_BookingView> {
         );
     context.read<BookingCubit>().confirmBooking(doctorId: widget.doctor.id);
 
-    // Navigate immediately to intake.
-    context.push(
-      AppRoutes.consultIntake.path,
-      extra: {'doctor': widget.doctor},
-    );
+    // Navigate based on selected consultation mode.
+    switch (widget.mode) {
+      case ConsultMode.nonVerbal:
+        // Text chat goes directly to the non-verbal consultation session.
+        SemanticsService.announce(
+          'Opening text chat session with ${widget.doctor.fullName ?? 'your doctor'}.',
+          TextDirection.ltr,
+        );
+        context.push(
+          AppRoutes.consultNonVerbal.path,
+          extra: _selectedSlot!.id, // bookingId expected as a plain String
+        );
+      case ConsultMode.voice:
+      case ConsultMode.video:
+      case ConsultMode.inPerson:
+        // All other modes go through the pre-consult intake screen first.
+        SemanticsService.announce(
+          'Proceeding to pre-consult intake.',
+          TextDirection.ltr,
+        );
+        context.push(
+          AppRoutes.consultIntake.path,
+          extra: {
+            'doctor': widget.doctor,
+            'mode': widget.mode,
+          },
+        );
+    }
   }
 
   @override

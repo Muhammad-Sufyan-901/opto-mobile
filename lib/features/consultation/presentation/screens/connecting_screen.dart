@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/constants/consultation_enums.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/consultation/domain/entities/doctor_entity.dart';
 
@@ -26,7 +27,8 @@ class ConnectingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
     final doctor = extra?['doctor'] as DoctorEntity?;
-    return _ConnectingView(doctor: doctor);
+    final mode = extra?['mode'] as ConsultMode? ?? ConsultMode.voice;
+    return _ConnectingView(doctor: doctor, mode: mode);
   }
 }
 
@@ -35,9 +37,10 @@ class ConnectingScreen extends StatelessWidget {
 // =============================================================================
 
 class _ConnectingView extends StatefulWidget {
-  const _ConnectingView({this.doctor});
+  const _ConnectingView({this.doctor, required this.mode});
 
   final DoctorEntity? doctor;
+  final ConsultMode mode;
 
   @override
   State<_ConnectingView> createState() => _ConnectingViewState();
@@ -101,7 +104,10 @@ class _ConnectingViewState extends State<_ConnectingView>
     if (!mounted) return;
     context.pushReplacement(
       AppRoutes.consultCallRoom.path,
-      extra: {'doctor': widget.doctor},
+      extra: {
+        'doctor': widget.doctor,
+        'mode': widget.mode,
+      },
     );
   }
 
@@ -110,6 +116,19 @@ class _ConnectingViewState extends State<_ConnectingView>
     if (name == null || name.trim().isEmpty) return 'NS';
     return name.trim().split(' ').take(2)
         .map((w) => w.isNotEmpty ? w[0].toUpperCase() : '').join();
+  }
+
+  String _modeLabel(ConsultMode mode) {
+    switch (mode) {
+      case ConsultMode.voice:
+        return 'Voice consult';
+      case ConsultMode.video:
+        return 'Video consult';
+      case ConsultMode.nonVerbal:
+        return 'Text chat';
+      case ConsultMode.inPerson:
+        return 'In-person visit';
+    }
   }
 
   @override
@@ -203,7 +222,7 @@ class _ConnectingViewState extends State<_ConnectingView>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '$specialty · Voice consult',
+                      '$specialty · ${_modeLabel(widget.mode)}',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: ext?.ink2 ?? cs.onSurfaceVariant,

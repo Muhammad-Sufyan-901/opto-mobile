@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/constants/consultation_enums.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/consultation/domain/entities/doctor_entity.dart';
 
@@ -23,7 +24,8 @@ class IntakeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final extra = GoRouterState.of(context).extra as Map<String, dynamic>;
     final doctor = extra['doctor'] as DoctorEntity;
-    return _IntakeView(doctor: doctor);
+    final mode = extra['mode'] as ConsultMode? ?? ConsultMode.voice;
+    return _IntakeView(doctor: doctor, mode: mode);
   }
 }
 
@@ -32,9 +34,10 @@ class IntakeScreen extends StatelessWidget {
 // =============================================================================
 
 class _IntakeView extends StatefulWidget {
-  const _IntakeView({required this.doctor});
+  const _IntakeView({required this.doctor, required this.mode});
 
   final DoctorEntity doctor;
+  final ConsultMode mode;
 
   @override
   State<_IntakeView> createState() => _IntakeViewState();
@@ -113,7 +116,10 @@ class _IntakeViewState extends State<_IntakeView>
     );
     context.push(
       AppRoutes.consultConnecting.path,
-      extra: {'doctor': widget.doctor},
+      extra: {
+        'doctor': widget.doctor,
+        'mode': widget.mode,
+      },
     );
   }
 

@@ -153,6 +153,30 @@ abstract class AppRoutes {
     name: 'communityThread',
   );
 
+  /// Community feed (K2 — full post list, formerly the /community root).
+  static const AppRoute communityFeed = AppRoute(
+    path: '/community/feed',
+    name: 'communityFeed',
+  );
+
+  /// Circle detail (K5). Navigate with:
+  /// ```dart
+  /// context.push('/community/circle/${Uri.encodeComponent(circle.slug)}');
+  /// ```
+  static const AppRoute communityCircle = AppRoute(
+    path: '/community/circle/:slug',
+    name: 'communityCircle',
+  );
+
+  /// Member public profile (K7). Navigate with:
+  /// ```dart
+  /// context.push('/community/member/${member.id}');
+  /// ```
+  static const AppRoute communityMember = AppRoute(
+    path: '/community/member/:id',
+    name: 'communityMember',
+  );
+
   /// Screen 18a — Doctor profile and availability slots.
   static const AppRoute consultDoctorProfile = AppRoute(
     path: '/consult/doctor/:id',
