@@ -20,13 +20,19 @@ import 'package:opto/core/error/failures.dart';
 import 'package:opto/core/supabase/realtime_channel_manager.dart';
 import 'package:opto/core/supabase/supabase_client_provider.dart';
 import 'package:opto/core/supabase/supabase_error_mapper.dart';
+import 'package:opto/features/connect/data/models/circle_model.dart';
+import 'package:opto/features/connect/data/models/circle_model_ext.dart';
 import 'package:opto/features/connect/data/models/content_report_model.dart';
 import 'package:opto/features/connect/data/models/follow_model.dart';
+import 'package:opto/features/connect/data/models/member_profile_model.dart';
+import 'package:opto/features/connect/data/models/member_profile_model_ext.dart';
 import 'package:opto/features/connect/data/models/post_media_model.dart';
 import 'package:opto/features/connect/data/models/post_model.dart';
 import 'package:opto/features/connect/data/models/post_model_ext.dart';
 import 'package:opto/features/connect/data/models/post_reply_model.dart';
 import 'package:opto/features/connect/data/models/post_reply_model_ext.dart';
+import 'package:opto/features/connect/domain/entities/circle_entity.dart';
+import 'package:opto/features/connect/domain/entities/member_profile_entity.dart';
 import 'package:opto/features/connect/domain/entities/post_entity.dart';
 import 'package:opto/features/connect/domain/entities/post_reply_entity.dart';
 
@@ -49,6 +55,17 @@ const _postSelect = '''
 const _replySelect = '''
   id, post_id, author_id, body, created_at, parent_reply_id, is_best_answer, voice_url,
   author:profiles!author_id(full_name, avatar_url, is_verified)
+''';
+
+/// Select string for circles with aggregate member count.
+const _circleSelect = '''
+  id, slug, name, description, about, icon_key, color_key, pinned_note, created_at,
+  member_count:circle_members(count)
+''';
+
+/// Select string for community-visible profile fields only.
+const _profileSelect = '''
+  id, full_name, avatar_url, is_verified, is_mentor, bio, handle, created_at
 ''';
 
 // ─── Projection helpers ────────────────────────────────────────────────────────
@@ -170,6 +187,29 @@ abstract class ConnectRemoteDataSource {
     required String postId,
     required String reason,
   });
+
+  // ── circles ────────────────────────────────────────────────────────────────
+  /// Returns all circles with current-user membership status.
+  Future<List<CircleEntity>> getCircles();
+
+  /// Returns a single circle by its [slug].
+  Future<CircleEntity> getCircle(String slug);
+
+  /// Joins the authenticated user to [circleId].
+  Future<void> joinCircle(String circleId);
+
+  /// Removes the authenticated user from [circleId].
+  Future<void> leaveCircle(String circleId);
+
+  // ── members ────────────────────────────────────────────────────────────────
+  /// Returns the public profile + community stats for [memberId].
+  Future<MemberProfileEntity> getMemberProfile(String memberId);
+
+  /// Toggles follow state for [memberId]. Returns the new isFollowedByMe value.
+  Future<bool> toggleMemberFollow(String memberId);
+
+  /// Returns recent posts authored by [memberId], ordered by created_at desc.
+  Future<List<PostEntity>> getMemberContributions(String memberId);
 }
 
 // =============================================================================
@@ -586,6 +626,222 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
           .select()
           .single();
       return ContentReportModel.fromJson(row);
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  // ── circles ────────────────────────────────────────────────────────────────
+
+  @override
+  Future<List<CircleEntity>> getCircles() async {
+    try {
+      final uid = _client.auth.currentUser?.id;
+      final rows = await _client
+          .from('circles')
+          .select(_circleSelect)
+          .order('name');
+
+      // Fetch current user's memberships in one query.
+      Set<String> memberOf = {};
+      if (uid != null) {
+        final memberships = await _client
+            .from('circle_members')
+            .select('circle_id')
+            .eq('member_id', uid);
+        memberOf = {for (final m in memberships) m['circle_id'] as String};
+      }
+
+      return (rows as List).map((row) {
+        final model =
+            CircleModel.fromJson(Map<String, dynamic>.from(row as Map));
+        return model.toEntity(
+          memberCount: _extractCount(row['member_count']),
+          isMember: memberOf.contains(model.id),
+        );
+      }).toList();
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<CircleEntity> getCircle(String slug) async {
+    try {
+      final uid = _client.auth.currentUser?.id;
+      final row = await _client
+          .from('circles')
+          .select(_circleSelect)
+          .eq('slug', slug)
+          .single();
+
+      bool isMember = false;
+      if (uid != null) {
+        final m = await _client
+            .from('circle_members')
+            .select('circle_id')
+            .eq('circle_id', row['id'] as String)
+            .eq('member_id', uid)
+            .maybeSingle();
+        isMember = m != null;
+      }
+
+      final model = CircleModel.fromJson(Map<String, dynamic>.from(row));
+      return model.toEntity(
+        memberCount: _extractCount(row['member_count']),
+        isMember: isMember,
+      );
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<void> joinCircle(String circleId) async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) throw const AuthFailure('Not authenticated');
+    try {
+      await _client
+          .from('circle_members')
+          .insert({'circle_id': circleId, 'member_id': uid});
+    } on PostgrestException catch (e) {
+      if (e.code == '23505') return; // already a member — idempotent
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<void> leaveCircle(String circleId) async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) throw const AuthFailure('Not authenticated');
+    try {
+      await _client
+          .from('circle_members')
+          .delete()
+          .eq('circle_id', circleId)
+          .eq('member_id', uid);
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  // ── members ────────────────────────────────────────────────────────────────
+
+  @override
+  Future<MemberProfileEntity> getMemberProfile(String memberId) async {
+    try {
+      final uid = _client.auth.currentUser?.id;
+
+      // Parallel: profile row + stats RPC.
+      final results = await Future.wait<dynamic>([
+        _client
+            .from('profiles')
+            .select(_profileSelect)
+            .eq('id', memberId)
+            .single(),
+        _client.rpc(
+          'community_member_stats',
+          params: {'_member_id': memberId},
+        ),
+      ]);
+
+      bool isFollowedByMe = false;
+      if (uid != null && uid != memberId) {
+        final followRow = await _client
+            .from('follows')
+            .select('follower_id')
+            .eq('follower_id', uid)
+            .eq('target_id', memberId)
+            .eq('type', 'people')
+            .maybeSingle();
+        isFollowedByMe = followRow != null;
+      }
+
+      final profileRow = results[0] as Map<String, dynamic>;
+      final statsRows = results[1] as List;
+      final stats = statsRows.isNotEmpty
+          ? statsRows.first as Map<String, dynamic>
+          : <String, dynamic>{};
+
+      final model = MemberProfileModel.fromJson(profileRow);
+      return model.toEntity(
+        postsCount: (stats['posts_count'] as int?) ?? 0,
+        helpfulCount: (stats['helpful_count'] as int?) ?? 0,
+        circlesCount: (stats['circles_count'] as int?) ?? 0,
+        isFollowedByMe: isFollowedByMe,
+      );
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<bool> toggleMemberFollow(String memberId) async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) throw const AuthFailure('Not authenticated');
+    try {
+      final existing = await _client
+          .from('follows')
+          .select('follower_id')
+          .eq('follower_id', uid)
+          .eq('target_id', memberId)
+          .eq('type', 'people')
+          .maybeSingle();
+
+      if (existing != null) {
+        await _client
+            .from('follows')
+            .delete()
+            .eq('follower_id', uid)
+            .eq('target_id', memberId)
+            .eq('type', 'people');
+        return false;
+      } else {
+        try {
+          await _client.from('follows').insert({
+            'follower_id': uid,
+            'target_id': memberId,
+            'type': 'people',
+          });
+        } on PostgrestException catch (e) {
+          if (e.code != '23505') rethrow;
+        }
+        return true;
+      }
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<List<PostEntity>> getMemberContributions(String memberId) async {
+    try {
+      final rows = await _client
+          .from('posts')
+          .select(_postSelect)
+          .eq('author_id', memberId)
+          .order('created_at', ascending: false)
+          .limit(10);
+
+      // Contributions are viewed in a read-only context; skip like hydration
+      // to save a round-trip. likedByMe will default to false.
+      return (rows as List)
+          .map((row) => _hydratePost(row, likedPostIds: const {}))
+          .toList();
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
