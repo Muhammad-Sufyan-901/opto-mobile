@@ -242,6 +242,33 @@ update public.profiles
     'f7b2a190-9e3d-4c5b-8a06-4c1b0e9d2f3c'
   );
 
+-- ─── Community circles ───────────────────────────────────────────────────────
+insert into public.circles (slug, name, description, about, icon_key, color_key, pinned_note) values
+  ('Prosthetic care',  'Prosthetic care',  'Support for ocular prosthesis & scleral shell wearers',
+   'A peer space for anyone living with an ocular prosthesis or scleral shell — cleaning routines, comfort tips, and honest first-weeks support. Specialists drop in weekly.',
+   'aperture', 'blue',
+   'New here? Start with the "First 30 days" voice guide and introduce yourself in the welcome thread.'),
+  ('Low vision',       'Low vision',       'Screen reader setups and daily life strategies for low-vision members',
+   'Share TalkBack & VoiceOver tips, assistive tech reviews, and the small wins that make every day easier.',
+   'eye', 'violet',
+   'Post your screen-reader model + OS when asking tech questions — it helps everyone answer faster.'),
+  ('Daily living',     'Daily living',     'Practical wins and tips for navigating life with vision impairment',
+   'Cooking, labelling, navigation — real talk from people who have figured it out and want to help you do the same.',
+   'sparkle', 'green',
+   'Share a win this week — big or small. The community celebrates every one.'),
+  ('Tech & apps',      'Tech & apps',      'Accessibility apps, hardware and AI tools',
+   'From magnification apps to AI-powered scene describers — if it makes your phone more useful, it belongs here.',
+   'smartphone', 'blue',
+   'When posting about an app, mention the platform (Android/iOS) and version.'),
+  ('Wins',             'Wins',             'Celebrate milestones and everyday victories',
+   'A positivity-only space. Post your wins — first solo trip, meal cooked unaided, job interview nailed — anything counts.',
+   'trophy', 'amber', null),
+  ('Ask a specialist', 'Ask a specialist', 'Questions answered by verified clinicians and specialists',
+   'Ophthalmologists, optometrists, and prosthetists volunteer here weekly. Post your question and a specialist will reply. For urgent concerns, book a consultation.',
+   'stethoscope', 'blue',
+   'Specialists answer general questions only. For personal medical advice, book a consultation via the Health tab.')
+on conflict (slug) do nothing;
+
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Accessibility POIs — Surabaya seed
 -- ─────────────────────────────────────────────────────────────────────────────
