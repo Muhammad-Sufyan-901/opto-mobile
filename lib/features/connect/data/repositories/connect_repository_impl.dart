@@ -1,15 +1,15 @@
 // Concrete implementation of [ConnectRepository].
 //
 // Delegates to [ConnectRemoteDataSource] for all PostgREST / Storage calls.
-// Maps data-layer models to domain entities via the `toEntity()` extensions.
-// Owns the [RealtimeChannelManager] for the live feed subscription.
+// The data source now returns fully-hydrated [PostEntity] / [PostReplyEntity]
+// objects (author name, avatar, verified, counts) directly, so this layer
+// primarily passes through and owns the Realtime channel lifecycle.
 import 'package:opto/core/error/failures.dart';
 import 'package:opto/core/supabase/realtime_channel_manager.dart';
 import 'package:opto/features/connect/data/datasources/connect_remote_data_source.dart';
 import 'package:opto/features/connect/data/models/post_media_model_ext.dart';
 import 'package:opto/features/connect/data/models/post_model.dart';
 import 'package:opto/features/connect/data/models/post_model_ext.dart';
-import 'package:opto/features/connect/data/models/post_reply_model_ext.dart';
 import 'package:opto/features/connect/domain/entities/post_entity.dart';
 import 'package:opto/features/connect/domain/entities/post_media_entity.dart';
 import 'package:opto/features/connect/domain/entities/post_reply_entity.dart';
@@ -39,18 +39,33 @@ class ConnectRepositoryImpl implements ConnectRepository {
   // ── posts ──────────────────────────────────────────────────────────────────
 
   @override
-  Future<List<PostEntity>> getFeed({int limit = 20, int offset = 0}) async {
-    final models = await _remote.getFeed(limit: limit, offset: offset);
-    return models.map((m) => m.toEntity()).toList();
-  }
+  Future<List<PostEntity>> getFeed({
+    int limit = 20,
+    int offset = 0,
+    String? topic,
+  }) =>
+      _remote.getFeed(limit: limit, offset: offset, topic: topic);
 
   @override
-  Future<PostEntity> createPost({required String body}) async {
+  Future<PostEntity> getPostById(String postId) =>
+      _remote.getPostById(postId);
+
+  @override
+  Future<PostEntity> createPost({
+    required String body,
+    String? title,
+    String? topic,
+    String? voiceUrl,
+  }) async {
     if (body.trim().isEmpty) {
       throw const ServerFailure('Body cannot be empty');
     }
-    final model = await _remote.createPost(body: body);
-    return model.toEntity();
+    return _remote.createPost(
+      body: body,
+      title: title?.trim().isNotEmpty == true ? title : null,
+      topic: topic,
+      voiceUrl: voiceUrl,
+    );
   }
 
   @override
@@ -81,25 +96,36 @@ class ConnectRepositoryImpl implements ConnectRepository {
   // ── replies ────────────────────────────────────────────────────────────────
 
   @override
-  Future<List<PostReplyEntity>> getReplies(String postId) async {
-    final models = await _remote.getReplies(postId);
-    return models.map((m) => m.toEntity()).toList();
-  }
+  Future<List<PostReplyEntity>> getReplies(String postId) =>
+      _remote.getReplies(postId);
 
   @override
   Future<PostReplyEntity> addReply({
     required String postId,
     required String body,
+    String? parentReplyId,
+    String? voiceUrl,
   }) async {
     if (body.trim().isEmpty) {
       throw const ServerFailure('Body cannot be empty');
     }
-    final model = await _remote.addReply(postId: postId, body: body);
-    return model.toEntity();
+    return _remote.addReply(
+      postId: postId,
+      body: body,
+      parentReplyId: parentReplyId,
+      voiceUrl: voiceUrl,
+    );
   }
 
   @override
   Future<void> deleteReply(String replyId) => _remote.deleteReply(replyId);
+
+  @override
+  Future<void> markBestAnswer({
+    required String replyId,
+    required String postId,
+  }) =>
+      _remote.markBestAnswer(replyId: replyId, postId: postId);
 
   // ── likes ──────────────────────────────────────────────────────────────────
 
@@ -110,6 +136,9 @@ class ConnectRepositoryImpl implements ConnectRepository {
 
   @override
   Stream<PostEntity> watchNewPosts() {
+    // Realtime INSERT events return the raw row without joins; we emit a minimal
+    // entity so the feed can prepend it. The full hydration happens when the
+    // user pulls-to-refresh or the BLoC reloads.
     return _remote.watchNewPostsRaw(_realtimeManager).map(
           (map) => PostModel.fromJson(map).toEntity(),
         );

@@ -128,14 +128,14 @@ return changeTopicFilter(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( bool reset)?  loadFeed,TResult Function()?  subscribeFeed,TResult Function( PostEntity post)?  newPostReceived,TResult Function( String postId)?  toggleLike,TResult Function( int index)?  changeTopicFilter,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( bool reset)?  loadFeed,TResult Function()?  subscribeFeed,TResult Function( PostEntity post)?  newPostReceived,TResult Function( String postId)?  toggleLike,TResult Function( int index,  String? topic)?  changeTopicFilter,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case LoadFeed() when loadFeed != null:
 return loadFeed(_that.reset);case SubscribeFeed() when subscribeFeed != null:
 return subscribeFeed();case NewPostReceived() when newPostReceived != null:
 return newPostReceived(_that.post);case ToggleLike() when toggleLike != null:
 return toggleLike(_that.postId);case ChangeTopicFilter() when changeTopicFilter != null:
-return changeTopicFilter(_that.index);case _:
+return changeTopicFilter(_that.index,_that.topic);case _:
   return orElse();
 
 }
@@ -153,14 +153,14 @@ return changeTopicFilter(_that.index);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( bool reset)  loadFeed,required TResult Function()  subscribeFeed,required TResult Function( PostEntity post)  newPostReceived,required TResult Function( String postId)  toggleLike,required TResult Function( int index)  changeTopicFilter,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( bool reset)  loadFeed,required TResult Function()  subscribeFeed,required TResult Function( PostEntity post)  newPostReceived,required TResult Function( String postId)  toggleLike,required TResult Function( int index,  String? topic)  changeTopicFilter,}) {final _that = this;
 switch (_that) {
 case LoadFeed():
 return loadFeed(_that.reset);case SubscribeFeed():
 return subscribeFeed();case NewPostReceived():
 return newPostReceived(_that.post);case ToggleLike():
 return toggleLike(_that.postId);case ChangeTopicFilter():
-return changeTopicFilter(_that.index);}
+return changeTopicFilter(_that.index,_that.topic);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -174,14 +174,14 @@ return changeTopicFilter(_that.index);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( bool reset)?  loadFeed,TResult? Function()?  subscribeFeed,TResult? Function( PostEntity post)?  newPostReceived,TResult? Function( String postId)?  toggleLike,TResult? Function( int index)?  changeTopicFilter,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( bool reset)?  loadFeed,TResult? Function()?  subscribeFeed,TResult? Function( PostEntity post)?  newPostReceived,TResult? Function( String postId)?  toggleLike,TResult? Function( int index,  String? topic)?  changeTopicFilter,}) {final _that = this;
 switch (_that) {
 case LoadFeed() when loadFeed != null:
 return loadFeed(_that.reset);case SubscribeFeed() when subscribeFeed != null:
 return subscribeFeed();case NewPostReceived() when newPostReceived != null:
 return newPostReceived(_that.post);case ToggleLike() when toggleLike != null:
 return toggleLike(_that.postId);case ChangeTopicFilter() when changeTopicFilter != null:
-return changeTopicFilter(_that.index);case _:
+return changeTopicFilter(_that.index,_that.topic);case _:
   return null;
 
 }
@@ -423,10 +423,11 @@ as String,
 
 
 class ChangeTopicFilter implements ConnectFeedEvent {
-  const ChangeTopicFilter(this.index);
+  const ChangeTopicFilter({required this.index, this.topic});
   
 
  final  int index;
+ final  String? topic;
 
 /// Create a copy of ConnectFeedEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -438,16 +439,16 @@ $ChangeTopicFilterCopyWith<ChangeTopicFilter> get copyWith => _$ChangeTopicFilte
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChangeTopicFilter&&(identical(other.index, index) || other.index == index));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChangeTopicFilter&&(identical(other.index, index) || other.index == index)&&(identical(other.topic, topic) || other.topic == topic));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,index);
+int get hashCode => Object.hash(runtimeType,index,topic);
 
 @override
 String toString() {
-  return 'ConnectFeedEvent.changeTopicFilter(index: $index)';
+  return 'ConnectFeedEvent.changeTopicFilter(index: $index, topic: $topic)';
 }
 
 
@@ -458,7 +459,7 @@ abstract mixin class $ChangeTopicFilterCopyWith<$Res> implements $ConnectFeedEve
   factory $ChangeTopicFilterCopyWith(ChangeTopicFilter value, $Res Function(ChangeTopicFilter) _then) = _$ChangeTopicFilterCopyWithImpl;
 @useResult
 $Res call({
- int index
+ int index, String? topic
 });
 
 
@@ -475,10 +476,11 @@ class _$ChangeTopicFilterCopyWithImpl<$Res>
 
 /// Create a copy of ConnectFeedEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? index = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? index = null,Object? topic = freezed,}) {
   return _then(ChangeTopicFilter(
-null == index ? _self.index : index // ignore: cast_nullable_to_non_nullable
-as int,
+index: null == index ? _self.index : index // ignore: cast_nullable_to_non_nullable
+as int,topic: freezed == topic ? _self.topic : topic // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

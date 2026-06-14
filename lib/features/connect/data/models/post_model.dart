@@ -1,6 +1,7 @@
 // Freezed + json_serializable DTO for the `posts` Supabase table.
 //
-// Mirrors the row shape defined in `database_schema.md` §4 CONNECT.posts.
+// Mirrors the extended row shape defined in `database_schema.md` §4 CONNECT.posts
+// plus the columns added in migration 20260614000000_community_feed_thread.sql.
 // All DB columns are snake_case; Dart fields are camelCase via [@JsonKey].
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -26,6 +27,15 @@ abstract class PostModel with _$PostModel {
 
     /// Row creation timestamp — set by Postgres default.
     @JsonKey(name: 'created_at') required DateTime createdAt,
+
+    /// Optional short heading for the post.
+    String? title,
+
+    /// Topic/circle label used by filter chips (e.g. "Prosthetic care").
+    String? topic,
+
+    /// Optional voice-note recording URL.
+    @JsonKey(name: 'voice_url') String? voiceUrl,
   }) = _PostModel;
 
   /// Deserialises a Supabase / JSON map to a [PostModel].

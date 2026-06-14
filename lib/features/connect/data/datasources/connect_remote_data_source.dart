@@ -7,8 +7,9 @@
 // SECURITY NOTES:
 // - Never join 🔒 tables (anthropometric_data, eye_photos, consultations,
 //   sos_events) in any query here.
-// - Author display name / avatar comes ONLY from the `profiles` table and is
-//   populated at the repository level, not inside this data source.
+// - Author display name / avatar / verified come ONLY from the `profiles` table
+//   and are joined inside getFeed / getPostById / getReplies using the
+//   `profiles!author_id` foreign-key hint so PostgREST resolves the correct FK.
 // - Use only `SupabaseClientProvider.client` — never `Supabase.instance.client`
 //   directly.
 import 'dart:io';
@@ -23,13 +24,95 @@ import 'package:opto/features/connect/data/models/content_report_model.dart';
 import 'package:opto/features/connect/data/models/follow_model.dart';
 import 'package:opto/features/connect/data/models/post_media_model.dart';
 import 'package:opto/features/connect/data/models/post_model.dart';
+import 'package:opto/features/connect/data/models/post_model_ext.dart';
 import 'package:opto/features/connect/data/models/post_reply_model.dart';
+import 'package:opto/features/connect/data/models/post_reply_model_ext.dart';
+import 'package:opto/features/connect/domain/entities/post_entity.dart';
+import 'package:opto/features/connect/domain/entities/post_reply_entity.dart';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/// PostgREST select string for posts with author join + aggregate counts.
+///
+/// Returns: id, author_id, body, created_at, title, topic, voice_url
+/// + author(full_name, avatar_url, is_verified)
+/// + post_likes(count)  (renamed to like_count by PostgREST)
+/// + post_replies(count) (renamed to reply_count)
+const _postSelect = '''
+  id, author_id, body, created_at, title, topic, voice_url,
+  author:profiles!author_id(full_name, avatar_url, is_verified),
+  like_count:post_likes(count),
+  reply_count:post_replies(count)
+''';
+
+/// Same join for replies, without the reply-count aggregate.
+const _replySelect = '''
+  id, post_id, author_id, body, created_at, parent_reply_id, is_best_answer, voice_url,
+  author:profiles!author_id(full_name, avatar_url, is_verified)
+''';
+
+// ─── Projection helpers ────────────────────────────────────────────────────────
+
+/// PostgREST aggregate count returns a list of objects: [{count: 3}].
+int _extractCount(dynamic raw) {
+  if (raw == null) return 0;
+  if (raw is int) return raw;
+  if (raw is List && raw.isNotEmpty) {
+    final first = raw.first;
+    if (first is Map && first.containsKey('count')) {
+      return (first['count'] as num?)?.toInt() ?? 0;
+    }
+  }
+  return 0;
+}
+
+PostEntity _hydratePost(
+  Map<String, dynamic> row, {
+  required Set<String> likedPostIds,
+}) {
+  final authorMap = row['author'] as Map<String, dynamic>?;
+  final likeCountRaw = row['like_count'];
+  final replyCountRaw = row['reply_count'];
+
+  final model = PostModel.fromJson(row);
+  return model.toEntity(
+    authorName: authorMap?['full_name'] as String?,
+    authorAvatarUrl: authorMap?['avatar_url'] as String?,
+    authorIsVerified: (authorMap?['is_verified'] as bool?) ?? false,
+    likeCount: _extractCount(likeCountRaw),
+    replyCount: _extractCount(replyCountRaw),
+    likedByMe: likedPostIds.contains(model.id),
+  );
+}
+
+PostReplyEntity _hydrateReply(Map<String, dynamic> row) {
+  final authorMap = row['author'] as Map<String, dynamic>?;
+  final model = PostReplyModel.fromJson(row);
+  return model.toEntity(
+    authorName: authorMap?['full_name'] as String?,
+    authorIsVerified: (authorMap?['is_verified'] as bool?) ?? false,
+  );
+}
 
 /// Contract for the connect remote data source.
 abstract class ConnectRemoteDataSource {
   // ── posts ──────────────────────────────────────────────────────────────────
-  Future<List<PostModel>> getFeed({int limit = 20, int offset = 0});
-  Future<PostModel> createPost({required String body});
+  Future<List<PostEntity>> getFeed({
+    int limit = 20,
+    int offset = 0,
+    String? topic,
+  });
+
+  /// Fetches a single post by [postId] with full author + count hydration.
+  Future<PostEntity> getPostById(String postId);
+
+  Future<PostEntity> createPost({
+    required String body,
+    String? title,
+    String? topic,
+    String? voiceUrl,
+  });
+
   Future<void> deletePost(String postId);
 
   // ── media ──────────────────────────────────────────────────────────────────
@@ -38,15 +121,28 @@ abstract class ConnectRemoteDataSource {
     required String localPath,
     required String altText,
   });
+
   Future<void> removeMedia(String mediaId);
 
   // ── replies ────────────────────────────────────────────────────────────────
-  Future<List<PostReplyModel>> getReplies(String postId);
-  Future<PostReplyModel> addReply({
+  Future<List<PostReplyEntity>> getReplies(String postId);
+
+  Future<PostReplyEntity> addReply({
     required String postId,
     required String body,
+    String? parentReplyId,
+    String? voiceUrl,
   });
+
   Future<void> deleteReply(String replyId);
+
+  /// Marks [replyId] as best answer for [postId].
+  ///
+  /// RLS enforces that only the OP author can update is_best_answer.
+  Future<void> markBestAnswer({
+    required String replyId,
+    required String postId,
+  });
 
   // ── likes ──────────────────────────────────────────────────────────────────
   /// Returns `true` if the user just liked (insert), `false` if unliked (delete).
@@ -61,10 +157,12 @@ abstract class ConnectRemoteDataSource {
 
   // ── follows ────────────────────────────────────────────────────────────────
   Future<List<FollowModel>> getFollows(String userId);
+
   Future<FollowModel> follow({
     required String targetId,
     required String type,
   });
+
   Future<void> unfollow({required String targetId});
 
   // ── reports ────────────────────────────────────────────────────────────────
@@ -89,14 +187,33 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
   // ── posts ──────────────────────────────────────────────────────────────────
 
   @override
-  Future<List<PostModel>> getFeed({int limit = 20, int offset = 0}) async {
+  Future<List<PostEntity>> getFeed({
+    int limit = 20,
+    int offset = 0,
+    String? topic,
+  }) async {
     try {
-      final rows = await _client
-          .from('posts')
-          .select()
+      // 1. Build the query; optionally filter by topic.
+      // Filters (.eq) must be applied before transform steps (.order/.range).
+      final baseQuery =
+          _client.from('posts').select(_postSelect);
+
+      final filteredQuery = (topic != null && topic.isNotEmpty)
+          ? baseQuery.eq('topic', topic)
+          : baseQuery;
+
+      final rows = await filteredQuery
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
-      return rows.map(PostModel.fromJson).toList();
+
+      // 2. Collect liked post-ids for the current user in one round-trip.
+      final likedPostIds = await _fetchLikedPostIds(
+        rows.map((r) => r['id'] as String).toList(),
+      );
+
+      return rows
+          .map((r) => _hydratePost(r, likedPostIds: likedPostIds))
+          .toList();
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
@@ -105,16 +222,47 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
   }
 
   @override
-  Future<PostModel> createPost({required String body}) async {
+  Future<PostEntity> getPostById(String postId) async {
+    try {
+      final row = await _client
+          .from('posts')
+          .select(_postSelect)
+          .eq('id', postId)
+          .single();
+
+      final likedPostIds = await _fetchLikedPostIds([postId]);
+      return _hydratePost(row, likedPostIds: likedPostIds);
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<PostEntity> createPost({
+    required String body,
+    String? title,
+    String? topic,
+    String? voiceUrl,
+  }) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) throw const AuthFailure('Not authenticated');
     try {
       final row = await _client
           .from('posts')
-          .insert({'author_id': userId, 'body': body})
-          .select()
+          .insert({
+            'author_id': userId,
+            'body': body,
+            'title': ?title,
+            'topic': ?topic,
+            'voice_url': ?voiceUrl,
+          })
+          .select(_postSelect)
           .single();
-      return PostModel.fromJson(row);
+
+      // Newly created — not liked by anyone yet.
+      return _hydratePost(row, likedPostIds: const {});
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
@@ -213,14 +361,14 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
   // ── replies ────────────────────────────────────────────────────────────────
 
   @override
-  Future<List<PostReplyModel>> getReplies(String postId) async {
+  Future<List<PostReplyEntity>> getReplies(String postId) async {
     try {
       final rows = await _client
           .from('post_replies')
-          .select()
+          .select(_replySelect)
           .eq('post_id', postId)
           .order('created_at', ascending: true);
-      return rows.map(PostReplyModel.fromJson).toList();
+      return rows.map(_hydrateReply).toList();
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
@@ -229,9 +377,11 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
   }
 
   @override
-  Future<PostReplyModel> addReply({
+  Future<PostReplyEntity> addReply({
     required String postId,
     required String body,
+    String? parentReplyId,
+    String? voiceUrl,
   }) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) throw const AuthFailure('Not authenticated');
@@ -242,10 +392,12 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
             'post_id': postId,
             'author_id': userId,
             'body': body,
+            'parent_reply_id': ?parentReplyId,
+            'voice_url': ?voiceUrl,
           })
-          .select()
+          .select(_replySelect)
           .single();
-      return PostReplyModel.fromJson(row);
+      return _hydrateReply(row);
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
@@ -257,6 +409,33 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
   Future<void> deleteReply(String replyId) async {
     try {
       await _client.from('post_replies').delete().eq('id', replyId);
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<void> markBestAnswer({
+    required String replyId,
+    required String postId,
+  }) async {
+    try {
+      // The partial unique index on post_replies(post_id) WHERE is_best_answer
+      // enforces at most one best-answer per post at the DB level.
+      // First, clear any existing best-answer for the same post.
+      await _client
+          .from('post_replies')
+          .update({'is_best_answer': false})
+          .eq('post_id', postId)
+          .eq('is_best_answer', true);
+
+      // Then mark the selected reply.
+      await _client
+          .from('post_replies')
+          .update({'is_best_answer': true})
+          .eq('id', replyId);
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
@@ -411,6 +590,26 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
       throw ServerFailure(e.toString());
+    }
+  }
+
+  // ── private helpers ────────────────────────────────────────────────────────
+
+  /// Returns the set of post-ids from [candidateIds] that the current user has
+  /// liked. Returns an empty set if unauthenticated or if [candidateIds] is empty.
+  Future<Set<String>> _fetchLikedPostIds(List<String> candidateIds) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null || candidateIds.isEmpty) return const {};
+    try {
+      final rows = await _client
+          .from('post_likes')
+          .select('post_id')
+          .eq('user_id', userId)
+          .inFilter('post_id', candidateIds);
+      return {for (final r in rows) r['post_id'] as String};
+    } catch (_) {
+      // Non-fatal — like indicators gracefully fall back to unliked.
+      return const {};
     }
   }
 }

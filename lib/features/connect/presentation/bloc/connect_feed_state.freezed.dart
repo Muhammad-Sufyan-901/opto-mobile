@@ -125,12 +125,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<PostEntity> posts,  bool isLoadingMore,  int activeTopic,  bool hasReachedEnd)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<PostEntity> posts,  bool isLoadingMore,  int activeTopic,  String? activeTopicLabel,  bool hasReachedEnd)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case FeedInitial() when initial != null:
 return initial();case FeedLoading() when loading != null:
 return loading();case FeedLoaded() when loaded != null:
-return loaded(_that.posts,_that.isLoadingMore,_that.activeTopic,_that.hasReachedEnd);case FeedError() when error != null:
+return loaded(_that.posts,_that.isLoadingMore,_that.activeTopic,_that.activeTopicLabel,_that.hasReachedEnd);case FeedError() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -149,12 +149,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<PostEntity> posts,  bool isLoadingMore,  int activeTopic,  bool hasReachedEnd)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<PostEntity> posts,  bool isLoadingMore,  int activeTopic,  String? activeTopicLabel,  bool hasReachedEnd)  loaded,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case FeedInitial():
 return initial();case FeedLoading():
 return loading();case FeedLoaded():
-return loaded(_that.posts,_that.isLoadingMore,_that.activeTopic,_that.hasReachedEnd);case FeedError():
+return loaded(_that.posts,_that.isLoadingMore,_that.activeTopic,_that.activeTopicLabel,_that.hasReachedEnd);case FeedError():
 return error(_that.message);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -169,12 +169,12 @@ return error(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<PostEntity> posts,  bool isLoadingMore,  int activeTopic,  bool hasReachedEnd)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<PostEntity> posts,  bool isLoadingMore,  int activeTopic,  String? activeTopicLabel,  bool hasReachedEnd)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case FeedInitial() when initial != null:
 return initial();case FeedLoading() when loading != null:
 return loading();case FeedLoaded() when loaded != null:
-return loaded(_that.posts,_that.isLoadingMore,_that.activeTopic,_that.hasReachedEnd);case FeedError() when error != null:
+return loaded(_that.posts,_that.isLoadingMore,_that.activeTopic,_that.activeTopicLabel,_that.hasReachedEnd);case FeedError() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -251,7 +251,7 @@ String toString() {
 
 
 class FeedLoaded implements ConnectFeedState {
-  const FeedLoaded({required final  List<PostEntity> posts, this.isLoadingMore = false, this.activeTopic = 0, this.hasReachedEnd = false}): _posts = posts;
+  const FeedLoaded({required final  List<PostEntity> posts, this.isLoadingMore = false, this.activeTopic = 0, this.activeTopicLabel, this.hasReachedEnd = false}): _posts = posts;
   
 
  final  List<PostEntity> _posts;
@@ -263,6 +263,7 @@ class FeedLoaded implements ConnectFeedState {
 
 @JsonKey() final  bool isLoadingMore;
 @JsonKey() final  int activeTopic;
+ final  String? activeTopicLabel;
 @JsonKey() final  bool hasReachedEnd;
 
 /// Create a copy of ConnectFeedState
@@ -275,16 +276,16 @@ $FeedLoadedCopyWith<FeedLoaded> get copyWith => _$FeedLoadedCopyWithImpl<FeedLoa
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FeedLoaded&&const DeepCollectionEquality().equals(other._posts, _posts)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.activeTopic, activeTopic) || other.activeTopic == activeTopic)&&(identical(other.hasReachedEnd, hasReachedEnd) || other.hasReachedEnd == hasReachedEnd));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FeedLoaded&&const DeepCollectionEquality().equals(other._posts, _posts)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.activeTopic, activeTopic) || other.activeTopic == activeTopic)&&(identical(other.activeTopicLabel, activeTopicLabel) || other.activeTopicLabel == activeTopicLabel)&&(identical(other.hasReachedEnd, hasReachedEnd) || other.hasReachedEnd == hasReachedEnd));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_posts),isLoadingMore,activeTopic,hasReachedEnd);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_posts),isLoadingMore,activeTopic,activeTopicLabel,hasReachedEnd);
 
 @override
 String toString() {
-  return 'ConnectFeedState.loaded(posts: $posts, isLoadingMore: $isLoadingMore, activeTopic: $activeTopic, hasReachedEnd: $hasReachedEnd)';
+  return 'ConnectFeedState.loaded(posts: $posts, isLoadingMore: $isLoadingMore, activeTopic: $activeTopic, activeTopicLabel: $activeTopicLabel, hasReachedEnd: $hasReachedEnd)';
 }
 
 
@@ -295,7 +296,7 @@ abstract mixin class $FeedLoadedCopyWith<$Res> implements $ConnectFeedStateCopyW
   factory $FeedLoadedCopyWith(FeedLoaded value, $Res Function(FeedLoaded) _then) = _$FeedLoadedCopyWithImpl;
 @useResult
 $Res call({
- List<PostEntity> posts, bool isLoadingMore, int activeTopic, bool hasReachedEnd
+ List<PostEntity> posts, bool isLoadingMore, int activeTopic, String? activeTopicLabel, bool hasReachedEnd
 });
 
 
@@ -312,12 +313,13 @@ class _$FeedLoadedCopyWithImpl<$Res>
 
 /// Create a copy of ConnectFeedState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? posts = null,Object? isLoadingMore = null,Object? activeTopic = null,Object? hasReachedEnd = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? posts = null,Object? isLoadingMore = null,Object? activeTopic = null,Object? activeTopicLabel = freezed,Object? hasReachedEnd = null,}) {
   return _then(FeedLoaded(
 posts: null == posts ? _self._posts : posts // ignore: cast_nullable_to_non_nullable
 as List<PostEntity>,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMore // ignore: cast_nullable_to_non_nullable
 as bool,activeTopic: null == activeTopic ? _self.activeTopic : activeTopic // ignore: cast_nullable_to_non_nullable
-as int,hasReachedEnd: null == hasReachedEnd ? _self.hasReachedEnd : hasReachedEnd // ignore: cast_nullable_to_non_nullable
+as int,activeTopicLabel: freezed == activeTopicLabel ? _self.activeTopicLabel : activeTopicLabel // ignore: cast_nullable_to_non_nullable
+as String?,hasReachedEnd: null == hasReachedEnd ? _self.hasReachedEnd : hasReachedEnd // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }

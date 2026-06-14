@@ -20,7 +20,11 @@ mixin _$PostReplyModel {
 @JsonKey(name: 'post_id') String get postId;/// FK → `profiles.id` — the reply author.
 @JsonKey(name: 'author_id') String get authorId;/// Text body of the reply.
  String get body;/// Row creation timestamp — set by Postgres default.
-@JsonKey(name: 'created_at') DateTime get createdAt;
+@JsonKey(name: 'created_at') DateTime get createdAt;/// FK → `post_replies.id` — parent reply for one-level nesting; null for
+/// top-level replies.
+@JsonKey(name: 'parent_reply_id') String? get parentReplyId;/// Whether the OP author has marked this as the best answer.
+@JsonKey(name: 'is_best_answer') bool get isBestAnswer;/// Optional voice-note recording URL.
+@JsonKey(name: 'voice_url') String? get voiceUrl;
 /// Create a copy of PostReplyModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -33,16 +37,16 @@ $PostReplyModelCopyWith<PostReplyModel> get copyWith => _$PostReplyModelCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PostReplyModel&&(identical(other.id, id) || other.id == id)&&(identical(other.postId, postId) || other.postId == postId)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&(identical(other.body, body) || other.body == body)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PostReplyModel&&(identical(other.id, id) || other.id == id)&&(identical(other.postId, postId) || other.postId == postId)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&(identical(other.body, body) || other.body == body)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.parentReplyId, parentReplyId) || other.parentReplyId == parentReplyId)&&(identical(other.isBestAnswer, isBestAnswer) || other.isBestAnswer == isBestAnswer)&&(identical(other.voiceUrl, voiceUrl) || other.voiceUrl == voiceUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,postId,authorId,body,createdAt);
+int get hashCode => Object.hash(runtimeType,id,postId,authorId,body,createdAt,parentReplyId,isBestAnswer,voiceUrl);
 
 @override
 String toString() {
-  return 'PostReplyModel(id: $id, postId: $postId, authorId: $authorId, body: $body, createdAt: $createdAt)';
+  return 'PostReplyModel(id: $id, postId: $postId, authorId: $authorId, body: $body, createdAt: $createdAt, parentReplyId: $parentReplyId, isBestAnswer: $isBestAnswer, voiceUrl: $voiceUrl)';
 }
 
 
@@ -53,7 +57,7 @@ abstract mixin class $PostReplyModelCopyWith<$Res>  {
   factory $PostReplyModelCopyWith(PostReplyModel value, $Res Function(PostReplyModel) _then) = _$PostReplyModelCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'author_id') String authorId, String body,@JsonKey(name: 'created_at') DateTime createdAt
+ String id,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'author_id') String authorId, String body,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'parent_reply_id') String? parentReplyId,@JsonKey(name: 'is_best_answer') bool isBestAnswer,@JsonKey(name: 'voice_url') String? voiceUrl
 });
 
 
@@ -70,14 +74,17 @@ class _$PostReplyModelCopyWithImpl<$Res>
 
 /// Create a copy of PostReplyModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? postId = null,Object? authorId = null,Object? body = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? postId = null,Object? authorId = null,Object? body = null,Object? createdAt = null,Object? parentReplyId = freezed,Object? isBestAnswer = null,Object? voiceUrl = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,postId: null == postId ? _self.postId : postId // ignore: cast_nullable_to_non_nullable
 as String,authorId: null == authorId ? _self.authorId : authorId // ignore: cast_nullable_to_non_nullable
 as String,body: null == body ? _self.body : body // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,parentReplyId: freezed == parentReplyId ? _self.parentReplyId : parentReplyId // ignore: cast_nullable_to_non_nullable
+as String?,isBestAnswer: null == isBestAnswer ? _self.isBestAnswer : isBestAnswer // ignore: cast_nullable_to_non_nullable
+as bool,voiceUrl: freezed == voiceUrl ? _self.voiceUrl : voiceUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -162,10 +169,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'author_id')  String authorId,  String body, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'author_id')  String authorId,  String body, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'parent_reply_id')  String? parentReplyId, @JsonKey(name: 'is_best_answer')  bool isBestAnswer, @JsonKey(name: 'voice_url')  String? voiceUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PostReplyModel() when $default != null:
-return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.createdAt);case _:
+return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.createdAt,_that.parentReplyId,_that.isBestAnswer,_that.voiceUrl);case _:
   return orElse();
 
 }
@@ -183,10 +190,10 @@ return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.createdAt)
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'author_id')  String authorId,  String body, @JsonKey(name: 'created_at')  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'author_id')  String authorId,  String body, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'parent_reply_id')  String? parentReplyId, @JsonKey(name: 'is_best_answer')  bool isBestAnswer, @JsonKey(name: 'voice_url')  String? voiceUrl)  $default,) {final _that = this;
 switch (_that) {
 case _PostReplyModel():
-return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.createdAt);case _:
+return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.createdAt,_that.parentReplyId,_that.isBestAnswer,_that.voiceUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +210,10 @@ return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.createdAt)
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'author_id')  String authorId,  String body, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'author_id')  String authorId,  String body, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'parent_reply_id')  String? parentReplyId, @JsonKey(name: 'is_best_answer')  bool isBestAnswer, @JsonKey(name: 'voice_url')  String? voiceUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _PostReplyModel() when $default != null:
-return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.createdAt);case _:
+return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.createdAt,_that.parentReplyId,_that.isBestAnswer,_that.voiceUrl);case _:
   return null;
 
 }
@@ -218,7 +225,7 @@ return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.createdAt)
 @JsonSerializable()
 
 class _PostReplyModel implements PostReplyModel {
-  const _PostReplyModel({required this.id, @JsonKey(name: 'post_id') required this.postId, @JsonKey(name: 'author_id') required this.authorId, required this.body, @JsonKey(name: 'created_at') required this.createdAt});
+  const _PostReplyModel({required this.id, @JsonKey(name: 'post_id') required this.postId, @JsonKey(name: 'author_id') required this.authorId, required this.body, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'parent_reply_id') this.parentReplyId, @JsonKey(name: 'is_best_answer') this.isBestAnswer = false, @JsonKey(name: 'voice_url') this.voiceUrl});
   factory _PostReplyModel.fromJson(Map<String, dynamic> json) => _$PostReplyModelFromJson(json);
 
 /// Primary key (UUID).
@@ -231,6 +238,13 @@ class _PostReplyModel implements PostReplyModel {
 @override final  String body;
 /// Row creation timestamp — set by Postgres default.
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
+/// FK → `post_replies.id` — parent reply for one-level nesting; null for
+/// top-level replies.
+@override@JsonKey(name: 'parent_reply_id') final  String? parentReplyId;
+/// Whether the OP author has marked this as the best answer.
+@override@JsonKey(name: 'is_best_answer') final  bool isBestAnswer;
+/// Optional voice-note recording URL.
+@override@JsonKey(name: 'voice_url') final  String? voiceUrl;
 
 /// Create a copy of PostReplyModel
 /// with the given fields replaced by the non-null parameter values.
@@ -245,16 +259,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PostReplyModel&&(identical(other.id, id) || other.id == id)&&(identical(other.postId, postId) || other.postId == postId)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&(identical(other.body, body) || other.body == body)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PostReplyModel&&(identical(other.id, id) || other.id == id)&&(identical(other.postId, postId) || other.postId == postId)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&(identical(other.body, body) || other.body == body)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.parentReplyId, parentReplyId) || other.parentReplyId == parentReplyId)&&(identical(other.isBestAnswer, isBestAnswer) || other.isBestAnswer == isBestAnswer)&&(identical(other.voiceUrl, voiceUrl) || other.voiceUrl == voiceUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,postId,authorId,body,createdAt);
+int get hashCode => Object.hash(runtimeType,id,postId,authorId,body,createdAt,parentReplyId,isBestAnswer,voiceUrl);
 
 @override
 String toString() {
-  return 'PostReplyModel(id: $id, postId: $postId, authorId: $authorId, body: $body, createdAt: $createdAt)';
+  return 'PostReplyModel(id: $id, postId: $postId, authorId: $authorId, body: $body, createdAt: $createdAt, parentReplyId: $parentReplyId, isBestAnswer: $isBestAnswer, voiceUrl: $voiceUrl)';
 }
 
 
@@ -265,7 +279,7 @@ abstract mixin class _$PostReplyModelCopyWith<$Res> implements $PostReplyModelCo
   factory _$PostReplyModelCopyWith(_PostReplyModel value, $Res Function(_PostReplyModel) _then) = __$PostReplyModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'author_id') String authorId, String body,@JsonKey(name: 'created_at') DateTime createdAt
+ String id,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'author_id') String authorId, String body,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'parent_reply_id') String? parentReplyId,@JsonKey(name: 'is_best_answer') bool isBestAnswer,@JsonKey(name: 'voice_url') String? voiceUrl
 });
 
 
@@ -282,14 +296,17 @@ class __$PostReplyModelCopyWithImpl<$Res>
 
 /// Create a copy of PostReplyModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? postId = null,Object? authorId = null,Object? body = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? postId = null,Object? authorId = null,Object? body = null,Object? createdAt = null,Object? parentReplyId = freezed,Object? isBestAnswer = null,Object? voiceUrl = freezed,}) {
   return _then(_PostReplyModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,postId: null == postId ? _self.postId : postId // ignore: cast_nullable_to_non_nullable
 as String,authorId: null == authorId ? _self.authorId : authorId // ignore: cast_nullable_to_non_nullable
 as String,body: null == body ? _self.body : body // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,parentReplyId: freezed == parentReplyId ? _self.parentReplyId : parentReplyId // ignore: cast_nullable_to_non_nullable
+as String?,isBestAnswer: null == isBestAnswer ? _self.isBestAnswer : isBestAnswer // ignore: cast_nullable_to_non_nullable
+as bool,voiceUrl: freezed == voiceUrl ? _self.voiceUrl : voiceUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

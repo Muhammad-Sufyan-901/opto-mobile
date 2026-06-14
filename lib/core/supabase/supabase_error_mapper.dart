@@ -54,9 +54,13 @@ class SupabaseErrorMapper {
       );
     }
 
-    // HTTP-range error codes surfaced by PostgREST
+    // HTTP-range error codes surfaced by PostgREST.
+    // NOTE: Only match genuine 3-digit HTTP 5xx codes (500–599).
+    // Postgres SQLSTATE codes (e.g. 42703 = undefined_column) are 5-digit
+    // all-numeric strings that would otherwise be misclassified here as 5xx,
+    // masking the real error behind the generic "server down" message.
     final statusCode = int.tryParse(code ?? '') ?? 0;
-    if (statusCode >= 500) {
+    if (statusCode >= 500 && statusCode <= 599) {
       return ServerFailure(
         'Server sedang mengalami gangguan. Mohon coba lagi nanti.',
       );

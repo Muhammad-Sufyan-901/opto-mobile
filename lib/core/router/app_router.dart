@@ -43,6 +43,7 @@ import 'package:opto/features/prosthetic_hub/presentation/screens/specialist_pro
 import 'package:opto/features/prosthetic_hub/presentation/screens/specialist_chat_screen.dart';
 import 'package:opto/features/connect/presentation/screens/community_screen.dart';
 import 'package:opto/features/connect/presentation/screens/compose_post_screen.dart';
+import 'package:opto/features/connect/domain/entities/post_entity.dart';
 import 'package:opto/features/connect/presentation/screens/post_thread_screen.dart';
 import 'package:opto/features/profile/presentation/screens/profile_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
@@ -493,7 +494,12 @@ final GoRouter appRouter = GoRouter(
       name: AppRoutes.communityThread.name,
       builder: (BuildContext context, GoRouterState state) {
         final String postId = state.pathParameters['postId']!;
-        return PostThreadScreen(postId: postId);
+        // Accept an optional [PostEntity] seed via route extra for instant
+        // OP render while the full thread loads from the network.
+        final PostEntity? seedPost = state.extra is PostEntity
+            ? state.extra as PostEntity
+            : null;
+        return PostThreadScreen(postId: postId, seedPost: seedPost);
       },
     ),
 

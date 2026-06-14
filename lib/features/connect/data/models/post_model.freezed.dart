@@ -19,7 +19,10 @@ mixin _$PostModel {
  String get id;/// FK → `profiles.id` — the post author.
 @JsonKey(name: 'author_id') String get authorId;/// Text body of the post.
  String get body;/// Row creation timestamp — set by Postgres default.
-@JsonKey(name: 'created_at') DateTime get createdAt;
+@JsonKey(name: 'created_at') DateTime get createdAt;/// Optional short heading for the post.
+ String? get title;/// Topic/circle label used by filter chips (e.g. "Prosthetic care").
+ String? get topic;/// Optional voice-note recording URL.
+@JsonKey(name: 'voice_url') String? get voiceUrl;
 /// Create a copy of PostModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -32,16 +35,16 @@ $PostModelCopyWith<PostModel> get copyWith => _$PostModelCopyWithImpl<PostModel>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PostModel&&(identical(other.id, id) || other.id == id)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&(identical(other.body, body) || other.body == body)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PostModel&&(identical(other.id, id) || other.id == id)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&(identical(other.body, body) || other.body == body)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.title, title) || other.title == title)&&(identical(other.topic, topic) || other.topic == topic)&&(identical(other.voiceUrl, voiceUrl) || other.voiceUrl == voiceUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,authorId,body,createdAt);
+int get hashCode => Object.hash(runtimeType,id,authorId,body,createdAt,title,topic,voiceUrl);
 
 @override
 String toString() {
-  return 'PostModel(id: $id, authorId: $authorId, body: $body, createdAt: $createdAt)';
+  return 'PostModel(id: $id, authorId: $authorId, body: $body, createdAt: $createdAt, title: $title, topic: $topic, voiceUrl: $voiceUrl)';
 }
 
 
@@ -52,7 +55,7 @@ abstract mixin class $PostModelCopyWith<$Res>  {
   factory $PostModelCopyWith(PostModel value, $Res Function(PostModel) _then) = _$PostModelCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'author_id') String authorId, String body,@JsonKey(name: 'created_at') DateTime createdAt
+ String id,@JsonKey(name: 'author_id') String authorId, String body,@JsonKey(name: 'created_at') DateTime createdAt, String? title, String? topic,@JsonKey(name: 'voice_url') String? voiceUrl
 });
 
 
@@ -69,13 +72,16 @@ class _$PostModelCopyWithImpl<$Res>
 
 /// Create a copy of PostModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? authorId = null,Object? body = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? authorId = null,Object? body = null,Object? createdAt = null,Object? title = freezed,Object? topic = freezed,Object? voiceUrl = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,authorId: null == authorId ? _self.authorId : authorId // ignore: cast_nullable_to_non_nullable
 as String,body: null == body ? _self.body : body // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
+as String?,topic: freezed == topic ? _self.topic : topic // ignore: cast_nullable_to_non_nullable
+as String?,voiceUrl: freezed == voiceUrl ? _self.voiceUrl : voiceUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -160,10 +166,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'author_id')  String authorId,  String body, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'author_id')  String authorId,  String body, @JsonKey(name: 'created_at')  DateTime createdAt,  String? title,  String? topic, @JsonKey(name: 'voice_url')  String? voiceUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PostModel() when $default != null:
-return $default(_that.id,_that.authorId,_that.body,_that.createdAt);case _:
+return $default(_that.id,_that.authorId,_that.body,_that.createdAt,_that.title,_that.topic,_that.voiceUrl);case _:
   return orElse();
 
 }
@@ -181,10 +187,10 @@ return $default(_that.id,_that.authorId,_that.body,_that.createdAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'author_id')  String authorId,  String body, @JsonKey(name: 'created_at')  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'author_id')  String authorId,  String body, @JsonKey(name: 'created_at')  DateTime createdAt,  String? title,  String? topic, @JsonKey(name: 'voice_url')  String? voiceUrl)  $default,) {final _that = this;
 switch (_that) {
 case _PostModel():
-return $default(_that.id,_that.authorId,_that.body,_that.createdAt);case _:
+return $default(_that.id,_that.authorId,_that.body,_that.createdAt,_that.title,_that.topic,_that.voiceUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -201,10 +207,10 @@ return $default(_that.id,_that.authorId,_that.body,_that.createdAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'author_id')  String authorId,  String body, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'author_id')  String authorId,  String body, @JsonKey(name: 'created_at')  DateTime createdAt,  String? title,  String? topic, @JsonKey(name: 'voice_url')  String? voiceUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _PostModel() when $default != null:
-return $default(_that.id,_that.authorId,_that.body,_that.createdAt);case _:
+return $default(_that.id,_that.authorId,_that.body,_that.createdAt,_that.title,_that.topic,_that.voiceUrl);case _:
   return null;
 
 }
@@ -216,7 +222,7 @@ return $default(_that.id,_that.authorId,_that.body,_that.createdAt);case _:
 @JsonSerializable()
 
 class _PostModel implements PostModel {
-  const _PostModel({required this.id, @JsonKey(name: 'author_id') required this.authorId, required this.body, @JsonKey(name: 'created_at') required this.createdAt});
+  const _PostModel({required this.id, @JsonKey(name: 'author_id') required this.authorId, required this.body, @JsonKey(name: 'created_at') required this.createdAt, this.title, this.topic, @JsonKey(name: 'voice_url') this.voiceUrl});
   factory _PostModel.fromJson(Map<String, dynamic> json) => _$PostModelFromJson(json);
 
 /// Primary key (UUID).
@@ -227,6 +233,12 @@ class _PostModel implements PostModel {
 @override final  String body;
 /// Row creation timestamp — set by Postgres default.
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
+/// Optional short heading for the post.
+@override final  String? title;
+/// Topic/circle label used by filter chips (e.g. "Prosthetic care").
+@override final  String? topic;
+/// Optional voice-note recording URL.
+@override@JsonKey(name: 'voice_url') final  String? voiceUrl;
 
 /// Create a copy of PostModel
 /// with the given fields replaced by the non-null parameter values.
@@ -241,16 +253,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PostModel&&(identical(other.id, id) || other.id == id)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&(identical(other.body, body) || other.body == body)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PostModel&&(identical(other.id, id) || other.id == id)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&(identical(other.body, body) || other.body == body)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.title, title) || other.title == title)&&(identical(other.topic, topic) || other.topic == topic)&&(identical(other.voiceUrl, voiceUrl) || other.voiceUrl == voiceUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,authorId,body,createdAt);
+int get hashCode => Object.hash(runtimeType,id,authorId,body,createdAt,title,topic,voiceUrl);
 
 @override
 String toString() {
-  return 'PostModel(id: $id, authorId: $authorId, body: $body, createdAt: $createdAt)';
+  return 'PostModel(id: $id, authorId: $authorId, body: $body, createdAt: $createdAt, title: $title, topic: $topic, voiceUrl: $voiceUrl)';
 }
 
 
@@ -261,7 +273,7 @@ abstract mixin class _$PostModelCopyWith<$Res> implements $PostModelCopyWith<$Re
   factory _$PostModelCopyWith(_PostModel value, $Res Function(_PostModel) _then) = __$PostModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'author_id') String authorId, String body,@JsonKey(name: 'created_at') DateTime createdAt
+ String id,@JsonKey(name: 'author_id') String authorId, String body,@JsonKey(name: 'created_at') DateTime createdAt, String? title, String? topic,@JsonKey(name: 'voice_url') String? voiceUrl
 });
 
 
@@ -278,13 +290,16 @@ class __$PostModelCopyWithImpl<$Res>
 
 /// Create a copy of PostModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? authorId = null,Object? body = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? authorId = null,Object? body = null,Object? createdAt = null,Object? title = freezed,Object? topic = freezed,Object? voiceUrl = freezed,}) {
   return _then(_PostModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,authorId: null == authorId ? _self.authorId : authorId // ignore: cast_nullable_to_non_nullable
 as String,body: null == body ? _self.body : body // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
+as String?,topic: freezed == topic ? _self.topic : topic // ignore: cast_nullable_to_non_nullable
+as String?,voiceUrl: freezed == voiceUrl ? _self.voiceUrl : voiceUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

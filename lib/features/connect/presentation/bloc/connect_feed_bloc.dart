@@ -1,6 +1,6 @@
 // BLoC for the community feed — sits between [ConnectRepository] and the
-// community screen. Handles pagination, Realtime subscriptions, and
-// optimistic like toggling.
+// community screen. Handles pagination, Realtime subscriptions, topic-filtering,
+// and optimistic like toggling.
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,11 +17,11 @@ export 'connect_feed_state.dart';
 ///
 /// Responsibilities:
 /// - Paginated [ConnectRepository.getFeed] calls (20 posts per page).
+/// - Server-side topic filtering — [ChangeTopicFilter] now passes the topic
+///   label string into [getFeed(topic:)] rather than client-side chip selection.
 /// - Realtime subscription via [ConnectRepository.watchNewPosts] — new posts
 ///   are prepended de-duplicated to the list.
 /// - Optimistic like toggling with automatic revert on failure.
-/// - Topic-filter chip selection (client-side; server filtering is a future
-///   iteration once topic tags are surfaced on the feed endpoint).
 ///
 /// Disposal: [close] cancels the [StreamSubscription] and calls
 /// [ConnectRepository.dispose] to release the Realtime channel. Because
@@ -59,6 +59,11 @@ class ConnectFeedBloc extends Bloc<ConnectFeedEvent, ConnectFeedState> {
       _offset = 0;
     }
 
+    // Retrieve the active topic label from current state (if any).
+    final currentTopicLabel = state is FeedLoaded
+        ? (state as FeedLoaded).activeTopicLabel
+        : null;
+
     // Show a full loading spinner only on the initial load (offset == 0).
     // For pagination the UI uses FeedLoaded.isLoadingMore.
     if (_offset == 0) {
@@ -68,7 +73,11 @@ class ConnectFeedBloc extends Bloc<ConnectFeedEvent, ConnectFeedState> {
     }
 
     try {
-      final results = await _connect.getFeed(limit: _pageSize, offset: _offset);
+      final results = await _connect.getFeed(
+        limit: _pageSize,
+        offset: _offset,
+        topic: currentTopicLabel,
+      );
       final hasReachedEnd = results.length < _pageSize;
 
       if (_offset == 0) {
@@ -76,6 +85,7 @@ class ConnectFeedBloc extends Bloc<ConnectFeedEvent, ConnectFeedState> {
         emit(ConnectFeedState.loaded(
           posts: results,
           hasReachedEnd: hasReachedEnd,
+          activeTopicLabel: currentTopicLabel,
         ));
       } else {
         // Pagination — append to existing list, preserving activeTopic.
@@ -156,12 +166,38 @@ class ConnectFeedBloc extends Bloc<ConnectFeedEvent, ConnectFeedState> {
     }
   }
 
-  void _onChangeTopicFilter(
+  Future<void> _onChangeTopicFilter(
     ChangeTopicFilter event,
     Emitter<ConnectFeedState> emit,
-  ) {
-    if (state is! FeedLoaded) return;
-    emit((state as FeedLoaded).copyWith(activeTopic: event.index));
+  ) async {
+    // Emit interim loading with updated chip index.
+    if (state is FeedLoaded) {
+      emit((state as FeedLoaded)
+          .copyWith(activeTopic: event.index, activeTopicLabel: event.topic));
+    }
+
+    // Reload from offset 0 with the new topic filter.
+    _offset = 0;
+    try {
+      final results = await _connect.getFeed(
+        limit: _pageSize,
+        offset: 0,
+        topic: event.topic,
+      );
+      final hasReachedEnd = results.length < _pageSize;
+      _offset = results.length;
+      emit(ConnectFeedState.loaded(
+        posts: results,
+        hasReachedEnd: hasReachedEnd,
+        activeTopic: event.index,
+        activeTopicLabel: event.topic,
+      ));
+    } on Failure catch (f) {
+      emit(ConnectFeedState.error(message: f.message));
+    } catch (_) {
+      emit(const ConnectFeedState.error(
+          message: 'An unexpected error occurred.'));
+    }
   }
 
   // ---------------------------------------------------------------------------

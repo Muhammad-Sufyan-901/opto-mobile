@@ -33,7 +33,12 @@ sealed class ConnectFeedEvent with _$ConnectFeedEvent {
   /// Applies an optimistic update immediately; reverts on failure.
   const factory ConnectFeedEvent.toggleLike(String postId) = ToggleLike;
 
-  /// Change the active topic-filter tab to [index].
-  const factory ConnectFeedEvent.changeTopicFilter(int index) =
-      ChangeTopicFilter;
+  /// Change the active topic-filter chip to [index].
+  ///
+  /// [topic] is the string label of the selected topic, or null for "All".
+  /// Triggers a server-side reload with the chosen topic filter.
+  const factory ConnectFeedEvent.changeTopicFilter({
+    required int index,
+    String? topic,
+  }) = ChangeTopicFilter;
 }

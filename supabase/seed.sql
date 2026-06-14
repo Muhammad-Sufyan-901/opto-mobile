@@ -180,6 +180,69 @@ where not exists (
 );
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- Community posts & replies seed
+-- Uses the seeded doctor profiles as authors. Fixed UUIDs → idempotent.
+-- ─────────────────────────────────────────────────────────────────────────────
+insert into public.posts (id, author_id, title, body, topic, created_at)
+select p.id::uuid, p.author_id::uuid, p.title, p.body, p.topic, now() - p.age::interval
+from (values
+  ('aa000000-0000-0000-0000-000000000001',
+   'd9f4a3b2-1c5e-4d7f-8a09-6b3e2c1d0f5a',
+   'Best way to handle morning dryness with a scleral shell?',
+   'Three weeks in and mornings feel gritty until I add drops. Curious what routine works for everyone else.',
+   'Prosthetic care',
+   '2 hours'),
+  ('aa000000-0000-0000-0000-000000000002',
+   'e8c3b2a1-0d4f-5e6c-9b07-5a2d1c0e3f4b',
+   'TalkBack + Opto Vision AI — my full daily setup',
+   'Sharing the gesture map and shortcuts that finally made my phone feel fast again. Voice note walks through each one.',
+   'Tech & apps',
+   '5 hours'),
+  ('aa000000-0000-0000-0000-000000000003',
+   'f7b2a190-9e3d-4c5b-8a06-4c1b0e9d2f3c',
+   'Wins thread: cooked dinner solo for the first time since surgery 🎉',
+   'Used the talking scale and a few labels. Small thing but it felt huge. What is your recent win?',
+   'Wins',
+   '1 day')
+) as p(id, author_id, title, body, topic, age)
+where not exists (select 1 from public.posts where id = p.id::uuid);
+
+-- Sample replies for the first post.
+-- First reply is marked is_best_answer = true.
+insert into public.post_replies (id, post_id, author_id, body, is_best_answer, created_at)
+select r.id::uuid, 'aa000000-0000-0000-0000-000000000001'::uuid, r.author_id::uuid, r.body, r.best, now() - r.age::interval
+from (values
+  ('bb000000-0000-0000-0000-000000000001',
+   'e8c3b2a1-0d4f-5e6c-9b07-5a2d1c0e3f4b',
+   'Warm compress for 30 seconds before you insert, then preservative-free drops. The dryness dropped for me within a week.',
+   true, '1 hour'),
+  ('bb000000-0000-0000-0000-000000000002',
+   'f7b2a190-9e3d-4c5b-8a06-4c1b0e9d2f3c',
+   'Seconding the preservative-free drops. If grittiness lasts past two weeks, book a quick polish appointment.',
+   false, '52 minutes')
+) as r(id, author_id, body, best, age)
+where not exists (select 1 from public.post_replies where id = r.id::uuid);
+
+-- Nested reply to the first reply (parent_reply_id = bb000000-...-001).
+insert into public.post_replies (id, post_id, author_id, parent_reply_id, body, is_best_answer, created_at)
+select 'bb000000-0000-0000-0000-000000000003'::uuid,
+       'aa000000-0000-0000-0000-000000000001'::uuid,
+       'd9f4a3b2-1c5e-4d7f-8a09-6b3e2c1d0f5a'::uuid,
+       'bb000000-0000-0000-0000-000000000001'::uuid,
+       'The warm compress tip changed my mornings completely. Thank you both 💙',
+       false,
+       now() - interval '34 minutes'
+where not exists (select 1 from public.post_replies where id = 'bb000000-0000-0000-0000-000000000003'::uuid);
+
+-- Mark dr. Andi's profile as verified (used by the verified badge in the feed UI).
+update public.profiles
+  set is_verified = true
+  where id in (
+    'd9f4a3b2-1c5e-4d7f-8a09-6b3e2c1d0f5a',
+    'f7b2a190-9e3d-4c5b-8a06-4c1b0e9d2f3c'
+  );
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- Accessibility POIs — Surabaya seed
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 5 initial POIs so the map is not empty on first launch.

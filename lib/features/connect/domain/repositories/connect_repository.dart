@@ -4,7 +4,6 @@
 // (`lib/features/connect/data/repositories/connect_repository_impl.dart`).
 //
 // NOTE: No Supabase or infrastructure imports — domain layer stays pure Dart.
-import 'package:opto/core/error/failures.dart';
 import 'package:opto/features/connect/domain/entities/post_entity.dart';
 import 'package:opto/features/connect/domain/entities/post_media_entity.dart';
 import 'package:opto/features/connect/domain/entities/post_reply_entity.dart';
@@ -16,12 +15,27 @@ import 'package:opto/features/connect/domain/entities/post_reply_entity.dart';
 /// Methods throw [Failure] subclasses on error; the BLoC catches and maps them
 /// to error states.
 abstract class ConnectRepository {
+  // ── posts ──────────────────────────────────────────────────────────────────
+
   /// Fetches the paginated community feed ordered by [createdAt] descending.
   ///
   /// [limit] defaults to 20; [offset] defaults to 0.
+  /// [topic] narrows the feed to posts with that topic label; null = all topics.
   ///
   /// Throws [ServerFailure] on network/RLS error.
-  Future<List<PostEntity>> getFeed({int limit = 20, int offset = 0});
+  Future<List<PostEntity>> getFeed({
+    int limit = 20,
+    int offset = 0,
+    String? topic,
+  });
+
+  /// Fetches a single fully-hydrated post by [postId].
+  ///
+  /// Used in the thread detail screen to render the original post header when
+  /// navigated via deep-link (no [seedPost] available from route extra).
+  ///
+  /// Throws [ServerFailure] when the post is not found or on network error.
+  Future<PostEntity> getPostById(String postId);
 
   /// Inserts a new post for the currently signed-in user.
   ///
@@ -29,7 +43,12 @@ abstract class ConnectRepository {
   ///
   /// Throws [AuthFailure] when unauthenticated, [ServerFailure] on RLS/network
   /// error.
-  Future<PostEntity> createPost({required String body});
+  Future<PostEntity> createPost({
+    required String body,
+    String? title,
+    String? topic,
+    String? voiceUrl,
+  });
 
   /// Deletes the post with [postId].
   ///
@@ -37,6 +56,8 @@ abstract class ConnectRepository {
   ///
   /// Throws [ServerFailure] on RLS/network error.
   Future<void> deletePost(String postId);
+
+  // ── media ──────────────────────────────────────────────────────────────────
 
   /// Uploads a media file (at [localPath]) to the `post-media` Storage bucket
   /// and inserts a `post_media` row linked to [postId].
@@ -56,6 +77,8 @@ abstract class ConnectRepository {
   /// Throws [StorageFailure] / [ServerFailure] on error.
   Future<void> removeMedia(String mediaId);
 
+  // ── replies ────────────────────────────────────────────────────────────────
+
   /// Fetches all replies for [postId] ordered by [createdAt] ascending.
   ///
   /// Throws [ServerFailure] on error.
@@ -64,15 +87,31 @@ abstract class ConnectRepository {
   /// Inserts a reply to [postId].
   ///
   /// [body] must be non-empty.
+  /// [parentReplyId] enables one-level nesting; null for top-level replies.
   ///
   /// Throws [AuthFailure] when unauthenticated, [ServerFailure] on error.
   Future<PostReplyEntity> addReply({
     required String postId,
     required String body,
+    String? parentReplyId,
+    String? voiceUrl,
   });
 
   /// Deletes a reply. RLS enforces author-only.
   Future<void> deleteReply(String replyId);
+
+  /// Marks [replyId] as the best answer for [postId].
+  ///
+  /// Only the OP author can invoke this (RLS-enforced).
+  /// Clears any previously marked best answer for the same post first.
+  ///
+  /// Throws [AuthFailure] when unauthenticated, [ServerFailure] on RLS/error.
+  Future<void> markBestAnswer({
+    required String replyId,
+    required String postId,
+  });
+
+  // ── likes ──────────────────────────────────────────────────────────────────
 
   /// Toggles a like on [postId] for the current user.
   ///
@@ -81,6 +120,8 @@ abstract class ConnectRepository {
   ///
   /// Throws [AuthFailure] when unauthenticated.
   Future<bool> toggleLike(String postId);
+
+  // ── realtime feed ──────────────────────────────────────────────────────────
 
   /// Returns a stream of new [PostEntity] inserts from the Supabase Realtime
   /// `connect-feed` channel. Each emitted item is a newly-inserted post.

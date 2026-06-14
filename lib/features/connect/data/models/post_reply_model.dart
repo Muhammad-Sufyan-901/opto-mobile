@@ -1,6 +1,7 @@
 // Freezed + json_serializable DTO for the `post_replies` Supabase table.
 //
-// Mirrors the row shape defined in `database_schema.md` §4 CONNECT.post_replies.
+// Mirrors the extended row shape defined in `database_schema.md` §4 CONNECT.post_replies
+// plus the columns added in migration 20260614000000_community_feed_thread.sql.
 // All DB columns are snake_case; Dart fields are camelCase via [@JsonKey].
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -29,6 +30,16 @@ abstract class PostReplyModel with _$PostReplyModel {
 
     /// Row creation timestamp — set by Postgres default.
     @JsonKey(name: 'created_at') required DateTime createdAt,
+
+    /// FK → `post_replies.id` — parent reply for one-level nesting; null for
+    /// top-level replies.
+    @JsonKey(name: 'parent_reply_id') String? parentReplyId,
+
+    /// Whether the OP author has marked this as the best answer.
+    @JsonKey(name: 'is_best_answer') @Default(false) bool isBestAnswer,
+
+    /// Optional voice-note recording URL.
+    @JsonKey(name: 'voice_url') String? voiceUrl,
   }) = _PostReplyModel;
 
   /// Deserialises a Supabase / JSON map to a [PostReplyModel].

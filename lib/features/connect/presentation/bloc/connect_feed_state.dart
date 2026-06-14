@@ -20,12 +20,15 @@ sealed class ConnectFeedState with _$ConnectFeedState {
   ///
   /// [isLoadingMore] indicates a pagination request in flight.
   /// [activeTopic] is the index of the selected topic-filter chip.
+  /// [activeTopicLabel] is the string label passed to [getFeed] for server-side
+  ///   filtering; null means "All topics".
   /// [hasReachedEnd] is `true` when the last page returned fewer items than
-  /// the page size — no more pages to fetch.
+  ///   the page size — no more pages to fetch.
   const factory ConnectFeedState.loaded({
     required List<PostEntity> posts,
     @Default(false) bool isLoadingMore,
     @Default(0) int activeTopic,
+    String? activeTopicLabel,
     @Default(false) bool hasReachedEnd,
   }) = FeedLoaded;
 
