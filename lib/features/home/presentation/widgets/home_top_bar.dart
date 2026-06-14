@@ -5,16 +5,44 @@ import 'package:opto/core/themes/app_custom_colors.dart';
 
 /// Top app bar of the Opto Home screen — **V1 Card Stack** layout.
 ///
-/// Row: menu icon · "Opto" title · bell icon (with unread dot) · avatar "R".
-/// Below the row: greeting block ("Good morning," / **"Rian"** as a heading).
+/// Row: menu icon · "Opto" title · bell icon (with unread dot) · avatar initial.
+/// Below the row: greeting block ("Good morning," / **name** as a heading).
+///
+/// [displayName] — the user's full name (from [ProfileEntity.fullName]);
+/// falls back to "…" while loading and "Guest" when unset.
+/// [avatarInitial] — first character of the name shown in the avatar circle;
+/// falls back to "?" when [displayName] is null or empty.
 ///
 /// Design: `.tb`, `.tb-icon`, `.tb-title`, `.tb-badge`, `.tb-avatar`,
 /// `.greet`, `.greet-lead`, `.greet-name` in `Android Home Dashboard.html`.
 class HomeTopBar extends StatelessWidget {
-  const HomeTopBar({super.key});
+  const HomeTopBar({
+    super.key,
+    this.displayName,
+    this.avatarInitial,
+  });
+
+  /// The user's display name shown in the greeting block and avatar label.
+  /// Null during initial load — falls back to "…" automatically.
+  final String? displayName;
+
+  /// Single character shown inside the avatar circle.
+  /// Derived from [displayName] when not provided.
+  final String? avatarInitial;
 
   @override
   Widget build(BuildContext context) {
+    // Resolve display values with safe fallbacks.
+    final String resolvedName = (displayName != null && displayName!.isNotEmpty)
+        ? displayName!
+        : (displayName == null ? '\u2026' : 'Guest'); // '…' while loading
+    final String resolvedInitial =
+        (avatarInitial != null && avatarInitial!.isNotEmpty)
+        ? avatarInitial!
+        : (resolvedName.isNotEmpty && resolvedName != '\u2026'
+              ? resolvedName[0].toUpperCase()
+              : '?');
+
     final ThemeData theme = Theme.of(context);
     final ColorScheme cs = theme.colorScheme;
     final ext = theme.extension<AppExtendedCustomColors>();
@@ -47,7 +75,9 @@ class HomeTopBar extends StatelessWidget {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: cs.surfaceContainerHighest.withValues(alpha: 0.6),
+                          color: cs.surfaceContainerHighest.withValues(
+                            alpha: 0.6,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: Center(
@@ -98,7 +128,9 @@ class HomeTopBar extends StatelessWidget {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: cs.surfaceContainerHighest.withValues(alpha: 0.6),
+                          color: cs.surfaceContainerHighest.withValues(
+                            alpha: 0.6,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: Stack(
@@ -123,7 +155,10 @@ class HomeTopBar extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     color: cs.error,
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: cs.surface, width: 2),
+                                    border: Border.all(
+                                      color: cs.surface,
+                                      width: 2,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -138,7 +173,7 @@ class HomeTopBar extends StatelessWidget {
 
               // Avatar — 44dp blue circle with initials
               Semantics(
-                label: 'Profile — Rian',
+                label: 'Profile — $resolvedName',
                 button: true,
                 child: GestureDetector(
                   onTap: () {
@@ -154,7 +189,7 @@ class HomeTopBar extends StatelessWidget {
                     alignment: Alignment.center,
                     child: ExcludeSemantics(
                       child: Text(
-                        'R',
+                        resolvedInitial,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -188,7 +223,7 @@ class HomeTopBar extends StatelessWidget {
               Semantics(
                 header: true,
                 child: Text(
-                  'Rian',
+                  resolvedName,
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w600,

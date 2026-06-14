@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
+import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/features/home/presentation/widgets/aura_voice_card.dart';
 import 'package:opto/features/home/presentation/widgets/home_bottom_nav.dart';
 import 'package:opto/features/home/presentation/widgets/home_list_card.dart';
@@ -13,6 +16,7 @@ import 'package:opto/features/home/presentation/widgets/home_section_header.dart
 import 'package:opto/features/home/presentation/widgets/home_top_bar.dart';
 import 'package:opto/features/home/presentation/widgets/quick_action_grid.dart';
 import 'package:opto/features/home/presentation/widgets/sos_card.dart';
+import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 
 /// Screen 15 — Opto Home Dashboard · **V1 Card Stack**.
 ///
@@ -50,146 +54,194 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  /// ProfileBloc instance owned by this screen.
+  late final ProfileBloc _profileBloc;
+
   @override
   void initState() {
     super.initState();
+    // Create a fresh ProfileBloc and immediately load the current user's profile.
+    _profileBloc = sl<ProfileBloc>();
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId != null) {
+      _profileBloc.add(LoadProfile(userId: userId));
+    }
+
     // Announce a concise one-line summary on arrival (design_system.md §21.3).
+    // The name will be announced again when the profile loads (see BlocListener).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      announce(context, 'Home. Good morning, Rian.');
+      announce(context, 'Home.');
     });
+  }
+
+  @override
+  void dispose() {
+    _profileBloc.close();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme cs = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor: cs.surface,
-      // Pinned bottom nav — lives outside the scroll area.
-      bottomNavigationBar: const HomeBottomNav(activeTab: 0),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          // 16 dp horizontal padding matches `.pad` in the HTML spec.
-          padding: const EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 6,
-            bottom: 24,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── 1. Top bar + greeting ──────────────────────────────────
-              const HomeTopBar(),
+    return BlocProvider<ProfileBloc>.value(
+      value: _profileBloc,
+      child: BlocListener<ProfileBloc, ProfileState>(
+        listener: (context, state) {
+          // Announce the user's name once the profile loads successfully.
+          if (state is ProfileLoaded) {
+            final name = state.profile.fullName;
+            if (name != null && name.isNotEmpty && mounted) {
+              announce(context, 'Good morning, $name.');
+            }
+          }
+        },
+        child: BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, profileState) {
+            // Extract name/initial from the loaded profile; null during loading.
+            final String? displayName = profileState is ProfileLoaded
+                ? profileState.profile.fullName
+                : null;
+            final String? avatarInitial =
+                displayName != null && displayName.isNotEmpty
+                ? displayName[0].toUpperCase()
+                : null;
 
-              const SizedBox(height: 10),
-
-              // ── 2. Emergency SOS — bold hero ───────────────────────────
-              SosCard(
-                bold: true,
-                onTap: () => context.go(AppRoutes.sos.path),
-              ),
-
-              const SizedBox(height: 14),
-
-              // ── 3. Aura Voice bar ──────────────────────────────────────
-              AuraVoiceCard(
-                onTap: () => context.go(AppRoutes.auraVoice.path),
-              ),
-
-              const SizedBox(height: 14),
-
-              // ── 4. Quick actions 2×2 grid ──────────────────────────────
-              HomeSectionHeader(
-                title: 'Quick actions',
-                onSeeAll: null, // no "See all" for quick actions in V1
-              ),
-
-              const SizedBox(height: 8),
-
-              const QuickActionGrid(),
-
-              const SizedBox(height: 14),
-
-              // ── 5. Up next grouped card ────────────────────────────────
-              HomeSectionHeader(
-                title: 'Up next',
-                onSeeAll: () {
-                  // TODO: navigate to full schedule / upcoming list.
-                },
-              ),
-
-              const SizedBox(height: 8),
-
-              HomeListCard(
-                items: [
-                  HomeListItem(
-                    icon: Icons.calendar_today_outlined,
-                    title: 'Prosthetic cleaning',
-                    subtitle: 'Tomorrow · 09:00',
-                    semanticLabel:
-                        'Prosthetic cleaning. Tomorrow at 09:00.',
+            return Scaffold(
+              backgroundColor: cs.surface,
+              // Pinned bottom nav — lives outside the scroll area.
+              bottomNavigationBar: const HomeBottomNav(activeTab: 0),
+              body: SafeArea(
+                child: SingleChildScrollView(
+                  // 16 dp horizontal padding matches `.pad` in the HTML spec.
+                  padding: const EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    top: 6,
+                    bottom: 24,
                   ),
-                  HomeListItem(
-                    avatarInitials: 'BP',
-                    title: 'Fitting — Dr. Budi Pratama',
-                    subtitle: 'Fri, Apr 18 · RSU Mata Cicendo',
-                    semanticLabel:
-                        'Fitting with Dr. Budi Pratama. Friday, April 18 at RSU Mata Cicendo.',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // ── 1. Top bar + greeting ─────────────────────────────────────────────
+                      HomeTopBar(
+                        displayName: displayName,
+                        avatarInitial: avatarInitial,
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // ── 2. Emergency SOS — bold hero ───────────────────────────
+                      SosCard(
+                        bold: true,
+                        onTap: () => context.go(AppRoutes.sos.path),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // ── 3. Aura Voice bar ──────────────────────────────────────
+                      AuraVoiceCard(
+                        onTap: () => context.go(AppRoutes.auraVoice.path),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // ── 4. Quick actions 2×2 grid ──────────────────────────────
+                      HomeSectionHeader(
+                        title: 'Quick actions',
+                        onSeeAll: null, // no "See all" for quick actions in V1
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      const QuickActionGrid(),
+
+                      const SizedBox(height: 14),
+
+                      // ── 5. Up next grouped card ────────────────────────────────
+                      HomeSectionHeader(
+                        title: 'Up next',
+                        onSeeAll: () {
+                          // TODO: navigate to full schedule / upcoming list.
+                        },
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      HomeListCard(
+                        items: [
+                          HomeListItem(
+                            icon: Icons.calendar_today_outlined,
+                            title: 'Prosthetic cleaning',
+                            subtitle: 'Tomorrow · 09:00',
+                            semanticLabel:
+                                'Prosthetic cleaning. Tomorrow at 09:00.',
+                          ),
+                          HomeListItem(
+                            avatarInitials: 'BP',
+                            title: 'Fitting — Dr. Budi Pratama',
+                            subtitle: 'Fri, Apr 18 · RSU Mata Cicendo',
+                            semanticLabel:
+                                'Fitting with Dr. Budi Pratama. Friday, April 18 at RSU Mata Cicendo.',
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // ── 6. Navigate nearby ─────────────────────────────────────
+                      const HomeNearbyCard(),
+
+                      const SizedBox(height: 14),
+
+                      // ── 7. Recent activity grouped card ───────────────────────
+                      HomeSectionHeader(
+                        title: 'Recent activity',
+                        onSeeAll: () {
+                          // TODO: navigate to full activity history.
+                        },
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      HomeListCard(
+                        items: [
+                          HomeListItem(
+                            icon: Icons.visibility_outlined,
+                            title: 'Read a letter from BPJS',
+                            subtitle: 'Today · 08:14',
+                            showChevron: false,
+                            semanticLabel:
+                                'Read a letter from BPJS. Today at 08:14.',
+                          ),
+                          HomeListItem(
+                            icon: Icons.forum_outlined,
+                            title: 'Replied in "Low-vision tips"',
+                            subtitle: 'Yesterday · 19:02',
+                            showChevron: false,
+                            semanticLabel:
+                                'Replied in Low-vision tips. Yesterday at 19:02.',
+                          ),
+                          HomeListItem(
+                            icon: Icons.medical_services_outlined,
+                            title: 'Booked Dr. Anwar — eye check',
+                            subtitle: 'Mon · 14:30',
+                            showChevron: false,
+                            semanticLabel:
+                                'Booked Dr. Anwar for eye check. Monday at 14:30.',
+                          ),
+                        ],
+                      ),
+
+                      // Extra bottom breathing room above nav.
+                      const SizedBox(height: AppDimensions.space16),
+                    ],
                   ),
-                ],
+                ),
               ),
-
-              const SizedBox(height: 14),
-
-              // ── 6. Navigate nearby ─────────────────────────────────────
-              const HomeNearbyCard(),
-
-              const SizedBox(height: 14),
-
-              // ── 7. Recent activity grouped card ───────────────────────
-              HomeSectionHeader(
-                title: 'Recent activity',
-                onSeeAll: () {
-                  // TODO: navigate to full activity history.
-                },
-              ),
-
-              const SizedBox(height: 8),
-
-              HomeListCard(
-                items: [
-                  HomeListItem(
-                    icon: Icons.visibility_outlined,
-                    title: 'Read a letter from BPJS',
-                    subtitle: 'Today · 08:14',
-                    showChevron: false,
-                    semanticLabel: 'Read a letter from BPJS. Today at 08:14.',
-                  ),
-                  HomeListItem(
-                    icon: Icons.forum_outlined,
-                    title: 'Replied in "Low-vision tips"',
-                    subtitle: 'Yesterday · 19:02',
-                    showChevron: false,
-                    semanticLabel:
-                        'Replied in Low-vision tips. Yesterday at 19:02.',
-                  ),
-                  HomeListItem(
-                    icon: Icons.medical_services_outlined,
-                    title: 'Booked Dr. Anwar — eye check',
-                    subtitle: 'Mon · 14:30',
-                    showChevron: false,
-                    semanticLabel:
-                        'Booked Dr. Anwar for eye check. Monday at 14:30.',
-                  ),
-                ],
-              ),
-
-              // Extra bottom breathing room above nav.
-              const SizedBox(height: AppDimensions.space16),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
