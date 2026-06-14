@@ -654,9 +654,8 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
         memberOf = {for (final m in memberships) m['circle_id'] as String};
       }
 
-      return (rows as List).map((row) {
-        final model =
-            CircleModel.fromJson(Map<String, dynamic>.from(row as Map));
+      return rows.map((row) {
+        final model = CircleModel.fromJson(row);
         return model.toEntity(
           memberCount: _extractCount(row['member_count']),
           isMember: memberOf.contains(model.id),
@@ -690,7 +689,7 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
         isMember = m != null;
       }
 
-      final model = CircleModel.fromJson(Map<String, dynamic>.from(row));
+      final model = CircleModel.fromJson(row);
       return model.toEntity(
         memberCount: _extractCount(row['member_count']),
         isMember: isMember,
@@ -768,9 +767,9 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
       }
 
       final profileRow = results[0] as Map<String, dynamic>;
-      final statsRows = results[1] as List;
-      final stats = statsRows.isNotEmpty
-          ? statsRows.first as Map<String, dynamic>
+      final statsRaw = results[1];
+      final stats = (statsRaw is List && statsRaw.isNotEmpty)
+          ? (statsRaw.first as Map<String, dynamic>)
           : <String, dynamic>{};
 
       final model = MemberProfileModel.fromJson(profileRow);
@@ -791,6 +790,9 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
   Future<bool> toggleMemberFollow(String memberId) async {
     final uid = _client.auth.currentUser?.id;
     if (uid == null) throw const AuthFailure('Not authenticated');
+    if (uid == memberId) {
+      throw const ServerFailure('Cannot follow yourself');
+    }
     try {
       final existing = await _client
           .from('follows')
@@ -839,7 +841,7 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
 
       // Contributions are viewed in a read-only context; skip like hydration
       // to save a round-trip. likedByMe will default to false.
-      return (rows as List)
+      return rows
           .map((row) => _hydratePost(row, likedPostIds: const {}))
           .toList();
     } on PostgrestException catch (e) {
