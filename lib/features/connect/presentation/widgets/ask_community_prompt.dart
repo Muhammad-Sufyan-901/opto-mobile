@@ -46,8 +46,8 @@ class AskCommunityPrompt extends StatelessWidget {
             children: [
               // User avatar (initials placeholder)
               Container(
-                width: 46,
-                height: 46,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   color: cs.primary,
                   shape: BoxShape.circle,
@@ -79,8 +79,8 @@ class AskCommunityPrompt extends StatelessWidget {
                 child: GestureDetector(
                   onTap: onMicTap,
                   child: Container(
-                    width: 46,
-                    height: 46,
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
                       color: cs.primary,
                       shape: BoxShape.circle,

@@ -95,7 +95,7 @@ class FeaturedHeroCard extends StatelessWidget {
               ExcludeSemantics(
                 child: Row(
                   children: [
-                    _AvatarStack(likeCount: post.likeCount),
+                    _AvatarStack(primaryColor: cs.primary, likeCount: post.likeCount),
                     const SizedBox(width: 11),
                     Text(
                       '${post.likeCount} found this helpful',
@@ -140,7 +140,8 @@ class FeaturedHeroCard extends StatelessWidget {
 }
 
 class _AvatarStack extends StatelessWidget {
-  const _AvatarStack({required this.likeCount});
+  const _AvatarStack({required this.primaryColor, required this.likeCount});
+  final Color primaryColor;
   final int likeCount;
 
   @override
@@ -165,8 +166,8 @@ class _AvatarStack extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: colors[i],
                       shape: BoxShape.circle,
-                      border: const Border.fromBorderSide(
-                        BorderSide(color: Color(0xFF1E6AC5), width: 2.5),
+                      border: Border.fromBorderSide(
+                        BorderSide(color: primaryColor, width: 2.5),
                       ),
                     ),
                   ),

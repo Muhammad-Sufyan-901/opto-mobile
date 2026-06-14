@@ -30,7 +30,7 @@ class MemberStatsRow extends StatelessWidget {
     final stats = [
       (_fmt(postsCount), 'Posts'),
       (_fmt(helpfulCount), 'Helpful'),
-      ('$circlesCount', 'Circles'),
+      (_fmt(circlesCount), 'Circles'),
     ];
 
     return Semantics(

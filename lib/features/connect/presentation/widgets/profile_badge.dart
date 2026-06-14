@@ -33,8 +33,8 @@ class ProfileBadge extends StatelessWidget {
           ext?.green ?? const Color(0xFF16A34A),
         ),
       ProfileBadgeVariant.amber => (
-          const Color(0xFFFEF3C7),
-          const Color(0xFF92400E),
+          ext?.warningTint ?? const Color(0xFFFEF3C7),
+          ext?.warning ?? const Color(0xFF92400E),
         ),
     };
 

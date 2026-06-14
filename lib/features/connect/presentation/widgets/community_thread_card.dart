@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/connect/domain/entities/post_entity.dart';
+import 'package:opto/features/connect/presentation/widgets/community_avatar.dart';
 import 'package:opto/features/connect/presentation/widgets/voice_note_player.dart';
 
 /// Reusable card that renders a single community [PostEntity] in the feed.
@@ -37,19 +38,6 @@ class CommunityThreadCard extends StatelessWidget {
   final VoidCallback onReport;
   final VoidCallback? onTap;
 
-  // ── Deterministic avatar colour ─────────────────────────────────────────
-  static const List<Color> _avatarPalette = [
-    Color(0xFF2563D6),
-    Color(0xFF1F8A5B),
-    Color(0xFF7C3AED),
-    Color(0xFFD97706),
-    Color(0xFFDB2777),
-  ];
-
-  static Color _colorFor(String initial) {
-    return _avatarPalette[initial.codeUnitAt(0) % _avatarPalette.length];
-  }
-
   // ── Relative time ───────────────────────────────────────────────────────
   static String _relativeTime(DateTime dt) {
     final d = DateTime.now().difference(dt);
@@ -71,10 +59,6 @@ class CommunityThreadCard extends StatelessWidget {
     final Color ink3 = ext?.ink3 ?? cs.onSurfaceVariant;
 
     final String authorName = post.authorName ?? 'Community Member';
-    final String initial = authorName.trim().isNotEmpty
-        ? authorName.trim()[0].toUpperCase()
-        : 'C';
-    final Color avatarColor = _colorFor(initial);
     final String timeLabel = _relativeTime(post.createdAt);
 
     // Semantic label for the whole card.
@@ -104,9 +88,8 @@ class CommunityThreadCard extends StatelessWidget {
               // ── Author row ──────────────────────────────────────────────
               ExcludeSemantics(
                 child: _AuthorRow(
-                  initial: initial,
-                  avatarColor: avatarColor,
                   authorName: authorName,
+                  authorId: post.authorId,
                   isVerified: post.authorIsVerified,
                   topic: post.topic,
                   timeLabel: timeLabel,
@@ -195,9 +178,8 @@ class CommunityThreadCard extends StatelessWidget {
 
 class _AuthorRow extends StatelessWidget {
   const _AuthorRow({
-    required this.initial,
-    required this.avatarColor,
     required this.authorName,
+    required this.authorId,
     required this.isVerified,
     required this.topic,
     required this.timeLabel,
@@ -207,9 +189,8 @@ class _AuthorRow extends StatelessWidget {
     required this.onReport,
   });
 
-  final String initial;
-  final Color avatarColor;
   final String authorName;
+  final String authorId;
   final bool isVerified;
   final String? topic;
   final String timeLabel;
@@ -229,23 +210,7 @@ class _AuthorRow extends StatelessWidget {
     return Row(
       children: [
         // Avatar
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: avatarColor,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              initial,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
+        CommunityAvatar(name: authorName, authorId: authorId, size: 44),
 
         const SizedBox(width: 12),
 

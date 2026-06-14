@@ -41,6 +41,7 @@ class CircleCover extends StatelessWidget {
 
     return Semantics(
       label: '${circle.name}. ${_memberLabel(circle.memberCount)}.',
+      excludeSemantics: true,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(28),

@@ -40,106 +40,101 @@ class _CommunityHomeSkeletonState extends State<CommunityHomeSkeleton>
     return Semantics(
       label: 'Loading community feed',
       child: ExcludeSemantics(
-        child: AnimatedBuilder(
-          animation: _anim,
-          builder: (context, _) {
-            return SingleChildScrollView(
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(18, 6, 18, 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Hero skeleton
-                  _SkBlock(
-                      h: 180,
-                      r: 30,
-                      base: skBase,
-                      sheen: skSheen,
-                      anim: _anim),
-                  const SizedBox(height: 16),
-                  // Section label
-                  _SkLine(
-                      w: 0.3,
-                      h: 11,
-                      base: skBase,
-                      sheen: skSheen,
-                      anim: _anim),
-                  const SizedBox(height: 12),
-                  // Circle tiles row
-                  SizedBox(
-                    height: 120,
-                    child: Row(
-                      children: List.generate(
-                          3,
-                          (i) => Padding(
-                                padding:
-                                    EdgeInsets.only(right: i < 2 ? 12 : 0),
-                                child: _SkBlock(
-                                    w: 150,
-                                    h: 120,
-                                    r: 22,
-                                    base: skBase,
-                                    sheen: skSheen,
-                                    anim: _anim),
-                              )),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Ask prompt
-                  _SkBlock(
-                      h: 66,
-                      r: 24,
-                      base: skBase,
-                      sheen: skSheen,
-                      anim: _anim),
-                  const SizedBox(height: 16),
-                  // Section label
-                  _SkLine(
-                      w: 0.28,
-                      h: 11,
-                      base: skBase,
-                      sheen: skSheen,
-                      anim: _anim),
-                  const SizedBox(height: 12),
-                  // Thread card skeletons
-                  _SkThreadCard(base: skBase, sheen: skSheen, anim: _anim),
-                  const SizedBox(height: 13),
-                  _SkThreadCard(base: skBase, sheen: skSheen, anim: _anim),
-                  const SizedBox(height: 20),
-                  // Loading footer
-                  Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Loading your community…',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                                color: ext?.ink3 ??
-                                    Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+        child: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(18, 6, 18, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Hero skeleton
+              _SkBlock(
+                  h: 180,
+                  r: 30,
+                  base: skBase,
+                  sheen: skSheen,
+                  anim: _anim),
+              const SizedBox(height: 16),
+              // Section label
+              _SkLine(
+                  w: 0.3,
+                  h: 11,
+                  base: skBase,
+                  sheen: skSheen,
+                  anim: _anim),
+              const SizedBox(height: 12),
+              // Circle tiles row
+              SizedBox(
+                height: 120,
+                child: Row(
+                  children: List.generate(
+                      3,
+                      (i) => Padding(
+                            padding:
+                                EdgeInsets.only(right: i < 2 ? 12 : 0),
+                            child: _SkBlock(
+                                w: 150,
+                                h: 120,
+                                r: 22,
+                                base: skBase,
+                                sheen: skSheen,
+                                anim: _anim),
+                          )),
+                ),
               ),
-            );
-          },
+              const SizedBox(height: 16),
+              // Ask prompt
+              _SkBlock(
+                  h: 66,
+                  r: 24,
+                  base: skBase,
+                  sheen: skSheen,
+                  anim: _anim),
+              const SizedBox(height: 16),
+              // Section label
+              _SkLine(
+                  w: 0.28,
+                  h: 11,
+                  base: skBase,
+                  sheen: skSheen,
+                  anim: _anim),
+              const SizedBox(height: 12),
+              // Thread card skeletons
+              _SkThreadCard(base: skBase, sheen: skSheen, anim: _anim),
+              const SizedBox(height: 13),
+              _SkThreadCard(base: skBase, sheen: skSheen, anim: _anim),
+              const SizedBox(height: 20),
+              // Loading footer
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Loading your community…',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(
+                            color: ext?.ink3 ??
+                                Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
