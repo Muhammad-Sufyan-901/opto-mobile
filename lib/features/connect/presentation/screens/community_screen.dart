@@ -58,6 +58,7 @@ class _CommunityViewState extends State<_CommunityView> {
     'Daily living',
     'Tech & apps',
     'Wins',
+    'Ask a specialist',
   ];
 
   static const List<String> _topicLabels = [
@@ -67,6 +68,7 @@ class _CommunityViewState extends State<_CommunityView> {
     'Daily living',
     'Tech & apps',
     'Wins',
+    'Ask a specialist',
   ];
 
   /// Last known post count to detect Realtime arrivals.

@@ -1,5 +1,3 @@
-// ignore_for_file: must_be_immutable (hand-rolled copyWith pattern matching project style)
-
 /// A peer-support circle (topic group) in the Connect community.
 ///
 /// [slug] matches the [PostEntity.topic] value so circle threads can be
@@ -28,9 +26,18 @@ class CircleEntity {
   final String? iconKey;
   final String? colorKey;
   final String? pinnedNote;
+
+  /// Number of members in this circle.
+  /// Hydrated by the data source via `circle_members(count)` aggregate join.
   final int memberCount;
   final bool isMember;
+
+  /// Whether the user has enabled notifications for this circle.
+  /// TODO: back with a circle_member_settings table (currently always false).
   final bool isNotifying;
+
+  /// Whether this circle has posts unread by the current user since last visit.
+  /// TODO: back with a last_seen_at column in circle_members (currently always false).
   final bool unread;
 
   CircleEntity copyWith({
