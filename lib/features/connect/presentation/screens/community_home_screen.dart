@@ -77,7 +77,7 @@ class _HomeViewState extends State<_HomeView> {
       },
       child: Scaffold(
         backgroundColor: cs.surface,
-        bottomNavigationBar: const HomeBottomNav(activeTab: 2),
+        bottomNavigationBar: const HomeBottomNav(activeTab: 1),
         floatingActionButton: _ComposeFab(cs: cs),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         body: SafeArea(
