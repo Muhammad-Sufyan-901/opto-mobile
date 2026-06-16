@@ -121,7 +121,25 @@ class _SummaryViewState extends State<_SummaryView> {
             context,
             'Order confirmed. Your supplies will arrive in 3–5 days.',
           );
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Order placed! Your supplies will arrive in 3–5 days.',
+              ),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
           context.go(AppRoutes.prostheticHub.path);
+        } else if (state is OrderSuppliesError) {
+          HapticPatterns.warning();
+          announce(context, 'Order failed. ${state.message}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          // Do NOT navigate — stay on summary screen for retry.
         }
       },
       child: Scaffold(

@@ -84,24 +84,23 @@ class SupplyProductCard extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15),
-                  child: Image.asset(
-                    product.type.imageAssetPath,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Center(
-                        child: Text(
-                          _chipLabel(product.type),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w800,
-                            height: 1.3,
-                            color: onTint,
+                  child: product.imageUrl != null
+                      ? Image.network(
+                          product.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, err, st) => _ChipFallback(
+                            label: _chipLabel(product.type),
+                            labelColor: onTint,
+                          ),
+                        )
+                      : Image.asset(
+                          product.type.imageAssetPath,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, err, st) => _ChipFallback(
+                            label: _chipLabel(product.type),
+                            labelColor: onTint,
                           ),
                         ),
-                      );
-                    },
-                  ),
                 ),
               ),
             ),
@@ -246,6 +245,30 @@ class _StepperPill extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Fallback widget shown inside the image chip when the image fails to load.
+class _ChipFallback extends StatelessWidget {
+  const _ChipFallback({required this.label, required this.labelColor});
+
+  final String label;
+  final Color labelColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 11.5,
+          fontWeight: FontWeight.w800,
+          height: 1.3,
+          color: labelColor,
+        ),
       ),
     );
   }
