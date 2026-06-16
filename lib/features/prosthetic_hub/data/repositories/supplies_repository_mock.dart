@@ -70,4 +70,13 @@ class SuppliesRepositoryMock implements SuppliesRepository {
       ),
     ];
   }
+
+  @override
+  Future<void> placeOrder({
+    required Map<String, int> cart,
+    required List<SupplyProduct> products,
+    required bool consentGiven,
+  }) async {
+    // Mock: no-op for testing
+  }
 }

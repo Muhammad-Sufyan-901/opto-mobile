@@ -36,6 +36,18 @@ extension SupplyProductTypeLabel on SupplyProductType {
       };
 }
 
+/// Maps a Postgres `product_type` enum string to a [SupplyProductType].
+///
+/// Throws [ArgumentError] for unknown values so data-layer bugs surface early.
+SupplyProductType supplyProductTypeFromDb(String dbValue) => switch (dbValue) {
+      'self_cleaning_case' => SupplyProductType.selfCleaningCase,
+      'care_kit' => SupplyProductType.careKit,
+      'solution' => SupplyProductType.solution,
+      'cloth' => SupplyProductType.cloth,
+      'storage_case' => SupplyProductType.storageCase,
+      _ => throw ArgumentError('Unknown product_type: $dbValue'),
+    };
+
 /// Immutable domain representation of a prosthetic supply product.
 ///
 /// [audioDescription] is the spoken description read aloud by Aura Voice /
@@ -48,6 +60,7 @@ class SupplyProduct {
     required this.audioDescription,
     required this.priceIdr,
     required this.isCustom,
+    this.imageUrl,
   });
 
   /// Primary key (string UUID or slug).
@@ -68,8 +81,12 @@ class SupplyProduct {
   /// Whether this product requires custom fabrication.
   final bool isCustom;
 
+  /// Remote image URL from Supabase Storage (null for mock / local-asset products).
+  final String? imageUrl;
+
   // ---------------------------------------------------------------------------
-  // copyWith — null-coalescent; no nullable fields so no _unset sentinel needed
+  // copyWith — null-coalescent; imageUrl uses an _unset sentinel so callers can
+  // explicitly clear it by passing null.
   // ---------------------------------------------------------------------------
 
   SupplyProduct copyWith({
@@ -79,6 +96,7 @@ class SupplyProduct {
     String? audioDescription,
     int? priceIdr,
     bool? isCustom,
+    String? imageUrl,
   }) {
     return SupplyProduct(
       id: id ?? this.id,
@@ -87,6 +105,7 @@ class SupplyProduct {
       audioDescription: audioDescription ?? this.audioDescription,
       priceIdr: priceIdr ?? this.priceIdr,
       isCustom: isCustom ?? this.isCustom,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 
@@ -104,7 +123,8 @@ class SupplyProduct {
           type == other.type &&
           audioDescription == other.audioDescription &&
           priceIdr == other.priceIdr &&
-          isCustom == other.isCustom;
+          isCustom == other.isCustom &&
+          imageUrl == other.imageUrl;
 
   @override
   int get hashCode => Object.hash(
@@ -114,5 +134,6 @@ class SupplyProduct {
         audioDescription,
         priceIdr,
         isCustom,
+        imageUrl,
       );
 }
