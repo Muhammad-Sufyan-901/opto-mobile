@@ -3,6 +3,7 @@
 // Drives catalog browsing, cart management, and order submission for
 // [OrderSuppliesScreen] and [SupplyOrderSummaryScreen].
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:opto/core/error/failures.dart';
 import 'package:opto/features/prosthetic_hub/domain/repositories/supplies_repository.dart';
 import 'package:opto/features/prosthetic_hub/presentation/cubit/order_supplies_state.dart';
 
@@ -14,7 +15,7 @@ export 'order_supplies_state.dart';
 /// 1. Call [loadCatalog] once after construction (inside `BlocProvider.create`)
 ///    to trigger the data fetch.
 /// 2. Use [addToCart] / [removeFromCart] while browsing the catalog.
-/// 3. Call [confirmOrder] from the summary screen to simulate order placement.
+/// 3. Call [confirmOrder] from the summary screen to place the order via the repository.
 class OrderSuppliesCubit extends Cubit<OrderSuppliesState> {
   OrderSuppliesCubit(this._repo) : super(const OrderSuppliesState.initial());
 
@@ -94,28 +95,57 @@ class OrderSuppliesCubit extends Cubit<OrderSuppliesState> {
     ));
   }
 
-  /// Simulates placing an order.
+  /// Places an order via the repository.
   ///
   /// Only works when the current state is [OrderSuppliesCatalog] with a
-  /// non-empty cart. Emits [OrderSuppliesSubmitting] → [OrderSuppliesConfirmed].
-  /// The [isClosed] guard protects each emit.
+  /// non-empty cart. Emits [OrderSuppliesSubmitting] → [OrderSuppliesConfirmed]
+  /// on success, or [OrderSuppliesError] → [OrderSuppliesCatalog] on failure so
+  /// the Confirm button re-enables for retry. The [isClosed] guard protects
+  /// each emit.
   Future<void> confirmOrder() async {
     final state = this.state;
     if (state is! OrderSuppliesCatalog) return;
     if (state.cart.isEmpty) return;
 
+    // Snapshot catalog state so we can restore it on failure.
+    final catalogState = state;
+
     if (!isClosed) {
       emit(OrderSuppliesState.submitting(
-        products: state.products,
-        cart: state.cart,
+        products: catalogState.products,
+        cart: catalogState.cart,
       ));
     }
 
-    // Simulate async network call.
-    await Future<void>.delayed(const Duration(milliseconds: 800));
-
-    if (!isClosed) {
-      emit(const OrderSuppliesState.confirmed());
+    try {
+      await _repo.placeOrder(
+        cart: catalogState.cart,
+        products: catalogState.products,
+        consentGiven: true,
+      );
+      if (!isClosed) {
+        emit(const OrderSuppliesState.confirmed());
+      }
+    } on Failure catch (e) {
+      if (!isClosed) {
+        emit(OrderSuppliesState.error(e.message));
+        // Restore catalog state so the Confirm button re-enables for retry.
+        emit(OrderSuppliesState.catalog(
+          products: catalogState.products,
+          cart: catalogState.cart,
+        ));
+      }
+    } catch (e) {
+      if (!isClosed) {
+        emit(OrderSuppliesState.error(
+          'Something went wrong. Please try again.',
+        ));
+        // Restore catalog state for retry.
+        emit(OrderSuppliesState.catalog(
+          products: catalogState.products,
+          cart: catalogState.cart,
+        ));
+      }
     }
   }
 }
