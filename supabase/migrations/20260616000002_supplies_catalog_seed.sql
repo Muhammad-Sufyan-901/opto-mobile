@@ -31,9 +31,9 @@ select
   v.name,
   v.audio_description,
   v.material,
-  v.is_custom::boolean,
-  v.price_idr::int,
-  true,
+  v.is_custom,
+  v.price_idr,
+  true, -- is_active: always true for seeded catalog products (not part of each VALUES row)
   v.image_path
 from (values
   ('solution',
