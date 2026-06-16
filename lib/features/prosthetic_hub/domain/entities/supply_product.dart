@@ -21,6 +21,19 @@ extension SupplyProductTypeLabel on SupplyProductType {
         SupplyProductType.cloth => 'Cloth',
         SupplyProductType.storageCase => 'Storage Case',
       };
+
+  String get imageAssetPath => switch (this) {
+        SupplyProductType.solution =>
+          'assets/images/supplies/daily_cleaning_solution.png',
+        SupplyProductType.selfCleaningCase =>
+          'assets/images/supplies/self_cleaning_case.png',
+        SupplyProductType.storageCase =>
+          'assets/images/supplies/standard_storage_case.png',
+        SupplyProductType.careKit =>
+          'assets/images/supplies/prosthetic_care_kit.png',
+        SupplyProductType.cloth =>
+          'assets/images/supplies/microfiber_cleaning_cloth.png',
+      };
 }
 
 /// Immutable domain representation of a prosthetic supply product.

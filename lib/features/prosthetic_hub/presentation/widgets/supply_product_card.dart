@@ -77,16 +77,30 @@ class SupplyProductCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: cs.primaryContainer,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: line.withValues(alpha: 0.4),
+                    width: 1,
+                  ),
                 ),
-                alignment: Alignment.center,
-                child: Text(
-                  _chipLabel(product.type),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
-                    height: 1.3,
-                    color: onTint,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.asset(
+                    product.type.imageAssetPath,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Center(
+                        child: Text(
+                          _chipLabel(product.type),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                            height: 1.3,
+                            color: onTint,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),

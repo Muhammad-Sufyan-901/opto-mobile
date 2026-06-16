@@ -107,6 +107,7 @@ flutter:
   - assets/fonts/
   - assets/images/onboarding/
   - assets/images/svg/icons/
+  - assets/images/supplies/
 
  # Atkinson Hyperlegible — designed by the Braille Institute for low-vision
  # users. Licensed SIL Open Font License (OFL). Weights 400 & 700 only.
