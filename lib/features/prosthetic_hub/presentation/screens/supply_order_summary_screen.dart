@@ -124,7 +124,7 @@ class _SummaryViewState extends State<_SummaryView> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Order placed! Your supplies will arrive in 3–5 days.',
+                'Order confirmed. Your supplies will arrive in 3–5 days.',
               ),
               behavior: SnackBarBehavior.floating,
             ),
