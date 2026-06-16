@@ -61,6 +61,13 @@ dependencies:
  intl: ^0.20.2
  phosphor_flutter: ^2.1.0
  image_picker: ^1.2.1
+ # ── Vision AI (Phase 3F) ───────────────────────────────────────────────────
+ # On-device OCR — reads text/Rupiah from camera frames (offline-capable).
+ google_mlkit_text_recognition: ^0.14.0
+ # On-device object detection — labels objects in the viewfinder.
+ google_mlkit_object_detection: ^0.14.0
+ # Text-to-speech for Aura result announcements (independent of screen reader).
+ flutter_tts: ^4.0.0
  # ── Accessibility Map (Phase 3B) ───────────────────────────────────────────
  # Device location — used for "nearby POIs" query and Emergency SOS (Phase 3E).
  geolocator: ^13.0.0

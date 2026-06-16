@@ -4,10 +4,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:opto/core/accessibility/haptic_controller.dart';
 import 'package:opto/core/config/secure_storage_config.dart';
+import 'package:opto/core/network/connectivity_service.dart';
 import 'package:opto/core/utils/secure_storage_helper.dart';
+import 'package:opto/core/voice/aura_tts.dart';
 import 'package:opto/core/voice/intent_parser.dart';
 import 'package:opto/core/voice/speech_recognizer.dart';
 import 'package:opto/core/voice/voice_controller.dart';
+import 'package:opto/features/vision_ai/data/datasources/color_detector.dart';
+import 'package:opto/features/vision_ai/data/datasources/ml_kit_vision_datasource.dart';
+import 'package:opto/features/vision_ai/data/datasources/scene_describe_remote_datasource.dart';
+import 'package:opto/features/vision_ai/data/repositories/vision_repository_impl.dart';
+import 'package:opto/features/vision_ai/domain/repositories/vision_repository.dart';
+import 'package:opto/features/vision_ai/presentation/cubit/vision_ai_cubit.dart';
 import 'package:opto/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:opto/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:opto/features/auth/domain/repositories/auth_repository.dart';
@@ -75,8 +83,8 @@ Future<void> init() async {
   // Kept in sync with AccessibilitySettingsCubit via app.dart.
   sl.registerLazySingleton<HapticController>(() => HapticController());
 
-  // VoiceController — Aura Voice engine.
-  // Kept in sync with AccessibilitySettingsCubit via app.dart (setVoiceEnabled).
+  // VoiceController — Aura Voice engine (STT + NLU).
+  // Kept in sync with AccessibilitySettingsCubit via app.dart.
   sl.registerLazySingleton<SpeechRecognizer>(() => SpeechToTextRecognizer());
   sl.registerLazySingleton<IntentParser>(() => const IntentParser());
   sl.registerLazySingleton<VoiceController>(
@@ -84,6 +92,16 @@ Future<void> init() async {
       recognizer: sl<SpeechRecognizer>(),
       parser: sl<IntentParser>(),
     ),
+  );
+
+  // AuraTts — TTS engine for Aura result announcements.
+  // setEnabled / setRate kept in sync with AccessibilitySettingsCubit
+  // via app.dart — mirroring the VoiceController pattern.
+  sl.registerLazySingleton<AuraTts>(() => AuraTts());
+
+  // ConnectivityService — offline gate for cloud Vision AI calls.
+  sl.registerLazySingleton<ConnectivityService>(
+    () => ConnectivityService(),
   );
 
   // Supabase client — initialized in main.dart before this runs.
@@ -326,5 +344,38 @@ Future<void> init() async {
   );
   sl.registerFactory<SpecialistChatCubit>(
     () => SpecialistChatCubit(),
+  );
+
+  // ===============================================================
+  // ── VISION AI (Phase 3F) ──
+  // ===============================================================
+  // Data sources — singletons (ML Kit model instances are expensive
+  // to recreate; [MlKitVisionDatasource.close] is called when the
+  // repository is disposed from [VisionAiCubit.close]).
+  sl.registerLazySingleton<MlKitVisionDatasource>(
+    () => MlKitVisionDatasource(),
+  );
+  sl.registerLazySingleton<ColorDetector>(
+    () => const ColorDetector(),
+  );
+  sl.registerLazySingleton<SceneDescribeRemoteDatasource>(
+    () => const SceneDescribeRemoteDatasource(),
+  );
+
+  // Repository
+  sl.registerLazySingleton<VisionRepository>(
+    () => VisionRepositoryImpl(
+      mlKit: sl<MlKitVisionDatasource>(),
+      colorDetector: sl<ColorDetector>(),
+      remote: sl<SceneDescribeRemoteDatasource>(),
+      connectivity: sl<ConnectivityService>(),
+    ),
+  );
+
+  // Cubit — registerFactory: each screen push gets a fresh camera +
+  // ML Kit warm-up cycle. The cubit's close() disposes the camera
+  // controller and calls repository.disposeResources() (ML Kit close).
+  sl.registerFactory<VisionAiCubit>(
+    () => VisionAiCubit(repository: sl<VisionRepository>()),
   );
 }

@@ -56,3 +56,47 @@ where schemaname = 'public' order by tablename, policyname;
 - `TO authenticated` always paired with an ownership predicate (no BOLA/IDOR).
 - `(select auth.uid())` wrapping used throughout (per-statement cache).
 - Medical 🔒 tables: owner-only, never joined to community/catalog queries.
+
+---
+
+## Phase 3F — Edge Functions
+
+### `scene-describe`
+
+**Purpose:** Accepts a base64-encoded JPEG frame, calls Anthropic Claude
+(claude-sonnet-4-6 multimodal), and returns a concise, accessibility-first
+scene description.
+
+**Files:**
+- `supabase/functions/scene-describe/index.ts` — Deno handler
+- `supabase/functions/scene-describe/deno.json` — npm imports
+- `supabase/config.toml` — `[functions.scene-describe] verify_jwt = true`
+
+**Required secret (set once on the Supabase project, never committed):**
+
+```bash
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+```
+
+**Local development:**
+
+```bash
+# Create .env.local with ANTHROPIC_API_KEY=sk-ant-... (gitignored)
+supabase functions serve scene-describe --env-file .env.local
+```
+
+**Deploy:**
+
+```bash
+supabase functions deploy scene-describe
+```
+
+**Security properties:**
+- `verify_jwt = true` — rejects calls without a valid Supabase JWT.
+- `ANTHROPIC_API_KEY` lives only as a Supabase secret — never in `.env` or
+  client code.
+- Rate-limited: 20 requests per `auth.uid()` per hour (in-memory; upgrade to
+  Postgres table for production persistence).
+- Image bytes are not logged or cached server-side beyond the single request.
+- Only the `describeScene` mode sends image data off-device; all other Vision
+  AI modes (OCR, object detection, colors) remain on-device.

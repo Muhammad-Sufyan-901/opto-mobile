@@ -6,6 +6,7 @@
 /// ```
 library;
 
+export 'aura_tts.dart';
 export 'intent_parser.dart';
 export 'speech_recognizer.dart';
 export 'voice_controller.dart';

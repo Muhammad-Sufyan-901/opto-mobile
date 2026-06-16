@@ -51,6 +51,8 @@ import 'package:opto/features/connect/presentation/screens/post_thread_screen.da
 import 'package:opto/features/profile/presentation/screens/profile_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
 import 'package:opto/features/sos/presentation/screens/sos_active_screen.dart';
+import 'package:opto/features/vision_ai/domain/entities/vision_mode.dart';
+import 'package:opto/features/vision_ai/presentation/cubit/vision_ai_cubit.dart';
 import 'package:opto/features/vision_ai/presentation/screens/vision_ai_screen.dart';
 import 'package:opto/features/voice/presentation/screens/aura_voice_screen.dart';
 import 'package:opto/core/location/location.dart';
@@ -319,11 +321,23 @@ final GoRouter appRouter = GoRouter(
     // ==========================================
 
     // Screen 16 — Vision AI
+    // VisionAiCubit is scoped to this route so the camera + ML Kit
+    // lifecycle is tied to the screen's presence in the navigator stack.
+    // The cubit is a registerFactory so each push gets a fresh instance.
     GoRoute(
       path: AppRoutes.visionAi.path,
       name: AppRoutes.visionAi.name,
-      builder: (BuildContext context, GoRouterState state) {
-        return const VisionAiScreen();
+      builder: (BuildContext context, GoRouterState routerState) {
+        // Accept an optional VisionMode from voice intent navigation
+        // (passed as GoRouterState.extra: VisionMode).
+        final initialMode =
+            routerState.extra is VisionMode
+                ? routerState.extra as VisionMode
+                : null;
+        return BlocProvider<VisionAiCubit>(
+          create: (_) => sl<VisionAiCubit>(),
+          child: VisionAiScreen(initialMode: initialMode),
+        );
       },
     ),
 

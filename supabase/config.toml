@@ -385,6 +385,20 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+# ── Phase 3F: Vision AI ────────────────────────────────────────────────────
+# scene-describe: proxies a JPEG camera frame to Anthropic Claude and
+# returns a concise, accessible scene description.
+#
+# Required secret (set once before deploying):
+#   supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+#
+# Local dev: supabase functions serve scene-describe --env-file .env.local
+#
+# verify_jwt = true means callers must supply a valid Supabase JWT —
+# the ANTHROPIC_API_KEY never reaches the Flutter client.
+[functions.scene-describe]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327

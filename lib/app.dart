@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 import 'package:opto/core/accessibility/haptic_controller.dart';
 import 'package:opto/core/config/app_info.dart';
+import 'package:opto/core/voice/aura_tts.dart';
 import 'package:opto/core/voice/voice_controller.dart';
 import 'package:opto/core/constants/app_theme_mode.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
@@ -59,6 +60,9 @@ class _AppState extends State<App> {
             sl<HapticController>().value = settings.hapticIntensity;
             // Keep VoiceController in sync with user's voice-enabled preference.
             sl<VoiceController>().setVoiceEnabled(settings.voiceEnabled);
+            // Keep AuraTts in sync with spoken-guidance preference and rate.
+            sl<AuraTts>().setEnabled(settings.spokenGuidanceEnabled);
+            sl<AuraTts>().setRate(settings.speakingRate);
 
             final (ThemeData theme, ThemeData? dark, ThemeMode flutterMode) =
                 switch (settings.theme) {

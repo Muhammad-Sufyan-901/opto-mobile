@@ -59,6 +59,18 @@
 			</array>
 		</dict>
 	</array>
+	<!-- Camera — used by Vision AI to read text, identify objects, and
+	     describe scenes. Required on iOS for the camera package. -->
+	<key>NSCameraUsageDescription</key>
+	<string>Opto uses the camera so Aura can read text, identify objects, and describe scenes for you.</string>
+	<!-- Microphone — used by Aura Voice (speech-to-text commands) and
+	     consultation video calls. -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Opto uses the microphone for Aura Voice commands and video consultations.</string>
+	<!-- Photo Library — used by Vision AI when analyzing an existing image
+	     from the gallery instead of a live camera capture. -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Opto accesses your photo library so Aura can analyze images you choose from your gallery.</string>
 	<!-- Location — used by Accessibility Map (nearby POIs) and Emergency SOS. -->
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Opto uses your location to show nearby accessible places and to send your position during Emergency SOS.</string>

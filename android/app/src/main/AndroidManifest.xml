@@ -57,6 +57,12 @@
          Storage, Realtime). Without this, the OS cannot resolve the Supabase
          hostname, producing errno = 7 / "No address associated with hostname". -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Camera — Vision AI (read text, identify objects, describe scenes).
+         Prompted at runtime via permission_handler. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Microphone — Aura Voice (speech-to-text) and video consultations.
+         Prompted at runtime via permission_handler. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Location — used by Accessibility Map (nearby POIs) and Emergency SOS.
          ACCESS_FINE_LOCATION → GPS-quality position for accurate bounding-box.
          ACCESS_COARSE_LOCATION → network/cell fallback if GPS unavailable.
