@@ -25,7 +25,8 @@ import 'package:opto/features/prosthetic_hub/domain/repositories/care_guides_rep
 import 'package:opto/features/prosthetic_hub/domain/repositories/supplies_repository.dart';
 import 'package:opto/features/prosthetic_hub/domain/repositories/specialist_repository.dart';
 import 'package:opto/features/prosthetic_hub/data/repositories/care_guides_repository_mock.dart';
-import 'package:opto/features/prosthetic_hub/data/repositories/supplies_repository_mock.dart';
+import 'package:opto/features/prosthetic_hub/data/datasources/supplies_remote_data_source.dart';
+import 'package:opto/features/prosthetic_hub/data/repositories/supplies_repository_impl.dart';
 import 'package:opto/features/prosthetic_hub/data/repositories/specialist_repository_mock.dart';
 import 'package:opto/features/prosthetic_hub/presentation/cubit/care_guides_cubit.dart';
 import 'package:opto/features/prosthetic_hub/presentation/cubit/order_supplies_cubit.dart';
@@ -328,8 +329,11 @@ Future<void> init() async {
   );
 
   // Order Supplies
+  sl.registerLazySingleton<SuppliesRemoteDataSource>(
+    () => SuppliesRemoteDataSourceImpl(),
+  );
   sl.registerLazySingleton<SuppliesRepository>(
-    () => const SuppliesRepositoryMock(),
+    () => SuppliesRepositoryImpl(remoteDataSource: sl<SuppliesRemoteDataSource>()),
   );
   sl.registerFactory<OrderSuppliesCubit>(
     () => OrderSuppliesCubit(sl<SuppliesRepository>()),
