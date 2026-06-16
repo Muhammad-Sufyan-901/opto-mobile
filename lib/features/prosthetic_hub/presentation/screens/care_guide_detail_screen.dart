@@ -82,6 +82,7 @@ class _CareGuideDetailViewState extends State<_CareGuideDetailView> {
                     children: [
                       // ── Hero illustration ──────────────────────────────
                       GuideIllustration(
+                        category: guide.category,
                         icon: Icons.remove_red_eye_outlined,
                         label: 'Overview illustration',
                         height: 182,
@@ -142,7 +143,11 @@ class _CareGuideDetailViewState extends State<_CareGuideDetailView> {
                         const SizedBox(height: AppDimensions.space12),
                         for (int i = 0; i < guide.steps.length; i++) ...[
                           if (i > 0) const SizedBox(height: AppDimensions.space12 + 2),
-                          _StepCard(step: guide.steps[i], number: i + 1),
+                          _StepCard(
+                            step: guide.steps[i],
+                            number: i + 1,
+                            category: guide.category,
+                          ),
                         ],
                       ] else ...[
                         ExcludeSemantics(
@@ -351,10 +356,15 @@ class _AudioPlayerCard extends StatelessWidget {
 
 /// A single numbered step card (`.hb-gstep` equivalent).
 class _StepCard extends StatelessWidget {
-  const _StepCard({required this.step, required this.number});
+  const _StepCard({
+    required this.step,
+    required this.number,
+    this.category,
+  });
 
   final CareGuideStep step;
   final int number;
+  final CareGuideCategory? category;
 
   @override
   Widget build(BuildContext context) {
@@ -417,6 +427,7 @@ class _StepCard extends StatelessWidget {
 
               // ── Per-step illustration ────────────────────────────────────
               GuideIllustration(
+                category: category,
                 icon: Icons.remove_red_eye_outlined,
                 label: 'Step $number illustration',
                 height: 146,

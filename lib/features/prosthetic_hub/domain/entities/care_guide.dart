@@ -169,4 +169,12 @@ extension CareGuideCategoryLabel on CareGuideCategory {
         CareGuideCategory.lubricate => 'Lubricating',
         CareGuideCategory.caseUse => 'Case Use',
       };
+
+  String get imageAssetPath => switch (this) {
+        CareGuideCategory.insert => 'assets/images/guides/guide_insert.png',
+        CareGuideCategory.remove => 'assets/images/guides/guide_remove.png',
+        CareGuideCategory.clean => 'assets/images/guides/guide_clean.png',
+        CareGuideCategory.lubricate => 'assets/images/guides/guide_lubricate.png',
+        CareGuideCategory.caseUse => 'assets/images/guides/guide_case_use.png',
+      };
 }

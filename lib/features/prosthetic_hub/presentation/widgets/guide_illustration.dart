@@ -9,14 +9,20 @@
 import 'package:flutter/material.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 
+import 'package:opto/features/prosthetic_hub/domain/entities/care_guide.dart';
+
 class GuideIllustration extends StatelessWidget {
   const GuideIllustration({
     super.key,
+    this.category,
     this.icon = Icons.remove_red_eye_outlined,
     this.label = 'Illustration',
     this.height = 150.0,
     this.mini = false,
   });
+
+  /// Which care category this illustration belongs to. If non-null, renders the real image.
+  final CareGuideCategory? category;
 
   /// Icon displayed in the center.
   final IconData icon;
@@ -49,7 +55,17 @@ class GuideIllustration extends StatelessWidget {
             color: blueTint,
             border: Border.all(color: line, width: 1.5),
           ),
-          child: Icon(icon, size: 28, color: onTint),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: category != null
+                ? Image.asset(
+                    category!.imageAssetPath,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        Icon(icon, size: 28, color: onTint),
+                  )
+                : Icon(icon, size: 28, color: onTint),
+          ),
         ),
       );
     }
@@ -62,42 +78,49 @@ class GuideIllustration extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Diagonal-stripe background
-              CustomPaint(painter: _StripePainter(color: blueTint)),
-              // Centered floating card with icon + label
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: cs.surface,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: line, width: 1.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: cs.shadow.withValues(alpha: 0.12),
-                        blurRadius: 14,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(icon, size: 26, color: onTint),
-                      const SizedBox(height: 6),
-                      Text(
-                        label.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.6,
-                          color: cs.onSurfaceVariant,
+              if (category != null)
+                Image.asset(
+                  category!.imageAssetPath,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      CustomPaint(painter: _StripePainter(color: blueTint)),
+                )
+              else
+                CustomPaint(painter: _StripePainter(color: blueTint)),
+              if (category == null)
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: cs.surface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: line, width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: cs.shadow.withValues(alpha: 0.12),
+                          blurRadius: 14,
+                          offset: const Offset(0, 6),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(icon, size: 26, color: onTint),
+                        const SizedBox(height: 6),
+                        Text(
+                          label.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.6,
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

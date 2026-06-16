@@ -50,6 +50,7 @@ class FeaturedGuideCard extends StatelessWidget {
             children: [
               // ── Illustration banner ──────────────────────────────────────
               GuideIllustration(
+                category: guide.category,
                 icon: Icons.remove_red_eye_outlined,
                 label: 'Cleaning illustration',
                 height: 158,

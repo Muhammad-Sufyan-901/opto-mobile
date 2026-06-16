@@ -58,6 +58,7 @@ class CareGuideCard extends StatelessWidget {
               // ── Mini illustration thumbnail ──────────────────────────────
               ExcludeSemantics(
                 child: GuideIllustration(
+                  category: guide.category,
                   mini: true,
                   icon: Icons.remove_red_eye_outlined,
                 ),
