@@ -1,14 +1,14 @@
-// ignore_for_file: avoid_print
-/// One-off script to upload the 5 prosthetic-supply product images to
-/// Supabase Storage (bucket: product-images).
-///
-/// Usage:
-///   SUPABASE_URL=https://xxx.supabase.co \
-///   SUPABASE_SERVICE_ROLE_KEY=eyJ... \
-///   dart run tool/upload_supply_images.dart
-///
-/// The service-role key is required so the upload bypasses RLS.
-/// Never commit this key; pass it only via environment variables.
+// ignore_for_file: avoid_print, depend_on_referenced_packages
+// One-off script to upload the 5 prosthetic-supply product images to
+// Supabase Storage (bucket: product-images).
+//
+// Usage:
+//   SUPABASE_URL=https://xxx.supabase.co \
+//   SUPABASE_SERVICE_ROLE_KEY=eyJ... \
+//   dart run tool/upload_supply_images.dart
+//
+// The service-role key is required so the upload bypasses RLS.
+// Never commit this key; pass it only via environment variables.
 
 import 'dart:io';
 
@@ -16,7 +16,7 @@ import 'package:supabase/supabase.dart';
 
 const _bucket = 'product-images';
 
-/// Paths relative to the project root.
+// Paths relative to the project root.
 const _images = [
   'assets/images/supplies/daily_cleaning_solution.png',
   'assets/images/supplies/self_cleaning_case.png',
