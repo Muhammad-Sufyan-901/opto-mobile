@@ -85,8 +85,8 @@ class SupplyProduct {
   final String? imageUrl;
 
   // ---------------------------------------------------------------------------
-  // copyWith — null-coalescent; imageUrl uses an _unset sentinel so callers can
-  // explicitly clear it by passing null.
+  // copyWith — null-coalescent; passing null for any field keeps the existing
+  // value. To explicitly clear imageUrl, create a new SupplyProduct instance.
   // ---------------------------------------------------------------------------
 
   SupplyProduct copyWith({
