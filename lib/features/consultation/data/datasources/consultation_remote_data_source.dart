@@ -13,9 +13,11 @@
 //   directly.
 // - `consultations` 🔒 methods are at the END of this file — treat them with
 //   extra care.
-// - createBooking performs two sequential writes (insert booking + update slot flag).
-//   This is NOT atomic. A server-side RPC / Edge Function should be added in a
-//   future iteration (see TODO comments in the method body).
+// - createBooking delegates to the `create_consultation_booking` Postgres RPC,
+//   which atomically inserts the booking row and marks the slot as booked inside
+//   a single SECURITY DEFINER transaction.  This replaced the previous non-atomic
+//   two-step write that raised SQLSTATE 42501 because `authenticated` holds only
+//   SELECT on `doctor_availability`.
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:opto/core/error/failures.dart';
@@ -46,7 +48,7 @@ abstract class ConsultationRemoteDataSource {
   // BOOKING ─────────────────────────────────────────────────────────────────────
   Future<ConsultationBookingModel> createBooking({
     required String doctorId,
-    required String slotId,
+    required DateTime slotStart,
     required String mode,
     required bool bookedViaVoice,
   });
@@ -164,7 +166,7 @@ class ConsultationRemoteDataSourceImpl implements ConsultationRemoteDataSource {
   @override
   Future<ConsultationBookingModel> createBooking({
     required String doctorId,
-    required String slotId,
+    required DateTime slotStart,
     required String mode,
     required bool bookedViaVoice,
   }) async {
@@ -173,27 +175,19 @@ class ConsultationRemoteDataSourceImpl implements ConsultationRemoteDataSource {
       throw const AuthFailure('Sesi tidak ditemukan. Silakan masuk kembali.');
     }
     try {
-      // Step 1: Insert booking row and capture the returned record.
-      final row = await _client
-          .from('consultation_bookings')
-          .insert({
-            'user_id': userId,
-            'doctor_id': doctorId,
-            'slot_id': slotId,
-            'mode': mode,
-            'booked_via_voice': bookedViaVoice,
-          })
-          .select()
-          .single();
-
-      // Step 2: Mark slot as booked (best-effort; atomicity via Edge Function is planned).
-      // TODO(booking-atomicity): move both steps into a Postgres RPC or Edge Function
-      // so the insert + flag-flip are atomic. For now this is two sequential writes.
-      await _client
-          .from('doctor_availability')
-          .update({'is_booked': true})
-          .eq('id', slotId)
-          .eq('is_booked', false); // Only update if not already booked (optimistic guard).
+      // Atomically: resolve-or-create the doctor_availability slot at the
+      // requested time, insert the booking, and mark the slot booked — all in
+      // one SECURITY DEFINER RPC.  Accepts a timestamp so the client never
+      // needs to send a real doctor_availability UUID.
+      final row = await _client.rpc(
+        'create_consultation_booking',
+        params: {
+          '_doctor_id': doctorId,
+          '_slot_start': slotStart.toUtc().toIso8601String(),
+          '_mode': mode, // e.g. 'non_verbal', 'video', 'in_person'
+          '_booked_via_voice': bookedViaVoice,
+        },
+      ) as Map<String, dynamic>;
 
       return ConsultationBookingModel.fromJson(row);
     } on PostgrestException catch (e) {

@@ -49,7 +49,7 @@ class _FakeBookingRepository implements BookingRepository {
   @override
   Future<ConsultationBookingEntity> createBooking({
     required String doctorId,
-    required String slotId,
+    required DateTime slotStart,
     required ConsultMode mode,
     bool bookedViaVoice = false,
   }) async {

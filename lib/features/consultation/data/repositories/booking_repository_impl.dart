@@ -31,17 +31,17 @@ class BookingRepositoryImpl implements BookingRepository {
   @override
   Future<ConsultationBookingEntity> createBooking({
     required String doctorId,
-    required String slotId,
+    required DateTime slotStart,
     required ConsultMode mode,
     bool bookedViaVoice = false,
   }) async {
-    if (doctorId.isEmpty || slotId.isEmpty) {
-      throw const ServerFailure('ID dokter dan slot tidak boleh kosong.');
+    if (doctorId.isEmpty) {
+      throw const ServerFailure('ID dokter tidak boleh kosong.');
     }
     try {
       final model = await _remoteDataSource.createBooking(
         doctorId: doctorId,
-        slotId: slotId,
+        slotStart: slotStart,
         mode: mode.dbValue, // convert enum → DB string
         bookedViaVoice: bookedViaVoice,
       );

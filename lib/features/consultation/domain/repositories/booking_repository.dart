@@ -20,21 +20,20 @@ abstract class BookingRepository {
   /// Creates a new consultation booking for the currently signed-in patient.
   ///
   /// [doctorId] must be a valid `doctors.id` UUID.
-  /// [slotId] must be a valid, un-booked `doctor_availability.id` UUID.
+  /// [slotStart] is the desired UTC start time for the session.  The server
+  ///   resolves an existing free `doctor_availability` slot at that time for the
+  ///   given doctor, or creates one, then books it atomically — so no real slot
+  ///   UUID is required from the client.
   /// [mode] sets the preferred delivery channel for the session.
   /// [bookedViaVoice] should be `true` when the booking was completed
   ///   entirely via the Aura Voice path — recorded as an accessibility KPI.
   ///
-  /// The repository implementation is responsible for atomically marking the
-  /// availability slot as booked (e.g. via an Edge Function or RLS-enforced
-  /// trigger) to prevent double-booking.
-  ///
   /// Throws [AuthFailure] when the patient is unauthenticated.
-  /// Throws [ConflictFailure] when [slotId] has already been claimed.
+  /// Throws [ConflictFailure] when [slotStart] is already taken for [doctorId].
   /// Throws [ServerFailure] on network / RLS error.
   Future<ConsultationBookingEntity> createBooking({
     required String doctorId,
-    required String slotId,
+    required DateTime slotStart,
     required ConsultMode mode,
     bool bookedViaVoice = false,
   });

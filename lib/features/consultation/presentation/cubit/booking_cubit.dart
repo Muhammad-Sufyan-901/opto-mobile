@@ -65,7 +65,7 @@ class BookingCubit extends Cubit<BookingState> {
     try {
       final booking = await _bookingRepo.createBooking(
         doctorId: doctorId,
-        slotId: current.slot.id,
+        slotStart: current.slot.slotStart,
         mode: current.mode,
         bookedViaVoice: bookedViaVoice,
       );
