@@ -49,6 +49,12 @@ import 'package:opto/features/connect/domain/entities/post_entity.dart';
 import 'package:opto/features/connect/presentation/screens/member_profile_screen.dart';
 import 'package:opto/features/connect/presentation/screens/post_thread_screen.dart';
 import 'package:opto/features/profile/presentation/screens/profile_screen.dart';
+import 'package:opto/features/profile/presentation/screens/profile_edit_screen.dart';
+import 'package:opto/features/profile/presentation/screens/profile_vision_screen.dart';
+import 'package:opto/features/profile/presentation/screens/accessibility_screen.dart';
+import 'package:opto/features/profile/presentation/screens/account_settings_screen.dart';
+import 'package:opto/features/profile/presentation/screens/my_activity_screen.dart';
+import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
 import 'package:opto/features/sos/presentation/screens/sos_active_screen.dart';
 import 'package:opto/features/vision_ai/domain/entities/vision_mode.dart';
@@ -550,12 +556,58 @@ final GoRouter appRouter = GoRouter(
       },
     ),
 
-    // Screen 20 — Profile
+    // Screen 20 — Profile Home
     GoRoute(
       path: AppRoutes.profile.path,
       name: AppRoutes.profile.name,
       builder: (BuildContext context, GoRouterState state) =>
           const ProfileScreen(),
+    ),
+
+    // Screen 20a — Edit Profile
+    GoRoute(
+      path: AppRoutes.profileEdit.path,
+      name: AppRoutes.profileEdit.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          BlocProvider<ProfileBloc>(
+            create: (_) => sl<ProfileBloc>(),
+            child: const ProfileEditScreen(),
+          ),
+    ),
+
+    // Screen 20b — Vision Profile (🔒 medical — owner-only display)
+    GoRoute(
+      path: AppRoutes.visionProfile.path,
+      name: AppRoutes.visionProfile.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const ProfileVisionScreen(),
+    ),
+
+    // Screen 20c — Accessibility Preferences (wired to AccessibilitySettingsCubit singleton)
+    GoRoute(
+      path: AppRoutes.accessibilitySettings.path,
+      name: AppRoutes.accessibilitySettings.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          BlocProvider<AccessibilitySettingsCubit>.value(
+            value: sl<AccessibilitySettingsCubit>(),
+            child: const AccessibilityScreen(),
+          ),
+    ),
+
+    // Screen 20d — Account & Settings
+    GoRoute(
+      path: AppRoutes.accountSettings.path,
+      name: AppRoutes.accountSettings.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const AccountSettingsScreen(),
+    ),
+
+    // Screen 20e — My Activity
+    GoRoute(
+      path: AppRoutes.myActivity.path,
+      name: AppRoutes.myActivity.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const MyActivityScreen(),
     ),
 
     // Screen 21 — Emergency SOS

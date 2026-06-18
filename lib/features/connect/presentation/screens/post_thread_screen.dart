@@ -596,7 +596,10 @@ class _OriginalPostBlock extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 2),
-                      Row(
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           if (post.topic != null) ...[
                             Container(
@@ -616,10 +619,8 @@ class _OriginalPostBlock extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 6),
                             Text('·',
                                 style: TextStyle(color: ink3)),
-                            const SizedBox(width: 6),
                           ],
                           Text(
                             timeLabel,
@@ -690,10 +691,10 @@ class _OriginalPostBlock extends StatelessWidget {
 
           // ── Footer stats ──────────────────────────────────────────────
           if (!isLoading)
-            Row(
-              children: [
-                // Like
-                Semantics(
+            Builder(
+              builder: (context) {
+                final isLargeText = MediaQuery.textScalerOf(context).scale(1.0) > 1.5;
+                final likeButton = Semantics(
                   button: true,
                   label: post.likedByMe
                       ? 'Unlike. ${post.likeCount} likes.'
@@ -712,10 +713,8 @@ class _OriginalPostBlock extends StatelessWidget {
                       cs: cs,
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                // Reply
-                Semantics(
+                );
+                final replyButton = Semantics(
                   button: true,
                   label: 'Reply to post.',
                   child: GestureDetector(
@@ -730,10 +729,8 @@ class _OriginalPostBlock extends StatelessWidget {
                       cs: cs,
                     ),
                   ),
-                ),
-                const Spacer(),
-                // Save (stub)
-                Semantics(
+                );
+                final saveButton = Semantics(
                   button: true,
                   label: 'Save post',
                   child: GestureDetector(
@@ -750,10 +747,8 @@ class _OriginalPostBlock extends StatelessWidget {
                       cs: cs,
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                // Flag / report
-                Semantics(
+                );
+                final reportButton = Semantics(
                   button: true,
                   label: 'Report post',
                   child: GestureDetector(
@@ -770,8 +765,41 @@ class _OriginalPostBlock extends StatelessWidget {
                       cs: cs,
                     ),
                   ),
-                ),
-              ],
+                );
+
+                final leftGroup = Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    likeButton,
+                    replyButton,
+                  ],
+                );
+                final rightGroup = Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    saveButton,
+                    reportButton,
+                  ],
+                );
+
+                return SizedBox(
+                  width: double.infinity,
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      leftGroup,
+                      rightGroup,
+                    ],
+                  ),
+                );
+              },
             ),
         ],
       ),
@@ -802,8 +830,8 @@ class _OpStatPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      height: 36,
-      padding: const EdgeInsets.symmetric(horizontal: 13),
+      constraints: const BoxConstraints(minHeight: 36),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
       decoration: BoxDecoration(
         color: active ? activeColor.withValues(alpha: 0.10) : cs.surface,
         borderRadius: BorderRadius.circular(18),
@@ -953,25 +981,22 @@ class _ReplyBubble extends StatelessWidget {
                       children: [
                         // Name row
                         ExcludeSemantics(
-                          child: Row(
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              Flexible(
-                                child: Text(
-                                  authorName,
-                                  style: theme.textTheme.labelLarge?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                    color: cs.onSurface,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                              Text(
+                                authorName,
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  color: cs.onSurface,
                                 ),
                               ),
-                              if (reply.authorIsVerified) ...[
-                                const SizedBox(width: 5),
+                              if (reply.authorIsVerified)
                                 Icon(Icons.verified,
                                     size: 14, color: cs.primary),
-                              ],
-                              if (reply.isBestAnswer) ...[
-                                const SizedBox(width: 8),
+                              if (reply.isBestAnswer)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 3),
@@ -998,7 +1023,6 @@ class _ReplyBubble extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                              ],
                             ],
                           ),
                         ),
@@ -1034,66 +1058,90 @@ class _ReplyBubble extends StatelessWidget {
                   ExcludeSemantics(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 9, left: 4),
-                      child: Row(
-                        children: [
-                          // Like (stub — no reply-likes table yet)
-                          _ReplyAction(
+                      child: Builder(
+                        builder: (context) {
+                          final isLargeText = MediaQuery.textScalerOf(context).scale(1.0) > 1.5;
+                          final likeAction = _ReplyAction(
                             icon: Icons.favorite_border,
                             label: '${reply.likeCount}',
                             color: ink3,
                             onTap: () {
                               // TODO(community): reply like — no backend yet.
                             },
-                          ),
-                          const SizedBox(width: 18),
-                          _ReplyAction(
+                          );
+                          final replyAction = _ReplyAction(
                             icon: Icons.reply_outlined,
                             label: 'Reply',
                             color: ink3,
                             onTap: onReply,
-                          ),
-                          const SizedBox(width: 18),
-                          Text(
+                          );
+                          final timeText = Text(
                             timeLabel,
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: ink3,
                               fontWeight: FontWeight.w700,
                             ),
-                          ),
-                          const Spacer(),
-                          // "Mark best answer" — shown only to the OP author.
-                          // Auth check is client-side here; RLS enforces on server.
-                          if (!reply.isBestAnswer) ...[
-                            Semantics(
-                              button: true,
-                              label:
-                                  'Mark this reply as best answer',
-                              child: GestureDetector(
-                                onTap: onMarkBestAnswer,
-                                child: ExcludeSemantics(
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.check_circle_outline,
-                                          size: 14, color: green),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'Best answer',
-                                        style:
-                                            theme.textTheme.labelSmall?.copyWith(
-                                          color: green,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 12,
-                                        ),
+                          );
+                          final bestAnswerBtn = !reply.isBestAnswer
+                              ? Semantics(
+                                  button: true,
+                                  label: 'Mark this reply as best answer',
+                                  child: GestureDetector(
+                                    onTap: onMarkBestAnswer,
+                                    child: ExcludeSemantics(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.check_circle_outline,
+                                              size: 14, color: green),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Best answer',
+                                            style: theme.textTheme.labelSmall?.copyWith(
+                                              color: green,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              ),
+                                )
+                              : const SizedBox.shrink();
+
+                          final leftGroup = Wrap(
+                            spacing: 12,
+                            runSpacing: 6,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              likeAction,
+                              replyAction,
+                              timeText,
+                            ],
+                          );
+
+                          return SizedBox(
+                            width: double.infinity,
+                            child: Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 12,
+                              runSpacing: 8,
+                              children: [
+                                leftGroup,
+                                if (!reply.isBestAnswer) bestAnswerBtn,
+                              ],
                             ),
-                          ],
-                        ],
+                          );
+                        },
                       ),
                     ),
+                  ),
+                  _InvisibleReplyActions(
+                    reply: reply,
+                    onReply: onReply,
+                    onMarkBestAnswer: onMarkBestAnswer,
                   ),
                 ],
               ),
@@ -1250,7 +1298,7 @@ class _ReplyComposer extends StatelessWidget {
                         : 'Add a reply',
                     textField: true,
                     child: Container(
-                      height: 50,
+                      constraints: const BoxConstraints(minHeight: 50),
                       decoration: BoxDecoration(
                         color: tint,
                         borderRadius: BorderRadius.circular(25),
@@ -1352,6 +1400,65 @@ class _ThreadError extends StatelessWidget {
               child: const Text('Retry'),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InvisibleReplyActions extends StatelessWidget {
+  const _InvisibleReplyActions({
+    required this.reply,
+    required this.onReply,
+    required this.onMarkBestAnswer,
+  });
+
+  final PostReplyEntity reply;
+  final VoidCallback onReply;
+  final VoidCallback onMarkBestAnswer;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 0,
+      child: Row(
+        children: [
+          Semantics(
+            button: true,
+            label: 'Like reply by ${reply.authorName ?? "member"}. ${reply.likeCount} likes',
+            child: GestureDetector(
+              onTap: () {
+                // TODO(community): reply like — no backend yet.
+              },
+              child: const SizedBox(
+                width: AppDimensions.minTapTarget,
+                height: AppDimensions.minTapTarget,
+              ),
+            ),
+          ),
+          Semantics(
+            button: true,
+            label: 'Reply to ${reply.authorName ?? "reply"}',
+            child: GestureDetector(
+              onTap: onReply,
+              child: const SizedBox(
+                width: AppDimensions.minTapTarget,
+                height: AppDimensions.minTapTarget,
+              ),
+            ),
+          ),
+          if (!reply.isBestAnswer)
+            Semantics(
+              button: true,
+              label: 'Mark reply by ${reply.authorName ?? "reply"} as best answer',
+              child: GestureDetector(
+                onTap: onMarkBestAnswer,
+                child: const SizedBox(
+                  width: AppDimensions.minTapTarget,
+                  height: AppDimensions.minTapTarget,
+                ),
+              ),
+            ),
         ],
       ),
     );

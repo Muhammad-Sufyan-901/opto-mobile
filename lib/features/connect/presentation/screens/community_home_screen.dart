@@ -7,12 +7,14 @@ import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/connect/domain/entities/post_entity.dart';
+import 'package:opto/features/connect/presentation/bloc/connect_feed_bloc.dart';
 import 'package:opto/features/connect/presentation/cubit/community_home_cubit.dart';
 import 'package:opto/features/connect/presentation/widgets/ask_community_prompt.dart';
 import 'package:opto/features/connect/presentation/widgets/circle_tile.dart';
 import 'package:opto/features/connect/presentation/widgets/community_home_skeleton.dart';
 import 'package:opto/features/connect/presentation/widgets/community_thread_card.dart';
 import 'package:opto/features/connect/presentation/widgets/featured_hero_card.dart';
+import 'package:opto/features/connect/presentation/widgets/report_post_sheet.dart';
 import 'package:opto/features/home/presentation/widgets/home_bottom_nav.dart';
 
 /// Screen 19 (K1) — Community Home.
@@ -30,8 +32,17 @@ class CommunityHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<CommunityHomeCubit>(
-      create: (_) => sl<CommunityHomeCubit>()..load(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<CommunityHomeCubit>(
+          create: (_) => sl<CommunityHomeCubit>()..load(),
+        ),
+        BlocProvider<ConnectFeedBloc>(
+          create: (_) => sl<ConnectFeedBloc>()
+            ..add(const ConnectFeedEvent.loadFeed())
+            ..add(const ConnectFeedEvent.subscribeFeed()),
+        ),
+      ],
       child: const _HomeView(),
     );
   }
@@ -57,6 +68,7 @@ class _HomeViewState extends State<_HomeView> {
     final cs = theme.colorScheme;
     final ext = theme.extension<AppExtendedCustomColors>();
     final blueTint = ext?.blueTint ?? cs.primaryContainer;
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
 
     return BlocListener<CommunityHomeCubit, CommunityHomeState>(
       listener: (context, state) {
@@ -84,6 +96,9 @@ class _HomeViewState extends State<_HomeView> {
           child: RefreshIndicator(
             onRefresh: () async {
               context.read<CommunityHomeCubit>().load();
+              context
+                  .read<ConnectFeedBloc>()
+                  .add(const ConnectFeedEvent.loadFeed(reset: true));
             },
             child: CustomScrollView(
               slivers: [
@@ -141,7 +156,7 @@ class _HomeViewState extends State<_HomeView> {
                               ),
                               const SizedBox(height: 12),
                               SizedBox(
-                                height: 130,
+                                height: 145 * textScale,
                                 child: ListView.separated(
                                   scrollDirection: Axis.horizontal,
                                   padding: EdgeInsets.zero,
@@ -215,6 +230,17 @@ class _HomeViewState extends State<_HomeView> {
                                 ),
                               ),
                             ],
+
+                            // Latest feed — full interactive cards powered by
+                            // ConnectFeedBloc, with featured/trending excluded.
+                            const SizedBox(height: 20),
+                            _LatestFeedSection(
+                              excludeIds: {
+                                if (state.featuredPost != null)
+                                  state.featuredPost!.id,
+                                ...state.trendingPosts.map((p) => p.id),
+                              },
+                            ),
                           ]),
                         ),
                       );
@@ -402,6 +428,119 @@ class _SectionHeader extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+// =============================================================================
+// LATEST FEED SECTION
+// =============================================================================
+
+/// Renders the full interactive feed below "Trending today" on the home screen.
+///
+/// Powered by [ConnectFeedBloc] (already provided above the widget tree), so
+/// likes, replies, and reports all work exactly as they do on the Feed screen.
+/// Posts whose ids appear in [excludeIds] are filtered out to avoid repeating
+/// the featured-hero and trending cards shown earlier on the page.
+class _LatestFeedSection extends StatelessWidget {
+  const _LatestFeedSection({required this.excludeIds});
+
+  final Set<String> excludeIds;
+
+  void _openThread(BuildContext context, PostEntity post) {
+    context.push('/community/thread/${post.id}', extra: post);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final ext = theme.extension<AppExtendedCustomColors>();
+
+    return BlocBuilder<ConnectFeedBloc, ConnectFeedState>(
+      builder: (context, state) {
+        if (state is FeedLoading) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(
+              child: CircularProgressIndicator.adaptive(),
+            ),
+          );
+        }
+
+        if (state is FeedError) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  state.message,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: ext?.ink3 ?? cs.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Semantics(
+                  button: true,
+                  label: 'Retry loading feed',
+                  child: TextButton(
+                    onPressed: () => context
+                        .read<ConnectFeedBloc>()
+                        .add(const ConnectFeedEvent.loadFeed(reset: true)),
+                    child: const Text('Retry'),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (state is FeedLoaded) {
+          final posts = state.posts
+              .where((p) => !excludeIds.contains(p.id))
+              .toList();
+
+          if (posts.isEmpty && !state.isLoadingMore) {
+            return const SizedBox.shrink();
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SectionHeader(
+                title: 'Latest',
+                actionLabel: 'All Feed',
+                onAction: () =>
+                    context.push(AppRoutes.communityFeed.path),
+              ),
+              const SizedBox(height: 12),
+              ...posts.map(
+                (post) => Padding(
+                  padding: const EdgeInsets.only(bottom: 13),
+                  child: CommunityThreadCard(
+                    post: post,
+                    onLike: () => context
+                        .read<ConnectFeedBloc>()
+                        .add(ConnectFeedEvent.toggleLike(post.id)),
+                    onReply: () => _openThread(context, post),
+                    onReport: () => ReportPostSheet.show(context, post.id),
+                    onTap: () => _openThread(context, post),
+                  ),
+                ),
+              ),
+              if (state.isLoadingMore)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Center(child: CircularProgressIndicator.adaptive()),
+                ),
+            ],
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
     );
   }
 }

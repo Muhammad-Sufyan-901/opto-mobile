@@ -231,119 +231,132 @@ class _PostActions extends StatelessWidget {
     final bool liked = post.likedByMe;
     final int likes = post.likeCount;
     final int replies = post.replyCount;
+    final isLargeText = MediaQuery.textScalerOf(context).scale(1.0) > 1.5;
 
-    return Row(
+    final likeButton = Semantics(
+      button: true,
+      label:
+          'Like this post, $likes like${likes == 1 ? "" : "s"}${liked ? ", liked" : ""}',
+      child: GestureDetector(
+        onTap: onLike,
+        child: SizedBox(
+          height: AppDimensions.minTapTarget,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ExcludeSemantics(
+                child: Icon(
+                  liked ? Icons.favorite : Icons.favorite_border,
+                  size: AppDimensions.iconMd,
+                  color: liked ? cs.error : ink2,
+                ),
+              ),
+              const SizedBox(width: 5),
+              ExcludeSemantics(
+                child: Text(
+                  '$likes',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: liked ? cs.error : ink2,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final replyButton = Semantics(
+      button: true,
+      label: 'Reply to this post, $replies repl${replies == 1 ? "y" : "ies"}',
+      child: GestureDetector(
+        onTap: onReply,
+        child: SizedBox(
+          height: AppDimensions.minTapTarget,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ExcludeSemantics(
+                child: Icon(
+                  Icons.reply_outlined,
+                  size: AppDimensions.iconMd,
+                  color: ink2,
+                ),
+              ),
+              const SizedBox(width: 5),
+              ExcludeSemantics(
+                child: Text(
+                  '$replies',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: ink2,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final listenButton = Semantics(
+      button: true,
+      label: 'Listen to post',
+      child: GestureDetector(
+        onTap: () {
+          // TODO(community): read post aloud via TTS
+        },
+        child: SizedBox(
+          height: AppDimensions.minTapTarget,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ExcludeSemantics(
+                child: Icon(
+                  Icons.volume_up_outlined,
+                  size: AppDimensions.iconMd,
+                  color: cs.primary,
+                ),
+              ),
+              const SizedBox(width: 5),
+              ExcludeSemantics(
+                child: Text(
+                  'Listen',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: cs.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final leftGroup = Wrap(
+      spacing: 20,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        // ── Like button ──────────────────────────────────────────────────
-        Semantics(
-          button: true,
-          label:
-              'Like this post, $likes like${likes == 1 ? "" : "s"}${liked ? ", liked" : ""}',
-          child: GestureDetector(
-            onTap: onLike,
-            child: SizedBox(
-              height: AppDimensions.minTapTarget,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ExcludeSemantics(
-                    child: Icon(
-                      liked ? Icons.favorite : Icons.favorite_border,
-                      size: AppDimensions.iconMd,
-                      color: liked ? cs.error : ink2,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  ExcludeSemantics(
-                    child: Text(
-                      '$likes',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: liked ? cs.error : ink2,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-
-        const SizedBox(width: 20),
-
-        // ── Reply button ─────────────────────────────────────────────────
-        Semantics(
-          button: true,
-          label: 'Reply to this post, $replies repl${replies == 1 ? "y" : "ies"}',
-          child: GestureDetector(
-            onTap: onReply,
-            child: SizedBox(
-              height: AppDimensions.minTapTarget,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ExcludeSemantics(
-                    child: Icon(
-                      Icons.reply_outlined,
-                      size: AppDimensions.iconMd,
-                      color: ink2,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  ExcludeSemantics(
-                    child: Text(
-                      '$replies',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: ink2,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-
-        // Spacer pushes Listen to the right
-        const Spacer(),
-
-        // ── Listen button ────────────────────────────────────────────────
-        Semantics(
-          button: true,
-          label: 'Listen to post',
-          child: GestureDetector(
-            onTap: () {
-              // TODO(community): read post aloud via TTS
-            },
-            child: SizedBox(
-              height: AppDimensions.minTapTarget,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ExcludeSemantics(
-                    child: Icon(
-                      Icons.volume_up_outlined,
-                      size: AppDimensions.iconMd,
-                      color: cs.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  ExcludeSemantics(
-                    child: Text(
-                      'Listen',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: cs.primary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+        likeButton,
+        replyButton,
       ],
+    );
+
+    return SizedBox(
+      width: double.infinity,
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 16,
+        runSpacing: 8,
+        children: [
+          leftGroup,
+          listenButton,
+        ],
+      ),
     );
   }
 }

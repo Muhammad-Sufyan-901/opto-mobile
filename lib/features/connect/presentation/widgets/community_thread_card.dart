@@ -239,7 +239,10 @@ class _AuthorRow extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 2),
-              Row(
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   if (topic != null) ...[
                     Container(
@@ -258,9 +261,7 @@ class _AuthorRow extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 6),
                     Text('·', style: TextStyle(color: ink3)),
-                    const SizedBox(width: 6),
                   ],
                   Text(
                     timeLabel,
@@ -323,10 +324,10 @@ class _FooterRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color surface = cs.surface;
 
-    return Row(
-      children: [
-        // Heart / likes
-        _StatPill(
+    return Builder(
+      builder: (context) {
+        final isLargeText = MediaQuery.textScalerOf(context).scale(1.0) > 1.5;
+        final likeButton = _StatPill(
           icon: post.likedByMe ? Icons.favorite : Icons.favorite_border,
           label: '${post.likeCount}',
           active: post.likedByMe,
@@ -335,10 +336,8 @@ class _FooterRow extends StatelessWidget {
           line: line,
           ink2: ink2,
           onTap: onLike,
-        ),
-        const SizedBox(width: 8),
-        // Replies
-        _StatPill(
+        );
+        final replyButton = _StatPill(
           icon: Icons.forum_outlined,
           label: '${post.replyCount}',
           active: false,
@@ -347,10 +346,8 @@ class _FooterRow extends StatelessWidget {
           line: line,
           ink2: ink2,
           onTap: onReply,
-        ),
-        const Spacer(),
-        // Save (stub)
-        _StatPill(
+        );
+        final saveButton = _StatPill(
           icon: Icons.bookmark_border,
           label: '',
           active: false,
@@ -361,10 +358,8 @@ class _FooterRow extends StatelessWidget {
           onTap: () {
             // TODO(community): bookmark / save post — not yet backed by DB.
           },
-        ),
-        const SizedBox(width: 8),
-        // Share (stub)
-        _StatPill(
+        );
+        final shareButton = _StatPill(
           icon: Icons.share_outlined,
           label: '',
           active: false,
@@ -375,8 +370,41 @@ class _FooterRow extends StatelessWidget {
           onTap: () {
             // TODO(community): share post — native share sheet.
           },
-        ),
-      ],
+        );
+
+        final leftGroup = Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            likeButton,
+            replyButton,
+          ],
+        );
+        final rightGroup = Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            saveButton,
+            shareButton,
+          ],
+        );
+
+        return SizedBox(
+          width: double.infinity,
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              leftGroup,
+              rightGroup,
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -420,8 +448,8 @@ class _StatPill extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 36,
-        padding: const EdgeInsets.symmetric(horizontal: 13),
+        constraints: const BoxConstraints(minHeight: 36),
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(18),

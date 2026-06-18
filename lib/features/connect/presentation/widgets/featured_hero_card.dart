@@ -46,8 +46,7 @@ class FeaturedHeroCard extends StatelessWidget {
             children: [
               // "Featured this week" tag
               Container(
-                height: 30,
-                padding: const EdgeInsets.symmetric(horizontal: 13),
+                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(15),
@@ -110,7 +109,8 @@ class FeaturedHeroCard extends StatelessWidget {
               const SizedBox(height: 18),
               // "Read thread" button
               Container(
-                height: 54,
+                constraints: const BoxConstraints(minHeight: 54),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(27),

@@ -240,6 +240,40 @@ abstract class AppRoutes {
     name: 'profile',
   );
 
+  /// Screen 20a — Edit profile (display name, pronouns, bio, location).
+  static const AppRoute profileEdit = AppRoute(
+    path: '/profile/edit',
+    name: 'profile_edit',
+  );
+
+  /// Screen 20b — Vision profile (diagnosis, functional vision, prosthesis,
+  /// assistive tech). 🔒 Displayed to the signed-in user only; never cached
+  /// beyond session and never joined to community/catalog queries.
+  static const AppRoute visionProfile = AppRoute(
+    path: '/profile/vision',
+    name: 'vision_profile',
+  );
+
+  /// Screen 20c — Accessibility preferences (screen reader, text size,
+  /// contrast, haptics, speech rate). Wired to [AccessibilitySettingsCubit].
+  static const AppRoute accessibilitySettings = AppRoute(
+    path: '/profile/accessibility',
+    name: 'accessibility_settings',
+  );
+
+  /// Screen 20d — Account & settings (email, phone, language, notifications,
+  /// privacy, sign-out, delete account).
+  static const AppRoute accountSettings = AppRoute(
+    path: '/profile/account',
+    name: 'account_settings',
+  );
+
+  /// Screen 20e — My activity (posts, saved, replies, liked).
+  static const AppRoute myActivity = AppRoute(
+    path: '/profile/activity',
+    name: 'my_activity',
+  );
+
   /// Screen 21 — Emergency SOS (panic button + alert).
   static const AppRoute sos = AppRoute(
     path: '/sos',

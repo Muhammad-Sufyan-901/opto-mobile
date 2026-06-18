@@ -460,8 +460,9 @@ class _TopicChipRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
     return SizedBox(
-      height: 40,
+      height: 40 * textScale,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(
@@ -478,7 +479,7 @@ class _TopicChipRow extends StatelessWidget {
               onTap: () => onChanged(i),
               child: ExcludeSemantics(
                 child: Container(
-                  height: 40,
+                  height: 40 * textScale,
                   padding: const EdgeInsets.symmetric(horizontal: 18),
                   decoration: BoxDecoration(
                     color: active ? cs.primary : Colors.transparent,

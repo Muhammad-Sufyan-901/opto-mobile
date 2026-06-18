@@ -390,7 +390,8 @@ class _NotesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: "Doctor's notes. $_mockNote "
+      label:
+          "Doctor's notes. $_mockNote "
           "Summarized and read aloud automatically.",
       child: _Card(
         cs: cs,
@@ -422,10 +423,14 @@ class _NotesCard extends StatelessWidget {
             // Summarized footer
             ExcludeSemantics(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: (ext?.blueTint ?? cs.primaryContainer)
-                      .withValues(alpha: 0.6),
+                  color: (ext?.blueTint ?? cs.primaryContainer).withValues(
+                    alpha: 0.6,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -477,7 +482,8 @@ class _RxCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'E-prescription. ${_rxItems.map((r) => '${r.name}, ${r.dose}, ${r.days} days').join('. ')}. '
+      label:
+          'E-prescription. ${_rxItems.map((r) => '${r.name}, ${r.dose}, ${r.days} days').join('. ')}. '
           'Digitally signed. Valid for 30 days.',
       child: _Card(
         cs: cs,
@@ -508,7 +514,12 @@ class _RxCard extends StatelessWidget {
                 const SizedBox(height: 4),
               ],
               ExcludeSemantics(
-                child: _RxRow(item: _rxItems[i], cs: cs, ext: ext, theme: theme),
+                child: _RxRow(
+                  item: _rxItems[i],
+                  cs: cs,
+                  ext: ext,
+                  theme: theme,
+                ),
               ),
             ],
 
@@ -517,7 +528,10 @@ class _RxCard extends StatelessWidget {
             // Signed footer
             ExcludeSemantics(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 9,
+                ),
                 decoration: BoxDecoration(
                   color: cs.surface,
                   borderRadius: BorderRadius.circular(12),
@@ -528,8 +542,11 @@ class _RxCard extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.lock_outline_rounded,
-                        size: 16, color: ext?.ink2 ?? cs.onSurfaceVariant),
+                    Icon(
+                      Icons.lock_outline_rounded,
+                      size: 16,
+                      color: ext?.ink2 ?? cs.onSurfaceVariant,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -540,11 +557,13 @@ class _RxCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(width: 8),
                     TextButton(
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
@@ -602,8 +621,7 @@ class _RxRow extends StatelessWidget {
               color: (ext?.blueTint ?? cs.primaryContainer),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.medication_outlined,
-                size: 20, color: cs.primary),
+            child: Icon(Icons.medication_outlined, size: 20, color: cs.primary),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -734,6 +752,84 @@ class _BottomActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLargeText = MediaQuery.textScalerOf(context).scale(1.0) > 1.25;
+
+    final savePdfButton = Semantics(
+      button: true,
+      label: 'Save PDF',
+      child: OutlinedButton(
+        onPressed: onSavePdf,
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(double.infinity, AppDimensions.buttonHeight),
+          foregroundColor: cs.primary,
+          side: BorderSide(
+            color: ext?.line ?? cs.outline,
+            width: 1.5,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusButton),
+          ),
+        ),
+        child: ExcludeSemantics(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.download_outlined, size: AppDimensions.iconSm),
+              const SizedBox(width: 7),
+              const Flexible(
+                child: Text(
+                  'Save PDF',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final bookFollowUpButton = Semantics(
+      button: true,
+      label: 'Book a follow-up consultation',
+      child: ElevatedButton(
+        onPressed: onBookFollowUp,
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(double.infinity, AppDimensions.buttonHeight),
+          backgroundColor: cs.primary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusButton),
+          ),
+          elevation: 0,
+        ),
+        child: ExcludeSemantics(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.calendar_today_outlined, size: 18),
+              const SizedBox(width: 8),
+              const Flexible(
+                child: Text(
+                  'Book follow-up',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
     return Container(
       padding: EdgeInsets.fromLTRB(
         AppDimensions.screenPadding,
@@ -750,83 +846,29 @@ class _BottomActions extends StatelessWidget {
           ),
         ),
       ),
-      child: Row(
-        children: [
-          // Save PDF
-          Expanded(
-            child: Semantics(
-              button: true,
-              label: 'Save PDF',
-              child: SizedBox(
-                height: AppDimensions.buttonHeight,
-                child: OutlinedButton(
-                  onPressed: onSavePdf,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: cs.primary,
-                    side: BorderSide(
-                      color: ext?.line ?? cs.outline,
-                      width: 1.5,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.radiusButton),
-                    ),
-                  ),
-                  child: ExcludeSemantics(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.download_outlined,
-                            size: AppDimensions.iconSm),
-                        const SizedBox(width: 7),
-                        const Text('Save PDF',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 15)),
-                      ],
-                    ),
-                  ),
+      child: isLargeText
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                bookFollowUpButton,
+                const SizedBox(height: 12),
+                savePdfButton,
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: savePdfButton,
                 ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Book follow-up
-          Expanded(
-            flex: 2,
-            child: Semantics(
-              button: true,
-              label: 'Book a follow-up consultation',
-              child: SizedBox(
-                height: AppDimensions.buttonHeight,
-                child: ElevatedButton(
-                  onPressed: onBookFollowUp,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: cs.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.radiusButton),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: ExcludeSemantics(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.calendar_today_outlined, size: 18),
-                        const SizedBox(width: 8),
-                        const Text('Book follow-up',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 15)),
-                      ],
-                    ),
-                  ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: bookFollowUpButton,
                 ),
-              ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }
