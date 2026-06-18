@@ -67,20 +67,24 @@ class EmergencyContactsCubit extends Cubit<EmergencyContactsState> {
 
   /// Inserts [contact] and reloads the list on success.
   ///
-  /// On failure emits [EmergencyContactsError] then restores the previous list.
+  /// On write failure emits [EmergencyContactsError] then restores the previous
+  /// list.  On reload failure (write succeeded) emits an error WITHOUT restoring
+  /// the old list — the contact was saved; the user should refresh.
   Future<void> add(EmergencyContactEntity contact) async {
     final previous = state;
     try {
       await _repo.addContact(contact);
-      await _reload();
     } on Failure catch (f) {
       emit(EmergencyContactsError(f.message));
       emit(previous);
+      return;
     } catch (e) {
       debugPrint('EmergencyContactsCubit.add: unexpected error — $e');
       emit(EmergencyContactsError('Failed to add contact.'));
       emit(previous);
+      return;
     }
+    await _reload();
   }
 
   // ── UPDATE ─────────────────────────────────────────────────────────────────
@@ -90,15 +94,17 @@ class EmergencyContactsCubit extends Cubit<EmergencyContactsState> {
     final previous = state;
     try {
       await _repo.updateContact(contact);
-      await _reload();
     } on Failure catch (f) {
       emit(EmergencyContactsError(f.message));
       emit(previous);
+      return;
     } catch (e) {
       debugPrint('EmergencyContactsCubit.update: unexpected error — $e');
       emit(EmergencyContactsError('Failed to update contact.'));
       emit(previous);
+      return;
     }
+    await _reload();
   }
 
   // ── DELETE ─────────────────────────────────────────────────────────────────
@@ -108,15 +114,17 @@ class EmergencyContactsCubit extends Cubit<EmergencyContactsState> {
     final previous = state;
     try {
       await _repo.deleteContact(contactId);
-      await _reload();
     } on Failure catch (f) {
       emit(EmergencyContactsError(f.message));
       emit(previous);
+      return;
     } catch (e) {
       debugPrint('EmergencyContactsCubit.delete: unexpected error — $e');
       emit(EmergencyContactsError('Failed to delete contact.'));
       emit(previous);
+      return;
     }
+    await _reload();
   }
 
   // ── INTERNAL ───────────────────────────────────────────────────────────────
@@ -124,7 +132,14 @@ class EmergencyContactsCubit extends Cubit<EmergencyContactsState> {
   Future<void> _reload() async {
     final uid = _userId;
     if (uid == null) return;
-    final contacts = await _repo.getContacts(uid);
-    emit(EmergencyContactsLoaded(contacts));
+    try {
+      final contacts = await _repo.getContacts(uid);
+      emit(EmergencyContactsLoaded(contacts));
+    } on Failure catch (f) {
+      emit(EmergencyContactsError(f.message));
+    } catch (e) {
+      debugPrint('EmergencyContactsCubit._reload: $e');
+      emit(EmergencyContactsError('Failed to refresh contacts.'));
+    }
   }
 }
