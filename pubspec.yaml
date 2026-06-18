@@ -59,6 +59,7 @@ dependencies:
  flutter_dotenv: ^6.0.0
  flutter_secure_storage: ^10.0.0
  intl: ^0.20.2
+ package_info_plus: ^8.3.0
  phosphor_flutter: ^2.1.0
  image_picker: ^1.2.1
  # ── Vision AI (Phase 3F) ───────────────────────────────────────────────────
