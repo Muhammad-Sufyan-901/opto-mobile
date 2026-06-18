@@ -472,12 +472,41 @@ class _AccessibleActionRow extends StatelessWidget {
                 child: Opacity(
                   opacity: 0,
                   child: OutlinedButton(
-                    onPressed: () {
-                      HapticPatterns.warning();
-                      context
-                          .read<CaregiverLinksCubit>()
-                          .updateStatus(link.id, LinkStatus.revoked);
-                      announce(context, 'Caregiver access revoked.');
+                    onPressed: () async {
+                      final cubit = context.read<CaregiverLinksCubit>();
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) {
+                          final cs = Theme.of(ctx).colorScheme;
+                          return AlertDialog(
+                            title: const Text('Revoke access?'),
+                            content: const Text(
+                              'This caregiver will no longer be able to access '
+                              'your information. You can re-invite them later.',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(ctx).pop(false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                style: TextButton.styleFrom(
+                                    foregroundColor: cs.error),
+                                onPressed: () =>
+                                    Navigator.of(ctx).pop(true),
+                                child: const Text('Revoke'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      if (confirmed == true && context.mounted) {
+                        HapticPatterns.warning();
+                        cubit.updateStatus(link.id, LinkStatus.revoked);
+                        // ignore: use_build_context_synchronously
+                        announce(context, 'Caregiver access revoked.');
+                      }
                     },
                     child: const Text('Revoke'),
                   ),
