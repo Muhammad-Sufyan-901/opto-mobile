@@ -86,15 +86,19 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     ctx.pop();
   }
 
-  Future<void> _pickAndUploadAvatar(BuildContext ctx) async {
+  Future<void> _pickAndUploadAvatar(
+    BuildContext ctx, {
+    ImageSource source = ImageSource.gallery,
+  }) async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
 
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery);
+    final picked = await picker.pickImage(source: source);
     if (picked == null) return;
 
     if (!ctx.mounted) return;
+    HapticPatterns.focusTick();
     announce(ctx, 'Uploading photo…');
     setState(() => _uploadingAvatar = true);
 
@@ -119,12 +123,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         if (state is ProfileLoaded) {
           _prefill(state);
           if (_uploadingAvatar) {
+            HapticPatterns.success();
             setState(() => _uploadingAvatar = false);
             announce(ctx, 'Photo updated.');
           }
         }
         if (state is ProfileError) {
-          if (_uploadingAvatar) setState(() => _uploadingAvatar = false);
+          if (_uploadingAvatar) {
+            HapticPatterns.warning();
+            setState(() => _uploadingAvatar = false);
+          }
           ScaffoldMessenger.of(ctx)
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(
@@ -134,6 +142,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         }
       },
       builder: (ctx, state) {
+        // Prefill on first render when the BLoC was already loaded before mount
+        // (listener only fires on state changes, not the current state at mount).
+        if (!_initialised && state is ProfileLoaded) _prefill(state);
+
         // Extract profile id from loaded state (null during loading/error).
         final profileId = state is ProfileLoaded ? state.profile.id : null;
         final avatarUrl =
@@ -241,9 +253,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                                 bottom: -2,
                                 child: Semantics(
                                   button: true,
-                                  label: 'Change photo',
+                                  label: 'Take photo with camera',
                                   child: GestureDetector(
-                                    onTap: () => _pickAndUploadAvatar(ctx),
+                                    onTap: () => _pickAndUploadAvatar(
+                                        ctx, source: ImageSource.camera),
                                     child: Container(
                                       width: 34,
                                       height: 34,
