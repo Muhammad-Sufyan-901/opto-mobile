@@ -73,6 +73,7 @@ import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
 import 'package:opto/features/profile/presentation/cubit/caregiver_links_cubit.dart';
 import 'package:opto/features/profile/presentation/cubit/emergency_contacts_cubit.dart';
+import 'package:opto/features/profile/presentation/cubit/vision_clinical_cubit.dart';
 
 // Service Locator
 final sl = GetIt.instance;
@@ -195,6 +196,10 @@ Future<void> init() async {
 
   sl.registerFactory<CaregiverLinksCubit>(
     () => CaregiverLinksCubit(sl<CaregiverLinkRepository>()),
+  );
+
+  sl.registerFactory<VisionClinicalCubit>(
+    () => VisionClinicalCubit(sl<ProfileRepository>()),
   );
 
   // ===============================================================

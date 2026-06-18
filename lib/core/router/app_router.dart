@@ -580,11 +580,16 @@ final GoRouter appRouter = GoRouter(
     ),
 
     // Screen 20b — Vision Profile (🔒 medical — owner-only display)
+    // ProfileBloc is provided here so the screen can read clinicName from the
+    // loaded profile (used in the privacy banner).
     GoRoute(
       path: AppRoutes.visionProfile.path,
       name: AppRoutes.visionProfile.name,
       builder: (BuildContext context, GoRouterState state) =>
-          const ProfileVisionScreen(),
+          BlocProvider<ProfileBloc>(
+            create: (_) => sl<ProfileBloc>(),
+            child: const ProfileVisionScreen(),
+          ),
     ),
 
     // Screen 20c — Accessibility Preferences (wired to AccessibilitySettingsCubit singleton)
