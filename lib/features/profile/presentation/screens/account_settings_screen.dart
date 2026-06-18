@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opto/features/profile/presentation/widgets/profile_nav_row.dart';
 
 /// Screen P5 — Account & Settings.
 ///
-/// Groups: Account · Preferences · More. Sign out and Delete account are
-/// "danger" rows; the delete-account row shows a confirmation dialog before
-/// dispatching. Email, phone, language, clinic values are static placeholders.
+/// Groups: Account · Preferences · More. Email/phone are read from the active
+/// Supabase session and ProfileBloc state. Sign out and Delete account are
+/// "danger" rows; delete shows a confirmation dialog (deletion deferred to
+/// an audited Edge Function — stub only for now).
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});
 
@@ -59,6 +62,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         ],
       );
     }
+
+    // Real values from session / profile state (no additional network calls).
+    final authUser = Supabase.instance.client.auth.currentUser;
+    final email = authUser?.email;
+    final profileState = context.watch<ProfileBloc>().state;
+    final phone = profileState is ProfileLoaded
+        ? profileState.profile.phone
+        : null;
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (ctx, state) {
@@ -129,13 +140,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     ProfileNavRow(
                       icon: Icons.person_outline,
                       title: 'Email',
-                      trailing: val('rani.putri@…'),
+                      trailing: val(email ?? '—'),
                     ),
                     const SizedBox(height: 11),
                     ProfileNavRow(
                       icon: Icons.phone_outlined,
                       title: 'Phone',
-                      trailing: val('+62 812 ••• 41'),
+                      trailing: val(phone ?? '—'),
                     ),
                     const SizedBox(height: 11),
                     ProfileNavRow(
