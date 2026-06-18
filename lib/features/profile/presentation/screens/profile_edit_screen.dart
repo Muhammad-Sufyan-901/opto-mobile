@@ -38,6 +38,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       announce(context, 'Edit profile.');
+      // The router gives the edit screen its own fresh ProfileBloc (factory),
+      // so we must load the profile here — the parent screen's BLoC is a
+      // separate instance and not accessible from this widget subtree.
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId != null) {
+        context
+            .read<ProfileBloc>()
+            .add(ProfileEvent.loadProfile(userId: userId));
+      }
     });
   }
 
@@ -130,9 +139,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             setState(() => _uploadingAvatar = false);
             announce(ctx, 'Photo updated.');
           } else if (_saving) {
-            // Profile fields saved successfully — announce and close screen.
+            // Profile fields saved successfully — show snackbar, announce, close.
             HapticPatterns.success();
             setState(() => _saving = false);
+            ScaffoldMessenger.of(ctx)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(const SnackBar(
+                content: Text('Profile saved successfully.'),
+                behavior: SnackBarBehavior.floating,
+              ));
             announce(ctx, 'Profile saved.');
             ctx.pop();
           }
