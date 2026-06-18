@@ -9,6 +9,8 @@
 //   Never expose these records in community/map/catalog joins.
 // - `caregiver_links` is owner-only (RLS enforced by Postgres).
 //   Never expose caregiver IDs in community/map surfaces.
+import 'dart:io';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:opto/core/error/failures.dart';
@@ -25,6 +27,11 @@ abstract class ProfileRemoteDataSource {
   Future<ProfileModel> getProfile(String userId);
   Future<void> updateProfile(String userId, Map<String, dynamic> fields);
   Future<void> updateVisionProfile(String dbValue);
+
+  /// Uploads [localPath] to the `avatars` Storage bucket (upsert) and returns
+  /// the public URL.  Throws [AuthFailure] if not signed in, [StorageFailure]
+  /// on upload error.
+  Future<String> uploadAvatar(String localPath);
 
   // ── accessibility_settings ─────────────────────────────────────────────────
   Future<AccessibilitySettingsModel> getSettings(String userId);
@@ -109,6 +116,26 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     } catch (e) {
       throw ServerFailure(e.toString());
     }
+  }
+
+  @override
+  Future<String> uploadAvatar(String localPath) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw const AuthFailure('Not authenticated');
+    final fileName =
+        '${DateTime.now().millisecondsSinceEpoch}_${localPath.split('/').last}';
+    final storagePath = '$userId/$fileName';
+    try {
+      await _client.storage
+          .from('avatars')
+          .upload(storagePath, File(localPath),
+              fileOptions: const FileOptions(upsert: true));
+    } on StorageException catch (e) {
+      throw SupabaseErrorMapper.fromStorage(e);
+    } catch (e) {
+      throw StorageFailure(e.toString());
+    }
+    return _client.storage.from('avatars').getPublicUrl(storagePath);
   }
 
   // ── accessibility_settings ─────────────────────────────────────────────────

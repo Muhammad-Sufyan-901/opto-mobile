@@ -33,18 +33,30 @@ class ProfileRepositoryImpl implements ProfileRepository {
     String? phone,
     VisionProfile? visionProfile,
     String? avatarUrl,
+    String? username,
+    String? pronouns,
+    String? bio,
+    String? location,
   }) async {
     final fields = <String, dynamic>{
       'full_name': ?fullName,
       'phone': ?phone,
       'vision_profile': ?visionProfile?.dbValue,
       'avatar_url': ?avatarUrl,
+      'handle': ?username,
+      'pronouns': ?pronouns,
+      'bio': ?bio,
+      'location': ?location,
     };
 
     if (fields.isEmpty) return; // nothing to update
 
     await _remote.updateProfile(userId, fields);
   }
+
+  @override
+  Future<String> uploadAvatar(String localPath) =>
+      _remote.uploadAvatar(localPath);
 
   @override
   Future<void> updateVisionProfile(VisionProfile profile) async {

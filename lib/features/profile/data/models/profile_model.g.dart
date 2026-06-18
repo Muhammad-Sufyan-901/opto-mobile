@@ -16,6 +16,10 @@ _ProfileModel _$ProfileModelFromJson(Map<String, dynamic> json) =>
         json['vision_profile'] as String?,
       ),
       avatarUrl: json['avatar_url'] as String?,
+      username: json['handle'] as String?,
+      pronouns: json['pronouns'] as String?,
+      bio: json['bio'] as String?,
+      location: json['location'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
 
@@ -29,5 +33,9 @@ Map<String, dynamic> _$ProfileModelToJson(_ProfileModel instance) =>
         instance.visionProfile,
       ),
       'avatar_url': instance.avatarUrl,
+      'handle': instance.username,
+      'pronouns': instance.pronouns,
+      'bio': instance.bio,
+      'location': instance.location,
       'created_at': instance.createdAt.toIso8601String(),
     };

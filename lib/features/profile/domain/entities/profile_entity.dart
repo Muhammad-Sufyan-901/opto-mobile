@@ -15,6 +15,10 @@ class ProfileEntity {
     this.phone,
     this.visionProfile,
     this.avatarUrl,
+    this.username,
+    this.pronouns,
+    this.bio,
+    this.location,
     required this.createdAt,
   });
 
@@ -36,6 +40,18 @@ class ProfileEntity {
   /// Supabase Storage public URL for the user's avatar (null if not uploaded).
   final String? avatarUrl;
 
+  /// The user's @handle (null until set).
+  final String? username;
+
+  /// The user's preferred pronouns (null until set).
+  final String? pronouns;
+
+  /// Short bio shown on the community profile card (null until set).
+  final String? bio;
+
+  /// City / region the user is based in (null until set).
+  final String? location;
+
   /// Row creation timestamp.
   final DateTime createdAt;
 
@@ -51,6 +67,10 @@ class ProfileEntity {
     String? phone,
     VisionProfile? visionProfile,
     String? avatarUrl,
+    String? username,
+    String? pronouns,
+    String? bio,
+    String? location,
     DateTime? createdAt,
   }) {
     return ProfileEntity(
@@ -60,6 +80,10 @@ class ProfileEntity {
       phone: phone ?? this.phone,
       visionProfile: visionProfile ?? this.visionProfile,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      username: username ?? this.username,
+      pronouns: pronouns ?? this.pronouns,
+      bio: bio ?? this.bio,
+      location: location ?? this.location,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -75,6 +99,10 @@ class ProfileEntity {
           phone == other.phone &&
           visionProfile == other.visionProfile &&
           avatarUrl == other.avatarUrl &&
+          username == other.username &&
+          pronouns == other.pronouns &&
+          bio == other.bio &&
+          location == other.location &&
           createdAt == other.createdAt;
 
   @override
@@ -85,6 +113,10 @@ class ProfileEntity {
         phone,
         visionProfile,
         avatarUrl,
+        username,
+        pronouns,
+        bio,
+        location,
         createdAt,
       );
 }

@@ -70,6 +70,18 @@ abstract class ProfileModel with _$ProfileModel {
     /// Supabase Storage public URL for the user's avatar (nullable).
     @JsonKey(name: 'avatar_url') String? avatarUrl,
 
+    /// The user's @handle (stored in DB as `handle`).
+    @JsonKey(name: 'handle') String? username,
+
+    /// The user's preferred pronouns (e.g. "she/her", "they/them").
+    String? pronouns,
+
+    /// Short bio shown on the community profile card.
+    String? bio,
+
+    /// City / region the user is based in.
+    String? location,
+
     /// Row creation timestamp — set by Postgres default.
     @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _ProfileModel;

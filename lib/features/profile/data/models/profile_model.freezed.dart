@@ -21,7 +21,11 @@ mixin _$ProfileModel {
 @JsonKey(name: 'full_name') String? get fullName;/// Contact phone number (nullable until set).
  String? get phone;/// How the user perceives vision (nullable until set during onboarding).
 @JsonKey(name: 'vision_profile')@_VisionProfileConverter() VisionProfile? get visionProfile;/// Supabase Storage public URL for the user's avatar (nullable).
-@JsonKey(name: 'avatar_url') String? get avatarUrl;/// Row creation timestamp — set by Postgres default.
+@JsonKey(name: 'avatar_url') String? get avatarUrl;/// The user's @handle (stored in DB as `handle`).
+@JsonKey(name: 'handle') String? get username;/// The user's preferred pronouns (e.g. "she/her", "they/them").
+ String? get pronouns;/// Short bio shown on the community profile card.
+ String? get bio;/// City / region the user is based in.
+ String? get location;/// Row creation timestamp — set by Postgres default.
 @JsonKey(name: 'created_at') DateTime get createdAt;
 /// Create a copy of ProfileModel
 /// with the given fields replaced by the non-null parameter values.
@@ -35,16 +39,16 @@ $ProfileModelCopyWith<ProfileModel> get copyWith => _$ProfileModelCopyWithImpl<P
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.role, role) || other.role == role)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.visionProfile, visionProfile) || other.visionProfile == visionProfile)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.role, role) || other.role == role)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.visionProfile, visionProfile) || other.visionProfile == visionProfile)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.username, username) || other.username == username)&&(identical(other.pronouns, pronouns) || other.pronouns == pronouns)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.location, location) || other.location == location)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,role,fullName,phone,visionProfile,avatarUrl,createdAt);
+int get hashCode => Object.hash(runtimeType,id,role,fullName,phone,visionProfile,avatarUrl,username,pronouns,bio,location,createdAt);
 
 @override
 String toString() {
-  return 'ProfileModel(id: $id, role: $role, fullName: $fullName, phone: $phone, visionProfile: $visionProfile, avatarUrl: $avatarUrl, createdAt: $createdAt)';
+  return 'ProfileModel(id: $id, role: $role, fullName: $fullName, phone: $phone, visionProfile: $visionProfile, avatarUrl: $avatarUrl, username: $username, pronouns: $pronouns, bio: $bio, location: $location, createdAt: $createdAt)';
 }
 
 
@@ -55,7 +59,7 @@ abstract mixin class $ProfileModelCopyWith<$Res>  {
   factory $ProfileModelCopyWith(ProfileModel value, $Res Function(ProfileModel) _then) = _$ProfileModelCopyWithImpl;
 @useResult
 $Res call({
- String id,@_UserRoleConverter() UserRole role,@JsonKey(name: 'full_name') String? fullName, String? phone,@JsonKey(name: 'vision_profile')@_VisionProfileConverter() VisionProfile? visionProfile,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'created_at') DateTime createdAt
+ String id,@_UserRoleConverter() UserRole role,@JsonKey(name: 'full_name') String? fullName, String? phone,@JsonKey(name: 'vision_profile')@_VisionProfileConverter() VisionProfile? visionProfile,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'handle') String? username, String? pronouns, String? bio, String? location,@JsonKey(name: 'created_at') DateTime createdAt
 });
 
 
@@ -72,7 +76,7 @@ class _$ProfileModelCopyWithImpl<$Res>
 
 /// Create a copy of ProfileModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? role = null,Object? fullName = freezed,Object? phone = freezed,Object? visionProfile = freezed,Object? avatarUrl = freezed,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? role = null,Object? fullName = freezed,Object? phone = freezed,Object? visionProfile = freezed,Object? avatarUrl = freezed,Object? username = freezed,Object? pronouns = freezed,Object? bio = freezed,Object? location = freezed,Object? createdAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
@@ -80,6 +84,10 @@ as UserRole,fullName: freezed == fullName ? _self.fullName : fullName // ignore:
 as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
 as String?,visionProfile: freezed == visionProfile ? _self.visionProfile : visionProfile // ignore: cast_nullable_to_non_nullable
 as VisionProfile?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,username: freezed == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
+as String?,pronouns: freezed == pronouns ? _self.pronouns : pronouns // ignore: cast_nullable_to_non_nullable
+as String?,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
+as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
@@ -166,10 +174,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @_UserRoleConverter()  UserRole role, @JsonKey(name: 'full_name')  String? fullName,  String? phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter()  VisionProfile? visionProfile, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @_UserRoleConverter()  UserRole role, @JsonKey(name: 'full_name')  String? fullName,  String? phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter()  VisionProfile? visionProfile, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'handle')  String? username,  String? pronouns,  String? bio,  String? location, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProfileModel() when $default != null:
-return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.createdAt);case _:
+return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.username,_that.pronouns,_that.bio,_that.location,_that.createdAt);case _:
   return orElse();
 
 }
@@ -187,10 +195,10 @@ return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfi
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @_UserRoleConverter()  UserRole role, @JsonKey(name: 'full_name')  String? fullName,  String? phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter()  VisionProfile? visionProfile, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'created_at')  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @_UserRoleConverter()  UserRole role, @JsonKey(name: 'full_name')  String? fullName,  String? phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter()  VisionProfile? visionProfile, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'handle')  String? username,  String? pronouns,  String? bio,  String? location, @JsonKey(name: 'created_at')  DateTime createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _ProfileModel():
-return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.createdAt);case _:
+return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.username,_that.pronouns,_that.bio,_that.location,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -207,10 +215,10 @@ return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfi
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @_UserRoleConverter()  UserRole role, @JsonKey(name: 'full_name')  String? fullName,  String? phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter()  VisionProfile? visionProfile, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @_UserRoleConverter()  UserRole role, @JsonKey(name: 'full_name')  String? fullName,  String? phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter()  VisionProfile? visionProfile, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'handle')  String? username,  String? pronouns,  String? bio,  String? location, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ProfileModel() when $default != null:
-return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.createdAt);case _:
+return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.username,_that.pronouns,_that.bio,_that.location,_that.createdAt);case _:
   return null;
 
 }
@@ -222,7 +230,7 @@ return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfi
 @JsonSerializable()
 
 class _ProfileModel implements ProfileModel {
-  const _ProfileModel({required this.id, @_UserRoleConverter() required this.role, @JsonKey(name: 'full_name') this.fullName, this.phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter() this.visionProfile, @JsonKey(name: 'avatar_url') this.avatarUrl, @JsonKey(name: 'created_at') required this.createdAt});
+  const _ProfileModel({required this.id, @_UserRoleConverter() required this.role, @JsonKey(name: 'full_name') this.fullName, this.phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter() this.visionProfile, @JsonKey(name: 'avatar_url') this.avatarUrl, @JsonKey(name: 'handle') this.username, this.pronouns, this.bio, this.location, @JsonKey(name: 'created_at') required this.createdAt});
   factory _ProfileModel.fromJson(Map<String, dynamic> json) => _$ProfileModelFromJson(json);
 
 /// Primary key — matches `auth.users.id` (UUID).
@@ -237,6 +245,14 @@ class _ProfileModel implements ProfileModel {
 @override@JsonKey(name: 'vision_profile')@_VisionProfileConverter() final  VisionProfile? visionProfile;
 /// Supabase Storage public URL for the user's avatar (nullable).
 @override@JsonKey(name: 'avatar_url') final  String? avatarUrl;
+/// The user's @handle (stored in DB as `handle`).
+@override@JsonKey(name: 'handle') final  String? username;
+/// The user's preferred pronouns (e.g. "she/her", "they/them").
+@override final  String? pronouns;
+/// Short bio shown on the community profile card.
+@override final  String? bio;
+/// City / region the user is based in.
+@override final  String? location;
 /// Row creation timestamp — set by Postgres default.
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 
@@ -253,16 +269,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.role, role) || other.role == role)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.visionProfile, visionProfile) || other.visionProfile == visionProfile)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.role, role) || other.role == role)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.visionProfile, visionProfile) || other.visionProfile == visionProfile)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.username, username) || other.username == username)&&(identical(other.pronouns, pronouns) || other.pronouns == pronouns)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.location, location) || other.location == location)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,role,fullName,phone,visionProfile,avatarUrl,createdAt);
+int get hashCode => Object.hash(runtimeType,id,role,fullName,phone,visionProfile,avatarUrl,username,pronouns,bio,location,createdAt);
 
 @override
 String toString() {
-  return 'ProfileModel(id: $id, role: $role, fullName: $fullName, phone: $phone, visionProfile: $visionProfile, avatarUrl: $avatarUrl, createdAt: $createdAt)';
+  return 'ProfileModel(id: $id, role: $role, fullName: $fullName, phone: $phone, visionProfile: $visionProfile, avatarUrl: $avatarUrl, username: $username, pronouns: $pronouns, bio: $bio, location: $location, createdAt: $createdAt)';
 }
 
 
@@ -273,7 +289,7 @@ abstract mixin class _$ProfileModelCopyWith<$Res> implements $ProfileModelCopyWi
   factory _$ProfileModelCopyWith(_ProfileModel value, $Res Function(_ProfileModel) _then) = __$ProfileModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@_UserRoleConverter() UserRole role,@JsonKey(name: 'full_name') String? fullName, String? phone,@JsonKey(name: 'vision_profile')@_VisionProfileConverter() VisionProfile? visionProfile,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'created_at') DateTime createdAt
+ String id,@_UserRoleConverter() UserRole role,@JsonKey(name: 'full_name') String? fullName, String? phone,@JsonKey(name: 'vision_profile')@_VisionProfileConverter() VisionProfile? visionProfile,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'handle') String? username, String? pronouns, String? bio, String? location,@JsonKey(name: 'created_at') DateTime createdAt
 });
 
 
@@ -290,7 +306,7 @@ class __$ProfileModelCopyWithImpl<$Res>
 
 /// Create a copy of ProfileModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? role = null,Object? fullName = freezed,Object? phone = freezed,Object? visionProfile = freezed,Object? avatarUrl = freezed,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? role = null,Object? fullName = freezed,Object? phone = freezed,Object? visionProfile = freezed,Object? avatarUrl = freezed,Object? username = freezed,Object? pronouns = freezed,Object? bio = freezed,Object? location = freezed,Object? createdAt = null,}) {
   return _then(_ProfileModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
@@ -298,6 +314,10 @@ as UserRole,fullName: freezed == fullName ? _self.fullName : fullName // ignore:
 as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
 as String?,visionProfile: freezed == visionProfile ? _self.visionProfile : visionProfile // ignore: cast_nullable_to_non_nullable
 as VisionProfile?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,username: freezed == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
+as String?,pronouns: freezed == pronouns ? _self.pronouns : pronouns // ignore: cast_nullable_to_non_nullable
+as String?,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
+as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));

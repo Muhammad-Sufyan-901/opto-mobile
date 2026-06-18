@@ -30,7 +30,18 @@ abstract class ProfileRepository {
     String? phone,
     VisionProfile? visionProfile,
     String? avatarUrl,
+    String? username,
+    String? pronouns,
+    String? bio,
+    String? location,
   });
+
+  /// Uploads the file at [localPath] to the `avatars` storage bucket and
+  /// returns the public URL of the uploaded file.
+  ///
+  /// Throws `AuthFailure` when there is no active session, and
+  /// `StorageFailure` on upload error.
+  Future<String> uploadAvatar(String localPath);
 
   /// Updates only the `vision_profile` column for the currently signed-in user.
   ///

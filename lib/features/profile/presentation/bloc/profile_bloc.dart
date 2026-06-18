@@ -19,6 +19,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ProfileBloc(this._profile) : super(const ProfileState.initial()) {
     on<LoadProfile>(_onLoadProfile);
     on<UpdateProfile>(_onUpdateProfile);
+    on<ChangeAvatar>(_onChangeAvatar);
     on<UpdateVisionProfile>(_onUpdateVisionProfile);
   }
 
@@ -56,6 +57,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         phone: event.phone,
         visionProfile: event.visionProfile,
         avatarUrl: event.avatarUrl,
+        username: event.username,
+        pronouns: event.pronouns,
+        bio: event.bio,
+        location: event.location,
       );
       // Reload the updated profile to get the server-confirmed state.
       final updated = await _profile.getProfile(event.userId);
@@ -71,6 +76,34 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       }
     } catch (e) {
       emit(previous is ProfileLoaded ? previous : const ProfileState.error(message: 'An unexpected error occurred.'));
+      if (previous is ProfileLoaded) {
+        emit(const ProfileState.error(message: 'An unexpected error occurred.'));
+      }
+    }
+  }
+
+  Future<void> _onChangeAvatar(
+    ChangeAvatar event,
+    Emitter<ProfileState> emit,
+  ) async {
+    final previous = state;
+    emit(const ProfileState.loading());
+    try {
+      final url = await _profile.uploadAvatar(event.localPath);
+      await _profile.updateProfile(event.userId, avatarUrl: url);
+      final updated = await _profile.getProfile(event.userId);
+      emit(ProfileState.loaded(profile: updated));
+    } on Failure catch (f) {
+      emit(previous is ProfileLoaded
+          ? previous
+          : ProfileState.error(message: f.message));
+      if (previous is ProfileLoaded) {
+        emit(ProfileState.error(message: f.message));
+      }
+    } catch (e) {
+      emit(previous is ProfileLoaded
+          ? previous
+          : const ProfileState.error(message: 'An unexpected error occurred.'));
       if (previous is ProfileLoaded) {
         emit(const ProfileState.error(message: 'An unexpected error occurred.'));
       }
