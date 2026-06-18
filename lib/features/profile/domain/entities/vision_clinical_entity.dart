@@ -144,6 +144,14 @@ class VisionClinicalEntity {
     );
   }
 
+  /// Identity equality — two entities for the same user represent the same
+  /// clinical record, regardless of field values.
+  ///
+  /// NOTE: BLoC `emit()` de-duplicates states using `==`. Because this entity
+  /// uses identity-only equality, loading updated clinical data WILL always
+  /// trigger a rebuild (different object instance ≠ equal, unless identical).
+  /// This is intentional: the [VisionClinicalCubit] emits new instances on
+  /// every load, so rebuilds are always triggered correctly.
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

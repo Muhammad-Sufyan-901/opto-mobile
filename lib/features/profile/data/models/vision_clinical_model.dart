@@ -22,13 +22,13 @@ class _AssistiveTechListConverter
   const _AssistiveTechListConverter();
 
   @override
-  List<AssistiveTech> fromJson(List<dynamic> json) => json.map((e) {
-        final m = e as Map<String, dynamic>;
-        return AssistiveTech(
-          name: m['name'] as String,
-          enabled: m['enabled'] as bool,
-        );
-      }).toList();
+  List<AssistiveTech> fromJson(List<dynamic> json) => json
+      .whereType<Map<String, dynamic>>()
+      .map((m) => AssistiveTech(
+            name: (m['name'] as String?) ?? '',
+            enabled: (m['enabled'] as bool?) ?? false,
+          ))
+      .toList();
 
   @override
   List<dynamic> toJson(List<AssistiveTech> list) =>
@@ -39,8 +39,12 @@ class _AssistiveTechListConverter
 // Date helpers for Supabase `date` columns (returned as ISO-8601 strings).
 // ---------------------------------------------------------------------------
 
-DateTime? _parseDate(dynamic v) =>
-    v == null ? null : DateTime.parse(v as String);
+DateTime? _parseDate(dynamic v) {
+  if (v == null) return null;
+  // Supabase returns date columns as ISO-8601 strings; guard against
+  // unexpected types (e.g. Map in PostgREST edge cases).
+  return DateTime.parse(v.toString());
+}
 
 String? _formatDate(DateTime? d) => d?.toIso8601String().substring(0, 10);
 
