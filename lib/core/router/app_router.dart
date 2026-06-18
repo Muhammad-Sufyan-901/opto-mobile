@@ -55,7 +55,9 @@ import 'package:opto/features/profile/presentation/screens/accessibility_screen.
 import 'package:opto/features/profile/presentation/screens/account_settings_screen.dart';
 import 'package:opto/features/profile/presentation/screens/my_activity_screen.dart';
 import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
+import 'package:opto/features/profile/presentation/cubit/caregiver_links_cubit.dart';
 import 'package:opto/features/profile/presentation/cubit/emergency_contacts_cubit.dart';
+import 'package:opto/features/profile/presentation/screens/caregiver_links_screen.dart';
 import 'package:opto/features/profile/presentation/screens/emergency_contacts_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
 import 'package:opto/features/sos/presentation/screens/sos_active_screen.dart';
@@ -619,6 +621,16 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => BlocProvider<EmergencyContactsCubit>(
         create: (_) => sl<EmergencyContactsCubit>(),
         child: const EmergencyContactsScreen(),
+      ),
+    ),
+
+    // Screen 20g — Caregiver Links
+    GoRoute(
+      path: AppRoutes.caregiverLinks.path,
+      name: AppRoutes.caregiverLinks.name,
+      builder: (context, state) => BlocProvider<CaregiverLinksCubit>(
+        create: (_) => sl<CaregiverLinksCubit>(),
+        child: const CaregiverLinksScreen(),
       ),
     ),
 

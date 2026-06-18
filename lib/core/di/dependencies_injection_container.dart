@@ -71,6 +71,7 @@ import 'package:opto/features/profile/domain/repositories/emergency_contact_repo
 import 'package:opto/features/profile/domain/repositories/profile_repository.dart';
 import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
+import 'package:opto/features/profile/presentation/cubit/caregiver_links_cubit.dart';
 import 'package:opto/features/profile/presentation/cubit/emergency_contacts_cubit.dart';
 
 // Service Locator
@@ -190,6 +191,10 @@ Future<void> init() async {
 
   sl.registerFactory<EmergencyContactsCubit>(
     () => EmergencyContactsCubit(sl<EmergencyContactRepository>()),
+  );
+
+  sl.registerFactory<CaregiverLinksCubit>(
+    () => CaregiverLinksCubit(sl<CaregiverLinkRepository>()),
   );
 
   // ===============================================================

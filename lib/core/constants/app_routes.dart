@@ -280,6 +280,12 @@ abstract class AppRoutes {
     name: 'emergency_contacts',
   );
 
+  /// Screen 20g — Caregiver links management.
+  static const AppRoute caregiverLinks = AppRoute(
+    path: '/profile/caregivers',
+    name: 'caregiver_links',
+  );
+
   /// Screen 21 — Emergency SOS (panic button + alert).
   static const AppRoute sos = AppRoute(
     path: '/sos',

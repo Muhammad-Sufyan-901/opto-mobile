@@ -156,6 +156,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       onTap: () =>
                           context.push(AppRoutes.emergencyContacts.path),
                     ),
+                    const SizedBox(height: 11),
+                    ProfileNavRow(
+                      icon: Icons.people_outline,
+                      title: 'Caregiver links',
+                      onTap: () =>
+                          context.push(AppRoutes.caregiverLinks.path),
+                    ),
                   ],
                 ),
 
