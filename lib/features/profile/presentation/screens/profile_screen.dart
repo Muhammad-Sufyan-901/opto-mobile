@@ -93,16 +93,22 @@ class _ProfileBodyState extends State<_ProfileBody> {
     final memberRepo = sl<MemberRepository>();
     final profileRepo = sl<ProfileRepository>();
 
-    Future.wait([
-      memberRepo.getMemberProfile(userId).then((m) {
-        if (mounted) {
-          setState(() { _memberProfile = m; });
-        }
-      }).catchError((_) {}),
-      profileRepo.getVisionClinical(userId).then((c) {
-        if (mounted) setState(() { _clinicalProfile = c; });
-      }).catchError((_) {}),
-    ]);
+    // Fire both calls in parallel; each updates state independently so a
+    // failure in one doesn't block the other.
+    memberRepo.getMemberProfile(userId).then((m) {
+      if (mounted) setState(() { _memberProfile = m; });
+    // ignore: avoid_catches_without_on_clauses
+    }).catchError((Object e) {
+      // Supplemental — degrade gracefully to null/zero fallbacks.
+      debugPrint('[ProfileScreen] getMemberProfile failed: $e');
+    });
+
+    profileRepo.getVisionClinical(userId).then((c) {
+      if (mounted) setState(() { _clinicalProfile = c; });
+    // ignore: avoid_catches_without_on_clauses
+    }).catchError((Object e) {
+      debugPrint('[ProfileScreen] getVisionClinical failed: $e');
+    });
   }
 
   @override
@@ -162,7 +168,7 @@ class _ProfileContent extends StatelessWidget {
   ];
   static String _monthAbbr(int month) => _months[month - 1];
 
-  String _buildHandle(ProfileEntity? profile, MemberProfileEntity? member) {
+  static String _buildHandle(ProfileEntity? profile, MemberProfileEntity? member) {
     final parts = <String>[];
     final handle = profile?.username ?? member?.handle;
     if (handle != null && handle.isNotEmpty) parts.add('@$handle');
@@ -199,7 +205,7 @@ class _ProfileContent extends StatelessWidget {
     final String summary =
         '$displayName. $visionLabel. '
         '$posts posts, ${_formatCount(helpful)} helpful votes, $circles circles. '
-        'Joined ${profile?.createdAt.year ?? memberProfile?.joinedYear ?? '—'}.';
+        'Joined ${profile?.createdAt.year ?? memberProfile?.joinedYear ?? 'unknown'}.';
 
     // ── Badges ──────────────────────────────────────────────────────────────
     final badges = <ProfileBadge>[];
@@ -255,7 +261,8 @@ class _ProfileContent extends StatelessWidget {
       ));
     }
 
-    final a11y = context.read<AccessibilitySettingsCubit>().state;
+    // Use watch so the glance card reacts when the user changes a11y settings.
+    final a11y = context.watch<AccessibilitySettingsCubit>().state;
     final voiceOn = a11y.voiceEnabled;
     final scale = a11y.textScale;
     final scaleStr = scale == 1.0 ? '1×' : '${scale.toStringAsFixed(1)}×';
@@ -378,7 +385,9 @@ class _ProfileContent extends StatelessWidget {
                         ExcludeSemantics(
                           child: CommunityAvatar(
                             name: displayName,
-                            authorId: profile?.id ?? '',
+                            authorId: profile?.id ??
+                                Supabase.instance.client.auth.currentUser?.id ??
+                                '',
                             avatarUrl: profile?.avatarUrl,
                             size: 96,
                             fontSize: 34,
@@ -632,7 +641,7 @@ class _ProfileContent extends StatelessWidget {
     );
   }
 
-  String _visionLabel(VisionProfile? vp) {
+  static String _visionLabel(VisionProfile? vp) {
     return switch (vp) {
       VisionProfile.blindTotal => 'Blind (total)',
       VisionProfile.lowVision => 'Low vision',
