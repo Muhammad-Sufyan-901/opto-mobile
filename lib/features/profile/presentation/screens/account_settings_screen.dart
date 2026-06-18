@@ -30,6 +30,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       announce(context, 'Account and settings.');
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId != null) {
+        context
+            .read<ProfileBloc>()
+            .add(ProfileEvent.loadProfile(userId: userId));
+      }
     });
   }
 

@@ -603,7 +603,10 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.accountSettings.path,
       name: AppRoutes.accountSettings.name,
       builder: (BuildContext context, GoRouterState state) =>
-          const AccountSettingsScreen(),
+          BlocProvider<ProfileBloc>(
+            create: (_) => sl<ProfileBloc>(),
+            child: const AccountSettingsScreen(),
+          ),
     ),
 
     // Screen 20e — My Activity
