@@ -17,6 +17,7 @@ class AccessibilitySettingsEntity {
     this.hotwordEnabled = false,
     this.spokenGuidanceEnabled = true,
     this.speakingRate = 0.45,
+    this.soundEffectsEnabled = true,
     this.updatedAt,
   });
 
@@ -47,6 +48,9 @@ class AccessibilitySettingsEntity {
   /// TTS speaking rate multiplier — 0.0 (slowest) to 1.0 (fastest); default 0.45.
   final double speakingRate;
 
+  /// Whether app sound effects are enabled; defaults to true.
+  final bool soundEffectsEnabled;
+
   /// Timestamp of the last settings update (null if never explicitly saved).
   final DateTime? updatedAt;
 
@@ -65,6 +69,7 @@ class AccessibilitySettingsEntity {
     bool? hotwordEnabled,
     bool? spokenGuidanceEnabled,
     double? speakingRate,
+    bool? soundEffectsEnabled,
     DateTime? updatedAt,
   }) {
     return AccessibilitySettingsEntity(
@@ -78,6 +83,7 @@ class AccessibilitySettingsEntity {
       spokenGuidanceEnabled:
           spokenGuidanceEnabled ?? this.spokenGuidanceEnabled,
       speakingRate: speakingRate ?? this.speakingRate,
+      soundEffectsEnabled: soundEffectsEnabled ?? this.soundEffectsEnabled,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
@@ -96,6 +102,7 @@ class AccessibilitySettingsEntity {
           hotwordEnabled == other.hotwordEnabled &&
           spokenGuidanceEnabled == other.spokenGuidanceEnabled &&
           speakingRate == other.speakingRate &&
+          soundEffectsEnabled == other.soundEffectsEnabled &&
           updatedAt == other.updatedAt;
 
   @override
@@ -109,6 +116,7 @@ class AccessibilitySettingsEntity {
         hotwordEnabled,
         spokenGuidanceEnabled,
         speakingRate,
+        soundEffectsEnabled,
         updatedAt,
       );
 }

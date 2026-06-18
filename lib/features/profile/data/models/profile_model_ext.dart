@@ -20,5 +20,8 @@ extension ProfileModelX on ProfileModel {
         bio: bio,
         location: location,
         createdAt: createdAt,
+        preferredLanguage: preferredLanguage,
+        clinicId: clinicId,
+        clinicName: clinicName,
       );
 }

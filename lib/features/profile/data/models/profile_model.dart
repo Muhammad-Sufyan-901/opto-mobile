@@ -84,6 +84,15 @@ abstract class ProfileModel with _$ProfileModel {
 
     /// Row creation timestamp — set by Postgres default.
     @JsonKey(name: 'created_at') required DateTime createdAt,
+
+    /// DB column `preferred_language` (not null, default 'en').
+    @JsonKey(name: 'preferred_language') @Default('en') String preferredLanguage,
+
+    /// DB column `clinic_id` (nullable UUID).
+    @JsonKey(name: 'clinic_id') String? clinicId,
+
+    /// Flattened from the nested `clinic:clinics(name)` join — read-only, never written back.
+    @JsonKey(name: 'clinic_name', includeToJson: false) String? clinicName,
   }) = _ProfileModel;
 
   /// Deserialises a Supabase / JSON map to a [ProfileModel].

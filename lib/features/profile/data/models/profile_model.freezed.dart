@@ -26,7 +26,10 @@ mixin _$ProfileModel {
  String? get pronouns;/// Short bio shown on the community profile card.
  String? get bio;/// City / region the user is based in.
  String? get location;/// Row creation timestamp — set by Postgres default.
-@JsonKey(name: 'created_at') DateTime get createdAt;
+@JsonKey(name: 'created_at') DateTime get createdAt;/// DB column `preferred_language` (not null, default 'en').
+@JsonKey(name: 'preferred_language') String get preferredLanguage;/// DB column `clinic_id` (nullable UUID).
+@JsonKey(name: 'clinic_id') String? get clinicId;/// Flattened from the nested `clinic:clinics(name)` join — read-only, never written back.
+@JsonKey(name: 'clinic_name', includeToJson: false) String? get clinicName;
 /// Create a copy of ProfileModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -39,16 +42,16 @@ $ProfileModelCopyWith<ProfileModel> get copyWith => _$ProfileModelCopyWithImpl<P
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.role, role) || other.role == role)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.visionProfile, visionProfile) || other.visionProfile == visionProfile)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.username, username) || other.username == username)&&(identical(other.pronouns, pronouns) || other.pronouns == pronouns)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.location, location) || other.location == location)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.role, role) || other.role == role)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.visionProfile, visionProfile) || other.visionProfile == visionProfile)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.username, username) || other.username == username)&&(identical(other.pronouns, pronouns) || other.pronouns == pronouns)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.location, location) || other.location == location)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.preferredLanguage, preferredLanguage) || other.preferredLanguage == preferredLanguage)&&(identical(other.clinicId, clinicId) || other.clinicId == clinicId)&&(identical(other.clinicName, clinicName) || other.clinicName == clinicName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,role,fullName,phone,visionProfile,avatarUrl,username,pronouns,bio,location,createdAt);
+int get hashCode => Object.hash(runtimeType,id,role,fullName,phone,visionProfile,avatarUrl,username,pronouns,bio,location,createdAt,preferredLanguage,clinicId,clinicName);
 
 @override
 String toString() {
-  return 'ProfileModel(id: $id, role: $role, fullName: $fullName, phone: $phone, visionProfile: $visionProfile, avatarUrl: $avatarUrl, username: $username, pronouns: $pronouns, bio: $bio, location: $location, createdAt: $createdAt)';
+  return 'ProfileModel(id: $id, role: $role, fullName: $fullName, phone: $phone, visionProfile: $visionProfile, avatarUrl: $avatarUrl, username: $username, pronouns: $pronouns, bio: $bio, location: $location, createdAt: $createdAt, preferredLanguage: $preferredLanguage, clinicId: $clinicId, clinicName: $clinicName)';
 }
 
 
@@ -59,7 +62,7 @@ abstract mixin class $ProfileModelCopyWith<$Res>  {
   factory $ProfileModelCopyWith(ProfileModel value, $Res Function(ProfileModel) _then) = _$ProfileModelCopyWithImpl;
 @useResult
 $Res call({
- String id,@_UserRoleConverter() UserRole role,@JsonKey(name: 'full_name') String? fullName, String? phone,@JsonKey(name: 'vision_profile')@_VisionProfileConverter() VisionProfile? visionProfile,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'handle') String? username, String? pronouns, String? bio, String? location,@JsonKey(name: 'created_at') DateTime createdAt
+ String id,@_UserRoleConverter() UserRole role,@JsonKey(name: 'full_name') String? fullName, String? phone,@JsonKey(name: 'vision_profile')@_VisionProfileConverter() VisionProfile? visionProfile,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'handle') String? username, String? pronouns, String? bio, String? location,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'preferred_language') String preferredLanguage,@JsonKey(name: 'clinic_id') String? clinicId,@JsonKey(name: 'clinic_name', includeToJson: false) String? clinicName
 });
 
 
@@ -76,7 +79,7 @@ class _$ProfileModelCopyWithImpl<$Res>
 
 /// Create a copy of ProfileModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? role = null,Object? fullName = freezed,Object? phone = freezed,Object? visionProfile = freezed,Object? avatarUrl = freezed,Object? username = freezed,Object? pronouns = freezed,Object? bio = freezed,Object? location = freezed,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? role = null,Object? fullName = freezed,Object? phone = freezed,Object? visionProfile = freezed,Object? avatarUrl = freezed,Object? username = freezed,Object? pronouns = freezed,Object? bio = freezed,Object? location = freezed,Object? createdAt = null,Object? preferredLanguage = null,Object? clinicId = freezed,Object? clinicName = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
@@ -89,7 +92,10 @@ as String?,pronouns: freezed == pronouns ? _self.pronouns : pronouns // ignore: 
 as String?,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
 as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,preferredLanguage: null == preferredLanguage ? _self.preferredLanguage : preferredLanguage // ignore: cast_nullable_to_non_nullable
+as String,clinicId: freezed == clinicId ? _self.clinicId : clinicId // ignore: cast_nullable_to_non_nullable
+as String?,clinicName: freezed == clinicName ? _self.clinicName : clinicName // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -174,10 +180,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @_UserRoleConverter()  UserRole role, @JsonKey(name: 'full_name')  String? fullName,  String? phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter()  VisionProfile? visionProfile, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'handle')  String? username,  String? pronouns,  String? bio,  String? location, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @_UserRoleConverter()  UserRole role, @JsonKey(name: 'full_name')  String? fullName,  String? phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter()  VisionProfile? visionProfile, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'handle')  String? username,  String? pronouns,  String? bio,  String? location, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'preferred_language')  String preferredLanguage, @JsonKey(name: 'clinic_id')  String? clinicId, @JsonKey(name: 'clinic_name', includeToJson: false)  String? clinicName)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProfileModel() when $default != null:
-return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.username,_that.pronouns,_that.bio,_that.location,_that.createdAt);case _:
+return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.username,_that.pronouns,_that.bio,_that.location,_that.createdAt,_that.preferredLanguage,_that.clinicId,_that.clinicName);case _:
   return orElse();
 
 }
@@ -195,10 +201,10 @@ return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfi
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @_UserRoleConverter()  UserRole role, @JsonKey(name: 'full_name')  String? fullName,  String? phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter()  VisionProfile? visionProfile, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'handle')  String? username,  String? pronouns,  String? bio,  String? location, @JsonKey(name: 'created_at')  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @_UserRoleConverter()  UserRole role, @JsonKey(name: 'full_name')  String? fullName,  String? phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter()  VisionProfile? visionProfile, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'handle')  String? username,  String? pronouns,  String? bio,  String? location, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'preferred_language')  String preferredLanguage, @JsonKey(name: 'clinic_id')  String? clinicId, @JsonKey(name: 'clinic_name', includeToJson: false)  String? clinicName)  $default,) {final _that = this;
 switch (_that) {
 case _ProfileModel():
-return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.username,_that.pronouns,_that.bio,_that.location,_that.createdAt);case _:
+return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.username,_that.pronouns,_that.bio,_that.location,_that.createdAt,_that.preferredLanguage,_that.clinicId,_that.clinicName);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -215,10 +221,10 @@ return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfi
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @_UserRoleConverter()  UserRole role, @JsonKey(name: 'full_name')  String? fullName,  String? phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter()  VisionProfile? visionProfile, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'handle')  String? username,  String? pronouns,  String? bio,  String? location, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @_UserRoleConverter()  UserRole role, @JsonKey(name: 'full_name')  String? fullName,  String? phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter()  VisionProfile? visionProfile, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'handle')  String? username,  String? pronouns,  String? bio,  String? location, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'preferred_language')  String preferredLanguage, @JsonKey(name: 'clinic_id')  String? clinicId, @JsonKey(name: 'clinic_name', includeToJson: false)  String? clinicName)?  $default,) {final _that = this;
 switch (_that) {
 case _ProfileModel() when $default != null:
-return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.username,_that.pronouns,_that.bio,_that.location,_that.createdAt);case _:
+return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.username,_that.pronouns,_that.bio,_that.location,_that.createdAt,_that.preferredLanguage,_that.clinicId,_that.clinicName);case _:
   return null;
 
 }
@@ -230,7 +236,7 @@ return $default(_that.id,_that.role,_that.fullName,_that.phone,_that.visionProfi
 @JsonSerializable()
 
 class _ProfileModel implements ProfileModel {
-  const _ProfileModel({required this.id, @_UserRoleConverter() required this.role, @JsonKey(name: 'full_name') this.fullName, this.phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter() this.visionProfile, @JsonKey(name: 'avatar_url') this.avatarUrl, @JsonKey(name: 'handle') this.username, this.pronouns, this.bio, this.location, @JsonKey(name: 'created_at') required this.createdAt});
+  const _ProfileModel({required this.id, @_UserRoleConverter() required this.role, @JsonKey(name: 'full_name') this.fullName, this.phone, @JsonKey(name: 'vision_profile')@_VisionProfileConverter() this.visionProfile, @JsonKey(name: 'avatar_url') this.avatarUrl, @JsonKey(name: 'handle') this.username, this.pronouns, this.bio, this.location, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'preferred_language') this.preferredLanguage = 'en', @JsonKey(name: 'clinic_id') this.clinicId, @JsonKey(name: 'clinic_name', includeToJson: false) this.clinicName});
   factory _ProfileModel.fromJson(Map<String, dynamic> json) => _$ProfileModelFromJson(json);
 
 /// Primary key — matches `auth.users.id` (UUID).
@@ -255,6 +261,12 @@ class _ProfileModel implements ProfileModel {
 @override final  String? location;
 /// Row creation timestamp — set by Postgres default.
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
+/// DB column `preferred_language` (not null, default 'en').
+@override@JsonKey(name: 'preferred_language') final  String preferredLanguage;
+/// DB column `clinic_id` (nullable UUID).
+@override@JsonKey(name: 'clinic_id') final  String? clinicId;
+/// Flattened from the nested `clinic:clinics(name)` join — read-only, never written back.
+@override@JsonKey(name: 'clinic_name', includeToJson: false) final  String? clinicName;
 
 /// Create a copy of ProfileModel
 /// with the given fields replaced by the non-null parameter values.
@@ -269,16 +281,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.role, role) || other.role == role)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.visionProfile, visionProfile) || other.visionProfile == visionProfile)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.username, username) || other.username == username)&&(identical(other.pronouns, pronouns) || other.pronouns == pronouns)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.location, location) || other.location == location)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.role, role) || other.role == role)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.visionProfile, visionProfile) || other.visionProfile == visionProfile)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.username, username) || other.username == username)&&(identical(other.pronouns, pronouns) || other.pronouns == pronouns)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.location, location) || other.location == location)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.preferredLanguage, preferredLanguage) || other.preferredLanguage == preferredLanguage)&&(identical(other.clinicId, clinicId) || other.clinicId == clinicId)&&(identical(other.clinicName, clinicName) || other.clinicName == clinicName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,role,fullName,phone,visionProfile,avatarUrl,username,pronouns,bio,location,createdAt);
+int get hashCode => Object.hash(runtimeType,id,role,fullName,phone,visionProfile,avatarUrl,username,pronouns,bio,location,createdAt,preferredLanguage,clinicId,clinicName);
 
 @override
 String toString() {
-  return 'ProfileModel(id: $id, role: $role, fullName: $fullName, phone: $phone, visionProfile: $visionProfile, avatarUrl: $avatarUrl, username: $username, pronouns: $pronouns, bio: $bio, location: $location, createdAt: $createdAt)';
+  return 'ProfileModel(id: $id, role: $role, fullName: $fullName, phone: $phone, visionProfile: $visionProfile, avatarUrl: $avatarUrl, username: $username, pronouns: $pronouns, bio: $bio, location: $location, createdAt: $createdAt, preferredLanguage: $preferredLanguage, clinicId: $clinicId, clinicName: $clinicName)';
 }
 
 
@@ -289,7 +301,7 @@ abstract mixin class _$ProfileModelCopyWith<$Res> implements $ProfileModelCopyWi
   factory _$ProfileModelCopyWith(_ProfileModel value, $Res Function(_ProfileModel) _then) = __$ProfileModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@_UserRoleConverter() UserRole role,@JsonKey(name: 'full_name') String? fullName, String? phone,@JsonKey(name: 'vision_profile')@_VisionProfileConverter() VisionProfile? visionProfile,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'handle') String? username, String? pronouns, String? bio, String? location,@JsonKey(name: 'created_at') DateTime createdAt
+ String id,@_UserRoleConverter() UserRole role,@JsonKey(name: 'full_name') String? fullName, String? phone,@JsonKey(name: 'vision_profile')@_VisionProfileConverter() VisionProfile? visionProfile,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'handle') String? username, String? pronouns, String? bio, String? location,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'preferred_language') String preferredLanguage,@JsonKey(name: 'clinic_id') String? clinicId,@JsonKey(name: 'clinic_name', includeToJson: false) String? clinicName
 });
 
 
@@ -306,7 +318,7 @@ class __$ProfileModelCopyWithImpl<$Res>
 
 /// Create a copy of ProfileModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? role = null,Object? fullName = freezed,Object? phone = freezed,Object? visionProfile = freezed,Object? avatarUrl = freezed,Object? username = freezed,Object? pronouns = freezed,Object? bio = freezed,Object? location = freezed,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? role = null,Object? fullName = freezed,Object? phone = freezed,Object? visionProfile = freezed,Object? avatarUrl = freezed,Object? username = freezed,Object? pronouns = freezed,Object? bio = freezed,Object? location = freezed,Object? createdAt = null,Object? preferredLanguage = null,Object? clinicId = freezed,Object? clinicName = freezed,}) {
   return _then(_ProfileModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
@@ -319,7 +331,10 @@ as String?,pronouns: freezed == pronouns ? _self.pronouns : pronouns // ignore: 
 as String?,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
 as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,preferredLanguage: null == preferredLanguage ? _self.preferredLanguage : preferredLanguage // ignore: cast_nullable_to_non_nullable
+as String,clinicId: freezed == clinicId ? _self.clinicId : clinicId // ignore: cast_nullable_to_non_nullable
+as String?,clinicName: freezed == clinicName ? _self.clinicName : clinicName // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

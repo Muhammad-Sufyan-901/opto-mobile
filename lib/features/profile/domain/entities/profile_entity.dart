@@ -20,6 +20,9 @@ class ProfileEntity {
     this.bio,
     this.location,
     required this.createdAt,
+    this.preferredLanguage = 'en',
+    this.clinicId,
+    this.clinicName,
   });
 
   /// Primary key — matches `auth.users.id` (UUID).
@@ -55,6 +58,15 @@ class ProfileEntity {
   /// Row creation timestamp.
   final DateTime createdAt;
 
+  /// User's preferred UI language (ISO 639-1 code, e.g. 'en', 'id'). Defaults to 'en'.
+  final String preferredLanguage;
+
+  /// FK to `clinics.id` (nullable — user may not have a linked clinic).
+  final String? clinicId;
+
+  /// Clinic display name derived from a DB join (nullable). Not stored in profiles directly.
+  final String? clinicName;
+
   /// Creates a copy with the given fields replaced.
   ///
   /// Note: passing `null` for a nullable field leaves it unchanged (does not
@@ -72,6 +84,9 @@ class ProfileEntity {
     String? bio,
     String? location,
     DateTime? createdAt,
+    String? preferredLanguage,
+    String? clinicId,
+    String? clinicName,
   }) {
     return ProfileEntity(
       id: id ?? this.id,
@@ -85,6 +100,9 @@ class ProfileEntity {
       bio: bio ?? this.bio,
       location: location ?? this.location,
       createdAt: createdAt ?? this.createdAt,
+      preferredLanguage: preferredLanguage ?? this.preferredLanguage,
+      clinicId: clinicId ?? this.clinicId,
+      clinicName: clinicName ?? this.clinicName,
     );
   }
 
@@ -103,7 +121,10 @@ class ProfileEntity {
           pronouns == other.pronouns &&
           bio == other.bio &&
           location == other.location &&
-          createdAt == other.createdAt;
+          createdAt == other.createdAt &&
+          preferredLanguage == other.preferredLanguage &&
+          clinicId == other.clinicId &&
+          clinicName == other.clinicName;
 
   @override
   int get hashCode => Object.hash(
@@ -118,5 +139,8 @@ class ProfileEntity {
         bio,
         location,
         createdAt,
+        preferredLanguage,
+        clinicId,
+        clinicName,
       );
 }
