@@ -31,6 +31,10 @@ grant select, insert, update, delete on public.content_reports        to authent
 grant select, insert, update, delete on public.sos_events             to authenticated;
 grant select, insert, update, delete on public.poi_contributions      to authenticated;
 
+-- NOTE: vision_clinical_profile (🔒 owner-only) is granted inline in
+--   20260618000001_profile_prefs_and_clinical.sql — it runs after this file in
+--   sort order and cannot be listed here.
+
 -- Notes:
 -- 1) Public-read tables get SELECT only; INSERT/UPDATE/DELETE is admin-only via is_admin() policy.
 -- 2) Admin writes to catalog tables should go through Edge Functions (service_role).
