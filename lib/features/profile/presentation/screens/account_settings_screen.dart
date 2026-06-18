@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 import 'package:opto/core/accessibility/accessibility.dart';
@@ -24,9 +25,16 @@ class AccountSettingsScreen extends StatefulWidget {
 }
 
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
+  /// Real app version loaded from the platform at mount time.
+  String _version = '';
+
   @override
   void initState() {
     super.initState();
+    // Load real app version from the platform bundle.
+    PackageInfo.fromPlatform().then((info) {
+      if (mounted) setState(() => _version = info.version);
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       announce(context, 'Account and settings.');
@@ -37,6 +45,23 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             .add(ProfileEvent.loadProfile(userId: userId));
       }
     });
+  }
+
+  /// Maps a BCP-47 language code to its display name.
+  static String _languageLabel(String code) {
+    const labels = {
+      'en': 'English',
+      'id': 'Bahasa Indonesia',
+      'ms': 'Bahasa Melayu',
+      'ar': 'العربية',
+      'zh': '中文',
+      'fr': 'Français',
+      'de': 'Deutsch',
+      'es': 'Español',
+      'pt': 'Português',
+      'hi': 'हिन्दी',
+    };
+    return labels[code] ?? code.toUpperCase();
   }
 
   @override
@@ -72,9 +97,16 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     // Real values from session / profile state (no additional network calls).
     final authUser = Supabase.instance.client.auth.currentUser;
     final email = authUser?.email;
+    final linkedCount = authUser?.identities?.length ?? 0;
     final profileState = context.watch<ProfileBloc>().state;
     final phone = profileState is ProfileLoaded
         ? profileState.profile.phone
+        : null;
+    final preferredLanguage = profileState is ProfileLoaded
+        ? profileState.profile.preferredLanguage
+        : null;
+    final clinicName = profileState is ProfileLoaded
+        ? profileState.profile.clinicName
         : null;
 
     return BlocListener<AuthBloc, AuthState>(
@@ -158,13 +190,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     ProfileNavRow(
                       icon: Icons.lock_outline,
                       title: 'Password',
-                      subtitle: 'Changed 3 months ago',
                     ),
                     const SizedBox(height: 11),
                     ProfileNavRow(
                       icon: Icons.link_outlined,
                       title: 'Linked accounts',
-                      trailing: val('2 linked'),
+                      trailing: val(linkedCount > 0
+                          ? '$linkedCount linked'
+                          : 'None'),
                     ),
                     const SizedBox(height: 11),
                     ProfileNavRow(
@@ -193,7 +226,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     ProfileNavRow(
                       icon: Icons.language_outlined,
                       title: 'Language',
-                      trailing: val('Bahasa Indonesia'),
+                      trailing: val(preferredLanguage != null
+                          ? _languageLabel(preferredLanguage)
+                          : '—'),
                     ),
                     const SizedBox(height: 11),
                     ProfileNavRow(
@@ -207,12 +242,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       title: 'Privacy & data',
                       subtitle: 'Who can see your profile',
                     ),
-                    const SizedBox(height: 11),
-                    ProfileNavRow(
-                      icon: Icons.medical_services_outlined,
-                      title: 'Connected clinic',
-                      trailing: val('RS Mata Cicendo'),
-                    ),
+                    if (clinicName != null && clinicName.isNotEmpty) ...[
+                      const SizedBox(height: 11),
+                      ProfileNavRow(
+                        icon: Icons.medical_services_outlined,
+                        title: 'Connected clinic',
+                        trailing: val(clinicName),
+                      ),
+                    ],
                   ],
                 ),
 
@@ -252,7 +289,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                 ExcludeSemantics(
                   child: Center(
                     child: Text(
-                      'Opto · v4.2.0 · Made accessible in Bandung',
+                      'Opto · v${_version.isNotEmpty ? _version : "…"} · Made accessible in Bandung',
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: ink3,
