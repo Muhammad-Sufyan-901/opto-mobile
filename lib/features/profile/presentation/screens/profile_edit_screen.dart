@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/connect/presentation/widgets/community_avatar.dart';
-import 'package:opto/features/profile/domain/entities/profile_entity.dart';
 import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 
 /// Screen P2 — Edit Profile.
 ///
 /// Pre-fills from the [ProfileBloc] loaded state. On save dispatches
-/// [ProfileEvent.updateProfile] with the edited name and bio. The photo
-/// change CTA is a stub (no backend storage yet).
+/// [ProfileEvent.updateProfile] with all edited fields. Photo upload
+/// dispatches [ProfileEvent.changeAvatar] via [ImagePicker].
 class ProfileEditScreen extends StatefulWidget {
   const ProfileEditScreen({super.key});
 
@@ -29,6 +29,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _bioCtrl = TextEditingController();
   final _locationCtrl = TextEditingController();
   bool _initialised = false;
+  bool _uploadingAvatar = false;
 
   @override
   void initState() {
@@ -49,17 +50,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     super.dispose();
   }
 
-  void _prefill(ProfileEntity profile) {
+  void _prefill(ProfileLoaded loaded) {
     if (_initialised) return;
     _initialised = true;
+    final profile = loaded.profile;
     _nameCtrl.text = profile.fullName ?? '';
-    _usernameCtrl.text = '@raniputri';
-    _pronounsCtrl.text = 'she/her';
-    _bioCtrl.text =
-        'Living with low vision since 2019, left ocular prosthesis since \'24. '
-        'I share routines, labeling tricks and the small daily wins. '
-        'Voice notes always welcome.';
-    _locationCtrl.text = 'Bandung, Indonesia';
+    _usernameCtrl.text = profile.username ?? '';
+    _pronounsCtrl.text = profile.pronouns ?? '';
+    _bioCtrl.text = profile.bio ?? '';
+    _locationCtrl.text = profile.location ?? '';
   }
 
   void _save(BuildContext ctx) {
@@ -69,11 +68,42 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     ctx.read<ProfileBloc>().add(
           ProfileEvent.updateProfile(
             userId: userId,
-            fullName: _nameCtrl.text.trim().isEmpty ? null : _nameCtrl.text.trim(),
+            fullName:
+                _nameCtrl.text.trim().isNotEmpty ? _nameCtrl.text.trim() : null,
+            username: _usernameCtrl.text.trim().isNotEmpty
+                ? _usernameCtrl.text.trim()
+                : null,
+            pronouns: _pronounsCtrl.text.trim().isNotEmpty
+                ? _pronounsCtrl.text.trim()
+                : null,
+            bio: _bioCtrl.text.trim().isNotEmpty ? _bioCtrl.text.trim() : null,
+            location: _locationCtrl.text.trim().isNotEmpty
+                ? _locationCtrl.text.trim()
+                : null,
           ),
         );
     announce(ctx, 'Profile saved.');
     ctx.pop();
+  }
+
+  Future<void> _pickAndUploadAvatar(BuildContext ctx) async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+
+    if (!ctx.mounted) return;
+    announce(ctx, 'Uploading photo…');
+    setState(() => _uploadingAvatar = true);
+
+    ctx.read<ProfileBloc>().add(
+          ProfileEvent.changeAvatar(
+            userId: userId,
+            localPath: picked.path,
+          ),
+        );
   }
 
   @override
@@ -86,8 +116,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
     return BlocConsumer<ProfileBloc, ProfileState>(
       listener: (ctx, state) {
-        if (state is ProfileLoaded) _prefill(state.profile);
+        if (state is ProfileLoaded) {
+          _prefill(state);
+          if (_uploadingAvatar) {
+            setState(() => _uploadingAvatar = false);
+            announce(ctx, 'Photo updated.');
+          }
+        }
         if (state is ProfileError) {
+          if (_uploadingAvatar) setState(() => _uploadingAvatar = false);
           ScaffoldMessenger.of(ctx)
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(
@@ -97,21 +134,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         }
       },
       builder: (ctx, state) {
-        // Prefill placeholders even if profile hasn't loaded
-        if (!_initialised) {
-          _nameCtrl.text = _nameCtrl.text.isEmpty ? 'Rani Putri' : _nameCtrl.text;
-          _usernameCtrl.text = _usernameCtrl.text.isEmpty ? '@raniputri' : _usernameCtrl.text;
-          _pronounsCtrl.text = _pronounsCtrl.text.isEmpty ? 'she/her' : _pronounsCtrl.text;
-          _bioCtrl.text = _bioCtrl.text.isEmpty
-              ? 'Living with low vision since 2019, left ocular prosthesis since \'24. '
-                  'I share routines, labeling tricks and the small daily wins. '
-                  'Voice notes always welcome.'
-              : _bioCtrl.text;
-          _locationCtrl.text = _locationCtrl.text.isEmpty
-              ? 'Bandung, Indonesia'
-              : _locationCtrl.text;
-          _initialised = true;
-        }
+        // Extract profile id from loaded state (null during loading/error).
+        final profileId = state is ProfileLoaded ? state.profile.id : null;
+        final avatarUrl =
+            state is ProfileLoaded ? state.profile.avatarUrl : null;
 
         return Scaffold(
           backgroundColor: cs.surface,
@@ -181,38 +207,62 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                             ExcludeSemantics(
                               child: CommunityAvatar(
                                 name: _nameCtrl.text,
-                                authorId: 'raniputri',
+                                authorId: profileId,
+                                avatarUrl: avatarUrl,
                                 size: 92,
                                 fontSize: 32,
                               ),
                             ),
-                            Positioned(
-                              right: -2,
-                              bottom: -2,
-                              child: Semantics(
-                                button: true,
-                                label: 'Change photo',
-                                child: GestureDetector(
-                                  onTap: () {},
-                                  child: Container(
-                                    width: 34,
-                                    height: 34,
-                                    decoration: BoxDecoration(
-                                      color: cs.primary,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                          color: cs.surface, width: 3),
+                            // Upload overlay or camera CTA
+                            if (_uploadingAvatar)
+                              Positioned.fill(
+                                child: Container(
+                                  width: 92,
+                                  height: 92,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black38,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Center(
+                                    child: SizedBox(
+                                      width: 28,
+                                      height: 28,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                    child: Center(
-                                      child: ExcludeSemantics(
-                                        child: Icon(Icons.photo_camera,
-                                            size: 17, color: Colors.white),
+                                  ),
+                                ),
+                              )
+                            else
+                              Positioned(
+                                right: -2,
+                                bottom: -2,
+                                child: Semantics(
+                                  button: true,
+                                  label: 'Change photo',
+                                  child: GestureDetector(
+                                    onTap: () => _pickAndUploadAvatar(ctx),
+                                    child: Container(
+                                      width: 34,
+                                      height: 34,
+                                      decoration: BoxDecoration(
+                                        color: cs.primary,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: cs.surface, width: 3),
+                                      ),
+                                      child: Center(
+                                        child: ExcludeSemantics(
+                                          child: Icon(Icons.photo_camera,
+                                              size: 17, color: Colors.white),
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -220,12 +270,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           button: true,
                           label: 'Change photo',
                           child: GestureDetector(
-                            onTap: () {},
+                            onTap: _uploadingAvatar
+                                ? null
+                                : () => _pickAndUploadAvatar(ctx),
                             child: Text(
                               'Change photo',
                               style: theme.textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.w800,
-                                color: cs.primary,
+                                color: _uploadingAvatar
+                                    ? cs.primary.withValues(alpha: 0.45)
+                                    : cs.primary,
                                 fontSize: 15,
                               ),
                             ),
