@@ -149,6 +149,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       title: 'Linked accounts',
                       trailing: val('2 linked'),
                     ),
+                    const SizedBox(height: 11),
+                    ProfileNavRow(
+                      icon: Icons.contacts_outlined,
+                      title: 'Emergency contacts',
+                      onTap: () =>
+                          context.push(AppRoutes.emergencyContacts.path),
+                    ),
                   ],
                 ),
 

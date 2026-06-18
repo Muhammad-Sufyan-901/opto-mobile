@@ -55,6 +55,8 @@ import 'package:opto/features/profile/presentation/screens/accessibility_screen.
 import 'package:opto/features/profile/presentation/screens/account_settings_screen.dart';
 import 'package:opto/features/profile/presentation/screens/my_activity_screen.dart';
 import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
+import 'package:opto/features/profile/presentation/cubit/emergency_contacts_cubit.dart';
+import 'package:opto/features/profile/presentation/screens/emergency_contacts_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
 import 'package:opto/features/sos/presentation/screens/sos_active_screen.dart';
 import 'package:opto/features/vision_ai/domain/entities/vision_mode.dart';
@@ -608,6 +610,16 @@ final GoRouter appRouter = GoRouter(
       name: AppRoutes.myActivity.name,
       builder: (BuildContext context, GoRouterState state) =>
           const MyActivityScreen(),
+    ),
+
+    // Screen 20f — Emergency Contacts
+    GoRoute(
+      path: AppRoutes.emergencyContacts.path,
+      name: AppRoutes.emergencyContacts.name,
+      builder: (context, state) => BlocProvider<EmergencyContactsCubit>(
+        create: (_) => sl<EmergencyContactsCubit>(),
+        child: const EmergencyContactsScreen(),
+      ),
     ),
 
     // Screen 21 — Emergency SOS

@@ -274,6 +274,12 @@ abstract class AppRoutes {
     name: 'my_activity',
   );
 
+  /// Screen 20f — Emergency contacts management.
+  static const AppRoute emergencyContacts = AppRoute(
+    path: '/profile/emergency',
+    name: 'emergency_contacts',
+  );
+
   /// Screen 21 — Emergency SOS (panic button + alert).
   static const AppRoute sos = AppRoute(
     path: '/sos',
