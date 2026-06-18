@@ -30,6 +30,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _locationCtrl = TextEditingController();
   bool _initialised = false;
   bool _uploadingAvatar = false;
+  bool _saving = false;
 
   @override
   void initState() {
@@ -62,9 +63,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   void _save(BuildContext ctx) {
+    if (_saving) return;
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
-    HapticPatterns.success();
+    HapticPatterns.focusTick();
+    setState(() => _saving = true);
     ctx.read<ProfileBloc>().add(
           ProfileEvent.updateProfile(
             userId: userId,
@@ -82,8 +85,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 : null,
           ),
         );
-    announce(ctx, 'Profile saved.');
-    ctx.pop();
+    // Announce and pop only after BLoC confirms success (see listener below).
   }
 
   Future<void> _pickAndUploadAvatar(
@@ -123,9 +125,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         if (state is ProfileLoaded) {
           _prefill(state);
           if (_uploadingAvatar) {
+            // Avatar upload completed successfully.
             HapticPatterns.success();
             setState(() => _uploadingAvatar = false);
             announce(ctx, 'Photo updated.');
+          } else if (_saving) {
+            // Profile fields saved successfully — announce and close screen.
+            HapticPatterns.success();
+            setState(() => _saving = false);
+            announce(ctx, 'Profile saved.');
+            ctx.pop();
           }
         }
         if (state is ProfileError) {
@@ -133,6 +142,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             HapticPatterns.warning();
             setState(() => _uploadingAvatar = false);
           }
+          if (_saving) setState(() => _saving = false);
           ScaffoldMessenger.of(ctx)
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(
@@ -181,7 +191,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 button: true,
                 label: 'Save changes',
                 child: GestureDetector(
-                  onTap: () => _save(ctx),
+                  onTap: _saving ? null : () => _save(ctx),
                   child: Container(
                     margin: const EdgeInsets.only(right: 8),
                     width: AppDimensions.minTapTarget,
@@ -378,7 +388,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     button: true,
                     label: 'Save changes',
                     child: GestureDetector(
-                      onTap: () => _save(ctx),
+                      onTap: _saving ? null : () => _save(ctx),
                       child: Container(
                         height: 60,
                         decoration: BoxDecoration(

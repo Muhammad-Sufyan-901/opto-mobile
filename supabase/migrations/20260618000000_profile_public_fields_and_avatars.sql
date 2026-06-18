@@ -38,9 +38,16 @@ on conflict do nothing;
 -- =========================================================
 -- 3. RLS Policies for avatars bucket
 -- =========================================================
--- Note: auth.uid() is uuid; owner column in storage.objects is also uuid.
--- Do NOT cast auth.uid()::text — that produces "operator does not exist: text = uuid".
--- See: 20260610000000_storage_buckets.sql for the same pattern on private buckets.
+-- Note on RLS for storage.objects:
+-- * INSERT: the `owner` column is NULL at the time the WITH CHECK is evaluated —
+--   using `auth.uid() = owner` always yields NULL (not TRUE) and blocks every
+--   upload.  Use a PATH PREFIX check instead:
+--     (storage.foldername(name))[1] = auth.uid()::text
+--   The cast to text is correct here because foldername() returns text[].
+--   Files are uploaded as  $userId/avatar.<ext>  so the first folder segment
+--   is the user UUID as text.
+-- * UPDATE / DELETE: the row already exists so `owner` is populated —
+--   `auth.uid() = owner` is safe for USING (existing row check).
 -- Policy names follow the project snake_case convention (see post_media_* policies).
 
 -- Anyone (anon or authenticated) can read avatars — needed for community feed rendering.
@@ -50,13 +57,20 @@ create policy "avatars_select_public"
   using (bucket_id = 'avatars');
 
 -- Owner can upload (insert) their own avatar.
+-- IMPORTANT: use path-prefix check, NOT `auth.uid() = owner`.
+-- The `owner` column is NULL at INSERT time, so an `= owner` check
+-- always evaluates to NULL (never TRUE) and silently blocks all uploads.
 create policy "avatars_insert_owner"
   on storage.objects
   for insert to authenticated
-  with check (bucket_id = 'avatars' and auth.uid() = owner);
+  with check (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
 
 -- Owner can replace (update) their own avatar.
 -- CRITICAL: Both USING and WITH CHECK required for UPDATE to work (per project convention).
+-- For UPDATE the row already exists, so `owner` is populated — uuid comparison is safe.
 create policy "avatars_update_owner"
   on storage.objects
   for update to authenticated

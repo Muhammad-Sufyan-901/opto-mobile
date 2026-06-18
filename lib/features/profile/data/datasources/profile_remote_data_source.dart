@@ -122,9 +122,10 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   Future<String> uploadAvatar(String localPath) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) throw const AuthFailure('Not authenticated');
-    final fileName =
-        '${DateTime.now().millisecondsSinceEpoch}_${localPath.split('/').last}';
-    final storagePath = '$userId/$fileName';
+    // Use a fixed path per user so upsert overwrites the previous avatar file
+    // rather than accumulating an unbounded number of files in the bucket.
+    final ext = localPath.split('.').last.toLowerCase();
+    final storagePath = '$userId/avatar.$ext';
     try {
       await _client.storage
           .from('avatars')

@@ -26,6 +26,11 @@ class EmergencyContactsScreen extends StatefulWidget {
 }
 
 class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
+  // Track pending mutations so the listener can announce confirmation after
+  // the async operation completes (not before — false positives confuse screen readers).
+  bool _pendingMutation = false;
+  String? _pendingDeleteName;
+
   @override
   void initState() {
     super.initState();
@@ -102,7 +107,23 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
       body: SafeArea(
         child: BlocConsumer<EmergencyContactsCubit, EmergencyContactsState>(
           listener: (ctx, state) {
+            if (state is EmergencyContactsLoaded) {
+              if (_pendingMutation) {
+                setState(() => _pendingMutation = false);
+                HapticPatterns.success();
+                announce(ctx, 'Contact saved.');
+              }
+              if (_pendingDeleteName != null) {
+                final name = _pendingDeleteName!;
+                setState(() => _pendingDeleteName = null);
+                announce(ctx, '$name removed.');
+              }
+            }
             if (state is EmergencyContactsError) {
+              setState(() {
+                _pendingMutation = false;
+                _pendingDeleteName = null;
+              });
               HapticPatterns.warning();
               ScaffoldMessenger.of(ctx).showSnackBar(
                 SnackBar(
@@ -166,7 +187,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
     BuildContext context, {
     required EmergencyContactEntity? contact,
   }) async {
-    await showModalBottomSheet<void>(
+    final bool? saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -177,6 +198,9 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
         child: _ContactFormSheet(existingContact: contact),
       ),
     );
+    if (saved == true && mounted) {
+      setState(() => _pendingMutation = true);
+    }
   }
 
   // ── Delete confirmation ────────────────────────────────────────────────────
@@ -210,10 +234,11 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
 
     if (confirmed == true && mounted) {
       HapticPatterns.warning();
+      setState(() => _pendingDeleteName = contact.name);
       // ignore: use_build_context_synchronously
       context.read<EmergencyContactsCubit>().delete(contact.id);
-      // ignore: use_build_context_synchronously
-      announce(context, '${contact.name} removed.');
+      // Announcement fires from the BlocConsumer listener once the delete
+      // is confirmed by the server (see _pendingDeleteName in listener).
     }
   }
 }
@@ -672,8 +697,9 @@ class _ContactFormSheetState extends State<_ContactFormSheet> {
   void _save() {
     if (!_formKey.currentState!.validate()) return;
 
-    final userId =
-        Supabase.instance.client.auth.currentUser?.id ?? '';
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return; // Session expired; server would reject anyway.
+
     final priority = int.tryParse(_priorityCtrl.text.trim()) ?? 0;
     final relationship = _relationCtrl.text.trim().isEmpty
         ? null
@@ -689,7 +715,6 @@ class _ContactFormSheetState extends State<_ContactFormSheet> {
         priority: priority,
       );
       cubit.update(updated);
-      announce(context, 'Contact updated.');
     } else {
       final newContact = EmergencyContactEntity(
         id: '', // ignored by server — Postgres generates it
@@ -700,10 +725,11 @@ class _ContactFormSheetState extends State<_ContactFormSheet> {
         priority: priority,
       );
       cubit.add(newContact);
-      announce(context, 'Contact added.');
     }
 
-    HapticPatterns.success();
-    Navigator.of(context).pop();
+    HapticPatterns.focusTick();
+    // Return true so the parent screen knows to watch for server confirmation.
+    // Announcement fires from the parent BlocConsumer listener on success.
+    Navigator.of(context).pop(true);
   }
 }
