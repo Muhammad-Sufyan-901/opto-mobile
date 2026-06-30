@@ -61,12 +61,20 @@ abstract class AppRoutes {
     name: 'prosthetic_order_supplies',
   );
 
-  /// Screen 17b-summary — Order summary & consent.
+  /// Screen 17b-summary — Checkout (address + payment + order summary).
   ///
   /// Receive cart data via `GoRouterState.extra`.
   static const AppRoute prostheticOrderSummary = AppRoute(
     path: '/prosthetic-hub/order-supplies/summary',
     name: 'prosthetic_order_summary',
+  );
+
+  /// Screen 17b-result — Payment instructions / confirmation after an order.
+  ///
+  /// Receive [OrderResult] via `GoRouterState.extra`.
+  static const AppRoute prostheticOrderResult = AppRoute(
+    path: '/prosthetic-hub/order-supplies/result',
+    name: 'prosthetic_order_result',
   );
 
   /// Screen 17c — Specialist directory.

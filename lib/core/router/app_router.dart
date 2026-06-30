@@ -38,6 +38,7 @@ import 'package:opto/features/prosthetic_hub/presentation/screens/care_log_scree
 import 'package:opto/features/prosthetic_hub/presentation/screens/care_guide_detail_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/order_supplies_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/supply_order_summary_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/order_payment_result_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/specialist_list_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/specialist_profile_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/specialist_chat_screen.dart';
@@ -392,12 +393,20 @@ final GoRouter appRouter = GoRouter(
           const OrderSuppliesScreen(),
     ),
 
-    // Screen 17b-summary — Order summary & consent
+    // Screen 17b-summary — Checkout (address + payment + order summary)
     GoRoute(
       path: AppRoutes.prostheticOrderSummary.path,
       name: AppRoutes.prostheticOrderSummary.name,
       builder: (BuildContext context, GoRouterState state) =>
           const SupplyOrderSummaryScreen(),
+    ),
+
+    // Screen 17b-result — Payment instructions / confirmation after order
+    GoRoute(
+      path: AppRoutes.prostheticOrderResult.path,
+      name: AppRoutes.prostheticOrderResult.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const OrderPaymentResultScreen(),
     ),
 
     // Screen 17c — Specialist directory

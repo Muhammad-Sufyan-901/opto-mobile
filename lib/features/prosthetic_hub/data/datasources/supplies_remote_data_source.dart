@@ -14,12 +14,18 @@
 //   directly.
 // - Image URLs are resolved via `SupabaseStorage.getPublicUrl` (synchronous);
 //   no additional auth is required for the `product-images` public bucket.
+// - `virtual_account_no` is owner-sensitive data — never expose it outside an
+//   authenticated, owner-scoped query.
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:opto/core/error/failures.dart';
 import 'package:opto/core/supabase/supabase_client_provider.dart';
 import 'package:opto/core/supabase/supabase_error_mapper.dart';
+import 'package:opto/features/prosthetic_hub/domain/entities/checkout_details.dart';
+import 'package:opto/features/prosthetic_hub/domain/entities/order_result.dart';
 import 'package:opto/features/prosthetic_hub/domain/entities/supply_product.dart';
 
 /// Contract for the supplies remote data source.
@@ -28,15 +34,18 @@ abstract class SuppliesRemoteDataSource {
   /// ascending price.
   Future<List<SupplyProduct>> getProducts();
 
-  /// Places an order for every item in [cart].
+  /// Places an order for every item in [cart] with the given [details].
   ///
   /// [cart] maps productId → quantity.
   /// [products] is the full catalog list used to look up prices and metadata.
-  /// [consentGiven] must be `true`; it is persisted on the order row for audit.
-  Future<void> placeOrder({
+  /// [details] carries shipping address and payment method.
+  ///
+  /// Returns an [OrderResult]; for VA orders this includes a generated
+  /// virtual account number and bank name.
+  Future<OrderResult> placeOrder({
     required Map<String, int> cart,
     required List<SupplyProduct> products,
-    required bool consentGiven,
+    required CheckoutDetails details,
   });
 }
 
@@ -95,32 +104,58 @@ class SuppliesRemoteDataSourceImpl implements SuppliesRemoteDataSource {
   // Never reference this table from catalog, map, or community queries.
 
   @override
-  Future<void> placeOrder({
+  Future<OrderResult> placeOrder({
     required Map<String, int> cart,
     required List<SupplyProduct> products,
-    required bool consentGiven,
+    required CheckoutDetails details,
   }) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) {
       throw const AuthFailure('Sesi tidak ditemukan. Silakan masuk kembali.');
     }
 
-    // Build one order row per cart line item.
+    // One UUID groups all line-item rows belonging to this checkout together.
+    final groupId = _generateUuidV4();
+
+    // For VA orders, generate a mock virtual account number once and reuse it
+    // for every row in this checkout group. COD orders have no VA number.
+    final String? vaNumber =
+        details.paymentMethod == PaymentMethod.virtualAccount
+            ? _generateVaNumber()
+            : null;
+
+    // Compute the grand total across all cart lines.
+    int grandTotal = 0;
     final rows = <Map<String, dynamic>>[];
     for (final entry in cart.entries) {
       final product = products.firstWhereOrNull((p) => p.id == entry.key);
       if (product == null) continue;
-      rows.add({
+      final lineTotal = product.priceIdr * entry.value;
+      grandTotal += lineTotal;
+      final row = <String, dynamic>{
         'user_id': userId,
         'product_id': product.id,
-        'status': 'draft',
-        'consent_given': consentGiven,
-        'total_idr': product.priceIdr * entry.value,
-      });
+        'status': 'submitted', // advance past 'draft' on confirmed checkout
+        'consent_given': true,
+        'total_idr': lineTotal,
+        // Payment + shipping columns (from migration 20260630000000)
+        'order_group_id': groupId,
+        'payment_method': details.paymentMethod.dbValue,
+        'payment_status': 'pending',
+        'recipient_name': details.recipientName,
+        'recipient_phone': details.recipientPhone,
+        'shipping_address': details.shippingAddress,
+        'shipping_city': details.shippingCity,
+        'shipping_postal_code': details.shippingPostalCode,
+      };
+      if (vaNumber != null) row['virtual_account_no'] = vaNumber;
+      rows.add(row);
     }
 
     // Nothing to insert — cart contained only unrecognised product IDs.
-    if (rows.isEmpty) return;
+    if (rows.isEmpty) {
+      throw const ServerFailure('Keranjang kosong atau produk tidak ditemukan.');
+    }
 
     try {
       await _client.from('prosthetic_orders').insert(rows);
@@ -129,5 +164,44 @@ class SuppliesRemoteDataSourceImpl implements SuppliesRemoteDataSource {
     } catch (e) {
       throw ServerFailure(e.toString());
     }
+
+    return OrderResult(
+      method: details.paymentMethod,
+      totalIdr: grandTotal,
+      virtualAccountNo: vaNumber,
+      bankName: vaNumber != null ? 'BCA' : null,
+    );
+  }
+
+  // PRIVATE HELPERS ─────────────────────────────────────────────────────────
+
+  /// Generates a RFC-4122 UUID v4 string using a cryptographically-secure RNG.
+  /// Used to group multi-product checkout rows under one [order_group_id].
+  String _generateUuidV4() {
+    final random = Random.secure();
+    final bytes = List<int>.generate(16, (_) => random.nextInt(256));
+    // Set version (4) and variant bits per RFC-4122 §4.4.
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    final hex =
+        bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+    return '${hex.substring(0, 8)}-'
+        '${hex.substring(8, 12)}-'
+        '${hex.substring(12, 16)}-'
+        '${hex.substring(16, 20)}-'
+        '${hex.substring(20)}';
+  }
+
+  /// Generates a mock BCA virtual account number: fixed prefix 8808 followed
+  /// by 12 random digits.
+  ///
+  /// In a production integration this would be replaced by a call to an Edge
+  /// Function (`order-confirm`) that contacts the payment provider (e.g.
+  /// Midtrans/Xendit) and returns a real VA number.
+  String _generateVaNumber() {
+    final random = Random.secure();
+    final suffix =
+        List.generate(12, (_) => random.nextInt(10)).join();
+    return '8808$suffix';
   }
 }

@@ -140,6 +140,11 @@ Verified catalog: ocular prosthetics and self-cleaning cases.
 > **RLS (strict):** owner-only; signed URLs only. Storage bucket policy mirrors this.
 
 ### `prosthetic_orders`
+
+New enums (migration `20260630000000_prosthetic_orders_payment.sql`):
+- `payment_method`: `virtual_account`, `cod`
+- `payment_status`: `pending`, `paid`, `cancelled`
+
 | Field | Type | Attributes | Notes |
 | :-- | :-- | :-- | :-- |
 | `id` | `uuid` | **PK** | |
@@ -149,8 +154,17 @@ Verified catalog: ocular prosthetics and self-cleaning cases.
 | `status` | `order_status` enum | default `'draft'` | `draft`, `submitted`, `in_review`, `in_production`, `shipped`, `completed`, `cancelled` |
 | `consent_given` | `boolean` | default `false` | explicit read-aloud confirmation |
 | `total_idr` | `int` | | |
+| `order_group_id` | `uuid` | nullable | ties all line-item rows of one checkout together |
+| `payment_method` | `payment_method` enum | nullable | `virtual_account` or `cod` |
+| `payment_status` | `payment_status` enum | default `'pending'` | `pending`, `paid`, `cancelled` |
+| `virtual_account_no` | `text` | nullable | populated only for `virtual_account` orders |
+| `recipient_name` | `text` | nullable | delivery recipient full name |
+| `recipient_phone` | `text` | nullable | delivery contact phone number |
+| `shipping_address` | `text` | nullable | street address |
+| `shipping_city` | `text` | nullable | city |
+| `shipping_postal_code` | `text` | nullable | postal / ZIP code |
 | `created_at` | `timestamptz` | default `now()` | |
-> **RLS:** owner read/write; assigned vendor/ocularist reads via order; admin full.
+> **RLS:** owner read/write; assigned vendor/ocularist reads via order; admin full. `virtual_account_no` is owner-sensitive — never expose in community/map/catalog joins.
 
 ### `care_tutorials`
 | Field | Type | Attributes | Notes |

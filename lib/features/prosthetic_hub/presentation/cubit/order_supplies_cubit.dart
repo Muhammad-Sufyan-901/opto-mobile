@@ -4,6 +4,7 @@
 // [OrderSuppliesScreen] and [SupplyOrderSummaryScreen].
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opto/core/error/failures.dart';
+import 'package:opto/features/prosthetic_hub/domain/entities/checkout_details.dart';
 import 'package:opto/features/prosthetic_hub/domain/repositories/supplies_repository.dart';
 import 'package:opto/features/prosthetic_hub/presentation/cubit/order_supplies_state.dart';
 
@@ -15,7 +16,8 @@ export 'order_supplies_state.dart';
 /// 1. Call [loadCatalog] once after construction (inside `BlocProvider.create`)
 ///    to trigger the data fetch.
 /// 2. Use [addToCart] / [removeFromCart] while browsing the catalog.
-/// 3. Call [confirmOrder] from the summary screen to place the order via the repository.
+/// 3. Call [confirmOrder] from the checkout screen with the shipping address
+///    and payment method collected from the user.
 class OrderSuppliesCubit extends Cubit<OrderSuppliesState> {
   OrderSuppliesCubit(this._repo) : super(const OrderSuppliesState.initial());
 
@@ -95,14 +97,15 @@ class OrderSuppliesCubit extends Cubit<OrderSuppliesState> {
     ));
   }
 
-  /// Places an order via the repository.
+  /// Places an order via the repository using the given checkout [details].
   ///
+  /// [details] must include a valid shipping address and payment method.
   /// Only works when the current state is [OrderSuppliesCatalog] with a
-  /// non-empty cart. Emits [OrderSuppliesSubmitting] → [OrderSuppliesConfirmed]
-  /// on success, or [OrderSuppliesError] → [OrderSuppliesCatalog] on failure so
-  /// the Confirm button re-enables for retry. The [isClosed] guard protects
-  /// each emit.
-  Future<void> confirmOrder() async {
+  /// non-empty cart. Emits [OrderSuppliesSubmitting] →
+  /// [OrderSuppliesConfirmed] on success, or [OrderSuppliesError] →
+  /// [OrderSuppliesCatalog] on failure so the Confirm button re-enables for
+  /// retry. The [isClosed] guard protects each emit.
+  Future<void> confirmOrder(CheckoutDetails details) async {
     final state = this.state;
     if (state is! OrderSuppliesCatalog) return;
     if (state.cart.isEmpty) return;
@@ -118,13 +121,13 @@ class OrderSuppliesCubit extends Cubit<OrderSuppliesState> {
     }
 
     try {
-      await _repo.placeOrder(
+      final result = await _repo.placeOrder(
         cart: catalogState.cart,
         products: catalogState.products,
-        consentGiven: true,
+        details: details,
       );
       if (!isClosed) {
-        emit(const OrderSuppliesState.confirmed());
+        emit(OrderSuppliesState.confirmed(result));
       }
     } on Failure catch (e) {
       if (!isClosed) {
