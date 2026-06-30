@@ -24,7 +24,18 @@ sealed class ProfileEvent with _$ProfileEvent {
     String? phone,
     VisionProfile? visionProfile,
     String? avatarUrl,
+    String? username,
+    String? pronouns,
+    String? bio,
+    String? location,
   }) = UpdateProfile;
+
+  /// Upload the image at [localPath] to storage and update the avatar URL
+  /// for [userId].
+  const factory ProfileEvent.changeAvatar({
+    required String userId,
+    required String localPath,
+  }) = ChangeAvatar;
 
   /// Persist only the [visionProfile] field for the currently signed-in user.
   ///

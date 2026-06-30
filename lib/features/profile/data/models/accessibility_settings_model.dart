@@ -88,6 +88,9 @@ abstract class AccessibilitySettingsModel with _$AccessibilitySettingsModel {
     /// TTS speaking rate multiplier — 0.0 (slowest) to 1.0 (fastest); default 0.45.
     @JsonKey(name: 'speaking_rate') @Default(0.45) double speakingRate,
 
+    /// DB column `sound_effects_enabled` (not null, default true).
+    @JsonKey(name: 'sound_effects_enabled') @Default(true) bool soundEffectsEnabled,
+
     /// Timestamp of the last settings update (nullable if never explicitly saved).
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _AccessibilitySettingsModel;

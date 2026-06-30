@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opto/features/profile/presentation/widgets/profile_nav_row.dart';
 
 /// Screen P5 — Account & Settings.
 ///
-/// Groups: Account · Preferences · More. Sign out and Delete account are
-/// "danger" rows; the delete-account row shows a confirmation dialog before
-/// dispatching. Email, phone, language, clinic values are static placeholders.
+/// Groups: Account · Preferences · More. Email/phone are read from the active
+/// Supabase session and ProfileBloc state. Sign out and Delete account are
+/// "danger" rows; delete shows a confirmation dialog (deletion deferred to
+/// an audited Edge Function — stub only for now).
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});
 
@@ -21,13 +25,43 @@ class AccountSettingsScreen extends StatefulWidget {
 }
 
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
+  /// Real app version loaded from the platform at mount time.
+  String _version = '';
+
   @override
   void initState() {
     super.initState();
+    // Load real app version from the platform bundle.
+    PackageInfo.fromPlatform().then((info) {
+      if (mounted) setState(() => _version = info.version);
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       announce(context, 'Account and settings.');
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId != null) {
+        context
+            .read<ProfileBloc>()
+            .add(ProfileEvent.loadProfile(userId: userId));
+      }
     });
+  }
+
+  /// Maps a BCP-47 language code to its display name.
+  static String _languageLabel(String code) {
+    const labels = {
+      'en': 'English',
+      'id': 'Bahasa Indonesia',
+      'ms': 'Bahasa Melayu',
+      'ar': 'العربية',
+      'zh': '中文',
+      'fr': 'Français',
+      'de': 'Deutsch',
+      'es': 'Español',
+      'pt': 'Português',
+      'hi': 'हिन्दी',
+    };
+    return labels[code] ?? code.toUpperCase();
   }
 
   @override
@@ -59,6 +93,21 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         ],
       );
     }
+
+    // Real values from session / profile state (no additional network calls).
+    final authUser = Supabase.instance.client.auth.currentUser;
+    final email = authUser?.email;
+    final linkedCount = authUser?.identities?.length ?? 0;
+    final profileState = context.watch<ProfileBloc>().state;
+    final phone = profileState is ProfileLoaded
+        ? profileState.profile.phone
+        : null;
+    final preferredLanguage = profileState is ProfileLoaded
+        ? profileState.profile.preferredLanguage
+        : null;
+    final clinicName = profileState is ProfileLoaded
+        ? profileState.profile.clinicName
+        : null;
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (ctx, state) {
@@ -129,25 +178,40 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     ProfileNavRow(
                       icon: Icons.person_outline,
                       title: 'Email',
-                      trailing: val('rani.putri@…'),
+                      trailing: val(email ?? '—'),
                     ),
                     const SizedBox(height: 11),
                     ProfileNavRow(
                       icon: Icons.phone_outlined,
                       title: 'Phone',
-                      trailing: val('+62 812 ••• 41'),
+                      trailing: val(phone ?? '—'),
                     ),
                     const SizedBox(height: 11),
                     ProfileNavRow(
                       icon: Icons.lock_outline,
                       title: 'Password',
-                      subtitle: 'Changed 3 months ago',
                     ),
                     const SizedBox(height: 11),
                     ProfileNavRow(
                       icon: Icons.link_outlined,
                       title: 'Linked accounts',
-                      trailing: val('2 linked'),
+                      trailing: val(linkedCount > 0
+                          ? '$linkedCount linked'
+                          : 'None'),
+                    ),
+                    const SizedBox(height: 11),
+                    ProfileNavRow(
+                      icon: Icons.contacts_outlined,
+                      title: 'Emergency contacts',
+                      onTap: () =>
+                          context.push(AppRoutes.emergencyContacts.path),
+                    ),
+                    const SizedBox(height: 11),
+                    ProfileNavRow(
+                      icon: Icons.people_outline,
+                      title: 'Caregiver links',
+                      onTap: () =>
+                          context.push(AppRoutes.caregiverLinks.path),
                     ),
                   ],
                 ),
@@ -162,7 +226,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     ProfileNavRow(
                       icon: Icons.language_outlined,
                       title: 'Language',
-                      trailing: val('Bahasa Indonesia'),
+                      trailing: val(preferredLanguage != null
+                          ? _languageLabel(preferredLanguage)
+                          : '—'),
                     ),
                     const SizedBox(height: 11),
                     ProfileNavRow(
@@ -176,12 +242,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       title: 'Privacy & data',
                       subtitle: 'Who can see your profile',
                     ),
-                    const SizedBox(height: 11),
-                    ProfileNavRow(
-                      icon: Icons.medical_services_outlined,
-                      title: 'Connected clinic',
-                      trailing: val('RS Mata Cicendo'),
-                    ),
+                    if (clinicName != null && clinicName.isNotEmpty) ...[
+                      const SizedBox(height: 11),
+                      ProfileNavRow(
+                        icon: Icons.medical_services_outlined,
+                        title: 'Connected clinic',
+                        trailing: val(clinicName),
+                      ),
+                    ],
                   ],
                 ),
 
@@ -221,7 +289,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                 ExcludeSemantics(
                   child: Center(
                     child: Text(
-                      'Opto · v4.2.0 · Made accessible in Bandung',
+                      'Opto · v${_version.isNotEmpty ? _version : "…"} · Made accessible in Bandung',
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: ink3,

@@ -46,6 +46,7 @@ class AccessibilitySettingsCubit extends Cubit<AccessibilitySettingsEntity> {
         hotwordEnabled: false,
         spokenGuidanceEnabled: true,
         speakingRate: 0.45,
+        soundEffectsEnabled: true,
       );
 
   // ---------------------------------------------------------------------------
@@ -98,6 +99,10 @@ class AccessibilitySettingsCubit extends Cubit<AccessibilitySettingsEntity> {
   /// Change the TTS speaking rate (0.0–1.0) immediately and persist.
   Future<void> updateSpeakingRate(double rate) async =>
       _updateField((s) => s.copyWith(speakingRate: rate.clamp(0.0, 1.0)));
+
+  /// Enable or disable app sound effects and persist.
+  Future<void> updateSoundEffects({required bool enabled}) async =>
+      _updateField((s) => s.copyWith(soundEffectsEnabled: enabled));
 
   /// Reset all settings to the Opto defaults.
   ///

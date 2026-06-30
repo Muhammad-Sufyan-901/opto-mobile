@@ -12,6 +12,7 @@ import 'package:opto/core/voice/aura_tts.dart';
 import 'package:opto/features/vision_ai/domain/entities/vision_mode.dart';
 import 'package:opto/features/vision_ai/domain/entities/vision_result.dart';
 import 'package:opto/features/vision_ai/presentation/cubit/vision_ai_cubit.dart';
+import 'package:opto/features/vision_ai/presentation/widgets/scene_consent_sheet.dart';
 
 /// Screen 16 — Vision AI Camera Viewfinder ("Aura").
 ///
@@ -112,6 +113,7 @@ class _VisionAiScreenState extends State<VisionAiScreen>
       listenWhen: (_, curr) =>
           curr is VisionAiResult ||
           curr is VisionAiOfflineFallback ||
+          curr is VisionAiConsentRequired ||
           curr is VisionAiError,
       listener: _onStateChange,
       builder: (context, state) {
@@ -135,13 +137,25 @@ class _VisionAiScreenState extends State<VisionAiScreen>
         HapticPatterns.success();
 
       case VisionAiOfflineFallback(:final result):
-        // Must announce offline status via BOTH paths (risk flag #2).
-        const offlineMsg =
-            'Scene description needs internet — OCR still works.';
-        announce(context, offlineMsg);
-        sl<AuraTts>().speak(offlineMsg);
-        final text = _resultText(result);
-        announce(context, text);
+        if (result is SceneResult && result.isQuotaExhausted) {
+          // Quota-exhausted path: surface distinct spoken BI message via
+          // BOTH AuraTts and SemanticsService (belt-and-suspenders).
+          final quotaMsg = result.toSpokenString();
+          announce(context, quotaMsg);
+          sl<AuraTts>().speak(quotaMsg);
+        } else {
+          // Generic offline path: Must announce via BOTH paths (risk flag #2).
+          const offlineMsg =
+              'Scene description needs internet — OCR still works.';
+          announce(context, offlineMsg);
+          sl<AuraTts>().speak(offlineMsg);
+          final text = _resultText(result);
+          announce(context, text);
+        }
+
+      case VisionAiConsentRequired():
+        // Show consent sheet; resume or cancel depending on user choice.
+        _showConsentSheet(context);
 
       case VisionAiError(:final message):
         announce(context, 'Error: $message');
@@ -149,6 +163,19 @@ class _VisionAiScreenState extends State<VisionAiScreen>
 
       default:
         break;
+    }
+  }
+
+  /// Presents [SceneConsentSheet]; on acceptance calls [confirmConsent],
+  /// on cancellation / dismissal calls [cancelConsent].
+  Future<void> _showConsentSheet(BuildContext context) async {
+    final cubit = context.read<VisionAiCubit>();
+    final agreed = await SceneConsentSheet.show(context);
+    if (!context.mounted) return;
+    if (agreed) {
+      await cubit.confirmConsent();
+    } else {
+      cubit.cancelConsent();
     }
   }
 
@@ -633,9 +660,13 @@ class _ReadoutPill extends StatelessWidget {
           mode == VisionMode.describeScene
               ? 'Describing scene…'
               : 'Analyzing…',
+        VisionAiConsentRequired() =>
+          'Permission required — please respond to the consent sheet.',
         VisionAiResult(:final result) => _toDisplayText(result),
         VisionAiOfflineFallback(:final result) =>
-          'Offline — ${_toDisplayText(result)}',
+          result is SceneResult && result.isQuotaExhausted
+              ? result.toSpokenString()
+              : 'Offline — ${_toDisplayText(result)}',
         VisionAiError(:final message) => 'Error: $message',
       };
 

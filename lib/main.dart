@@ -8,6 +8,7 @@ import 'app.dart';
 import 'core/config/hive_client.dart';
 import 'core/constants/app_env_keys.dart';
 import 'core/di/dependencies_injection_container.dart' as deps_container;
+import 'features/vision_ai/data/vision_ai_config.dart';
 
 Future<void> main() async {
   // Widgets Binding (Ensure Flutter is initialized)
@@ -15,6 +16,15 @@ Future<void> main() async {
 
   // Load environment variables
   await dotenv.load(fileName: ".env");
+
+  // TEMPORARY DIAGNOSTIC — remove once scene-describe is confirmed working.
+  // Prints what the bundled .env asset actually contains at runtime so we can
+  // verify the latest .env was compiled in (not a stale asset).
+  debugPrint(
+    '[Env] SCENE_DESCRIBE_TIER=${dotenv.env['SCENE_DESCRIBE_TIER']} '
+    'APP_ENV_MODE=${dotenv.env['APP_ENV_MODE']} '
+    'cloudSceneAllowed=${VisionAiConfig.cloudSceneAllowed}',
+  );
 
   // Initialize date formatting for Indonesian locale
   await initializeDateFormatting('id_ID', null);

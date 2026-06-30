@@ -386,16 +386,33 @@ deno_version = 2
 # secret_key = "env(SECRET_VALUE)"
 
 # ── Phase 3F: Vision AI ────────────────────────────────────────────────────
-# scene-describe: proxies a JPEG camera frame to Anthropic Claude and
-# returns a concise, accessible scene description.
+# scene-describe: proxies a JPEG camera frame to Google Gemini 2.5 Flash-Lite
+# and returns a concise Bahasa Indonesia scene description (< 3 s).
+#
+# Deployment posture:
+#   FREE PLAN (dev-only, default):
+#     The Flutter client gates cloud calls to development builds via
+#     VisionAiConfig.cloudSceneAllowed (SCENE_DESCRIBE_TIER=free in .env).
+#     ⚠️  The Gemini free tier trains on submitted data — never send real
+#         user camera frames to the free tier (UU PDP violation).
+#
+#   PAID PLAN (production):
+#     Set GEMINI_API_KEY to a billing-enabled key and set
+#     SCENE_DESCRIBE_TIER=paid in the Flutter .env to lift the dev-only gate.
+#     No code change required.
 #
 # Required secret (set once before deploying):
-#   supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+#   supabase secrets set GEMINI_API_KEY=<gemini-api-key>
+#   (Use a billing-enabled key for production; free key for dev/demo only.)
 #
-# Local dev: supabase functions serve scene-describe --env-file .env.local
+# Optional: override the model without a code change (default: gemini-2.5-flash-lite):
+#   supabase secrets set SCENE_DESCRIBE_MODEL=gemini-2.5-flash-lite
+#
+# Local dev (non-sensitive test frames only):
+#   supabase functions serve scene-describe --env-file .env.local
 #
 # verify_jwt = true means callers must supply a valid Supabase JWT —
-# the ANTHROPIC_API_KEY never reaches the Flutter client.
+# the GEMINI_API_KEY never reaches the Flutter client.
 [functions.scene-describe]
 verify_jwt = true
 

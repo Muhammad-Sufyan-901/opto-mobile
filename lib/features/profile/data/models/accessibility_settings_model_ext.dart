@@ -18,6 +18,7 @@ extension AccessibilitySettingsModelX on AccessibilitySettingsModel {
         hotwordEnabled: hotwordEnabled,
         spokenGuidanceEnabled: spokenGuidanceEnabled,
         speakingRate: speakingRate,
+        soundEffectsEnabled: soundEffectsEnabled,
         updatedAt: updatedAt,
       );
 }

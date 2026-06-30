@@ -15,6 +15,13 @@ extension ProfileModelX on ProfileModel {
         phone: phone,
         visionProfile: visionProfile,
         avatarUrl: avatarUrl,
+        username: username,
+        pronouns: pronouns,
+        bio: bio,
+        location: location,
         createdAt: createdAt,
+        preferredLanguage: preferredLanguage,
+        clinicId: clinicId,
+        clinicName: clinicName,
       );
 }

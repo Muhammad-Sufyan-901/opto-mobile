@@ -7,15 +7,21 @@ part 'vision_ai_state.freezed.dart';
 /// State machine for [VisionAiCubit].
 ///
 /// Transitions (normal flow):
-///   [initializing] → [ready] (camera + ML Kit warmed up)
-///   [ready]        → [capturing] (shutter or gallery pressed)
-///   [capturing]    → [analyzing] (image captured, ML / cloud running)
-///   [analyzing]    → [result] or [offlineFallback] or [error]
-///   [result]       → [ready] (user changes mode or taps again)
+///   [initializing]   → [ready] (camera + ML Kit warmed up)
+///   [ready]          → [capturing] (shutter or gallery pressed)
+///   [capturing]      → [analyzing] (image captured, ML / cloud running)
+///   [analyzing]      → [result] or [offlineFallback] or [error]
+///   [result]         → [ready] (user changes mode or taps again)
+///
+/// Consent path (scene description, free plan):
+///   [ready]          → [consentRequired] (first cloud scene description,
+///                       no consent on record)
+///   [consentRequired]→ [capturing] (user taps "Setuju / Agree")
+///   [consentRequired]→ [ready] (user cancels / dismisses sheet)
 ///
 /// Alternative paths:
-///   [initializing] → [permissionDenied] (camera permission not granted)
-///   Any state      → [error] (unexpected failure)
+///   [initializing]   → [permissionDenied] (camera permission not granted)
+///   Any state        → [error] (unexpected failure)
 ///
 /// The [mode] field is carried through all post-initialization states so
 /// that mode-chip rebuilds are triggered by a proper state inequality
@@ -65,6 +71,16 @@ sealed class VisionAiState with _$VisionAiState {
     required VisionMode mode,
   }) = VisionAiOfflineFallback;
 
+  /// Consent is required before the first cloud scene-description call.
+  ///
+  /// Emitted when [VisionMode.describeScene] is requested on the free plan
+  /// and the user has not yet accepted the UU PDP data-sharing notice.
+  /// The screen responds by presenting [SceneConsentSheet]; on acceptance
+  /// the cubit resumes capture via [VisionAiCubit.confirmConsent()].
+  const factory VisionAiState.consentRequired({
+    required VisionMode mode,
+  }) = VisionAiConsentRequired;
+
   /// An unexpected error occurred. [message] is displayed and spoken.
   const factory VisionAiState.error({
     required String message,
@@ -85,6 +101,7 @@ extension VisionAiStateX on VisionAiState {
         VisionAiAnalyzing(:final mode) => mode,
         VisionAiResult(:final mode) => mode,
         VisionAiOfflineFallback(:final mode) => mode,
+        VisionAiConsentRequired(:final mode) => mode,
         VisionAiError(:final mode) => mode,
         VisionAiInitializing() => VisionMode.readText,
         VisionAiPermissionDenied() => VisionMode.readText,
@@ -102,6 +119,7 @@ extension VisionAiStateX on VisionAiState {
         VisionAiReady() => true,
         VisionAiResult() => true,
         VisionAiOfflineFallback() => true,
+        VisionAiConsentRequired() => true,
         VisionAiError() => true,
         _ => false,
       };

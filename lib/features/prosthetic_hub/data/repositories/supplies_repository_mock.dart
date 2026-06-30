@@ -4,6 +4,8 @@
 // Replace with a real Supabase-backed implementation once the backend table
 // is provisioned (see `system_architecture.md` Appendix A).
 
+import 'package:opto/features/prosthetic_hub/domain/entities/checkout_details.dart';
+import 'package:opto/features/prosthetic_hub/domain/entities/order_result.dart';
 import 'package:opto/features/prosthetic_hub/domain/entities/supply_product.dart';
 import 'package:opto/features/prosthetic_hub/domain/repositories/supplies_repository.dart';
 
@@ -72,11 +74,26 @@ class SuppliesRepositoryMock implements SuppliesRepository {
   }
 
   @override
-  Future<void> placeOrder({
+  Future<OrderResult> placeOrder({
     required Map<String, int> cart,
     required List<SupplyProduct> products,
-    required bool consentGiven,
+    required CheckoutDetails details,
   }) async {
-    // Mock: no-op for testing
+    // Mock: compute total and return a fake OrderResult.
+    int total = 0;
+    for (final entry in cart.entries) {
+      final product = products.where((p) => p.id == entry.key).firstOrNull;
+      if (product != null) total += product.priceIdr * entry.value;
+    }
+    return OrderResult(
+      method: details.paymentMethod,
+      totalIdr: total,
+      virtualAccountNo: details.paymentMethod == PaymentMethod.virtualAccount
+          ? '880812345678901234' // fixed mock VA for tests
+          : null,
+      bankName: details.paymentMethod == PaymentMethod.virtualAccount
+          ? 'BCA'
+          : null,
+    );
   }
 }

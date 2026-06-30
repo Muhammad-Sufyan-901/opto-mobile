@@ -9,6 +9,8 @@
 //   Never expose these records in community/map/catalog joins.
 // - `caregiver_links` is owner-only (RLS enforced by Postgres).
 //   Never expose caregiver IDs in community/map surfaces.
+import 'dart:io';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:opto/core/error/failures.dart';
@@ -18,6 +20,9 @@ import 'package:opto/features/profile/data/models/accessibility_settings_model.d
 import 'package:opto/features/profile/data/models/caregiver_link_model.dart';
 import 'package:opto/features/profile/data/models/emergency_contact_model.dart';
 import 'package:opto/features/profile/data/models/profile_model.dart';
+import 'package:opto/features/profile/data/models/vision_clinical_model.dart';
+import 'package:opto/features/profile/data/models/vision_clinical_model_ext.dart';
+import 'package:opto/features/profile/domain/entities/vision_clinical_entity.dart';
 
 /// Contract for the profile remote data source.
 abstract class ProfileRemoteDataSource {
@@ -25,6 +30,11 @@ abstract class ProfileRemoteDataSource {
   Future<ProfileModel> getProfile(String userId);
   Future<void> updateProfile(String userId, Map<String, dynamic> fields);
   Future<void> updateVisionProfile(String dbValue);
+
+  /// Uploads [localPath] to the `avatars` Storage bucket (upsert) and returns
+  /// the public URL.  Throws [AuthFailure] if not signed in, [StorageFailure]
+  /// on upload error.
+  Future<String> uploadAvatar(String localPath);
 
   // ── accessibility_settings ─────────────────────────────────────────────────
   Future<AccessibilitySettingsModel> getSettings(String userId);
@@ -38,6 +48,14 @@ abstract class ProfileRemoteDataSource {
     Map<String, dynamic> json,
   );
   Future<void> deleteEmergencyContact(String contactId);
+
+  // ── vision_clinical_profile ────────────────────────────────────────────────
+
+  /// Returns the clinical profile for [userId], or null if no row exists yet.
+  Future<VisionClinicalEntity?> getVisionClinical(String userId);
+
+  /// Upserts the clinical profile row for the current user.
+  Future<void> upsertVisionClinical(VisionClinicalEntity entity);
 
   // ── caregiver_links ────────────────────────────────────────────────────────
   Future<List<CaregiverLinkModel>> getCaregiverLinks(String userId);
@@ -70,10 +88,14 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     try {
       final row = await _client
           .from('profiles')
-          .select()
+          .select('*, clinic:clinics(name)')
           .eq('id', userId)
           .single();
-      return ProfileModel.fromJson(row);
+      // Flatten the nested clinic join so ProfileModel.fromJson can read clinic_name.
+      final clinicMap = row['clinic'] as Map<String, dynamic>?;
+      final flatRow = Map<String, dynamic>.from(row)
+        ..['clinic_name'] = clinicMap?['name'];
+      return ProfileModel.fromJson(flatRow);
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
@@ -109,6 +131,27 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     } catch (e) {
       throw ServerFailure(e.toString());
     }
+  }
+
+  @override
+  Future<String> uploadAvatar(String localPath) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw const AuthFailure('Not authenticated');
+    // Use a fixed path per user so upsert overwrites the previous avatar file
+    // rather than accumulating an unbounded number of files in the bucket.
+    final ext = localPath.split('.').last.toLowerCase();
+    final storagePath = '$userId/avatar.$ext';
+    try {
+      await _client.storage
+          .from('avatars')
+          .upload(storagePath, File(localPath),
+              fileOptions: const FileOptions(upsert: true));
+    } on StorageException catch (e) {
+      throw SupabaseErrorMapper.fromStorage(e);
+    } catch (e) {
+      throw StorageFailure(e.toString());
+    }
+    return _client.storage.from('avatars').getPublicUrl(storagePath);
   }
 
   // ── accessibility_settings ─────────────────────────────────────────────────
@@ -206,6 +249,59 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           .from('emergency_contacts')
           .delete()
           .eq('id', contactId);
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  // ── vision_clinical_profile ────────────────────────────────────────────────
+
+  @override
+  Future<VisionClinicalEntity?> getVisionClinical(String userId) async {
+    try {
+      final row = await _client
+          .from('vision_clinical_profile')
+          .select()
+          .eq('user_id', userId)
+          .maybeSingle(); // returns null if no row
+      if (row == null) return null;
+      return VisionClinicalModel.fromJson(row).toEntity();
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<void> upsertVisionClinical(VisionClinicalEntity entity) async {
+    try {
+      final model = VisionClinicalModel(
+        userId: entity.userId,
+        diagnosis: entity.diagnosis,
+        diagnosisSeverity: entity.diagnosisSeverity,
+        affectedEyes: entity.affectedEyes,
+        diagnosedYear: entity.diagnosedYear,
+        lightPerception: entity.lightPerception,
+        centralAcuity: entity.centralAcuity,
+        visualField: entity.visualField,
+        prosthesisEye: entity.prosthesisEye,
+        prosthesisType: entity.prosthesisType,
+        prosthesisMaterial: entity.prosthesisMaterial,
+        prosthesisFittedDate: entity.prosthesisFittedDate,
+        prosthesisFittedClinic: entity.prosthesisFittedClinic,
+        lastPolishDate: entity.lastPolishDate,
+        nextPolishDue: entity.nextPolishDue,
+        assistiveTech: entity.assistiveTech,
+      );
+      final payload = model.toJson()
+        ..remove('created_at') // managed by DB
+        ..remove('updated_at'); // managed by DB trigger
+      await _client
+          .from('vision_clinical_profile')
+          .upsert(payload, onConflict: 'user_id');
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {

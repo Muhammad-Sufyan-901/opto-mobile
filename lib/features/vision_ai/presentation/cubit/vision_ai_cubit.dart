@@ -1,16 +1,19 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:opto/core/accessibility/haptic_patterns.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/voice/aura_tts.dart';
+import 'package:opto/features/vision_ai/data/vision_ai_config.dart';
 import 'package:opto/features/vision_ai/domain/entities/vision_mode.dart';
 import 'package:opto/features/vision_ai/domain/entities/vision_result.dart';
 import 'package:opto/features/vision_ai/domain/repositories/vision_repository.dart';
 import 'package:opto/features/vision_ai/presentation/cubit/vision_ai_state.dart';
+import 'package:opto/features/vision_ai/presentation/widgets/scene_consent_sheet.dart';
 
 export 'vision_ai_state.dart';
 
@@ -26,20 +29,31 @@ export 'vision_ai_state.dart';
 /// - Gallery path via [ImagePicker].
 /// - Flash toggle.
 /// - Post-result TTS via [AuraTts] and camera-ready haptic.
+/// - UU PDP consent gate for cloud scene description on the Gemini free plan:
+///   emits [VisionAiConsentRequired] when consent has not been recorded yet;
+///   [confirmConsent()] persists acceptance and resumes the captured image.
 ///
 /// The [CameraController] is exposed as a public getter so the screen can
 /// pass it to [CameraPreview] without rebuilding the entire widget subtree
 /// on every state change.
 class VisionAiCubit extends Cubit<VisionAiState> {
-  VisionAiCubit({required VisionRepository repository})
-      : _repository = repository,
+  VisionAiCubit({
+    required VisionRepository repository,
+    required Box<dynamic> consentBox,
+  })  : _repository = repository,
+        _consentBox = consentBox,
         super(const VisionAiState.initializing());
 
   final VisionRepository _repository;
+  final Box<dynamic> _consentBox;
   final ImagePicker _picker = ImagePicker();
 
   CameraController? _controller;
   VisionResult? _lastResult;
+
+  // Holds the image path captured when consent is pending, so we can resume
+  // the analysis pipeline after the user accepts.
+  String? _pendingConsentFilePath;
 
   // Public getter — screen builds CameraPreview from this.
   CameraController? get cameraController => _controller;
@@ -134,6 +148,12 @@ class VisionAiCubit extends Cubit<VisionAiState> {
   ///
   /// Guards against double-tap by returning early when already capturing
   /// or analyzing ([VisionAiState.canCapture] is `false`).
+  ///
+  /// For [VisionMode.describeScene] on the Gemini free plan, checks whether
+  /// UU PDP consent has been recorded. If not, the image is captured silently
+  /// and stored in [_pendingConsentFilePath], then [VisionAiConsentRequired]
+  /// is emitted so the screen can present [SceneConsentSheet]. The analysis
+  /// pipeline resumes only after [confirmConsent()] is called.
   Future<void> capture() async {
     final current = state;
     if (!current.canCapture) return;
@@ -144,6 +164,18 @@ class VisionAiCubit extends Cubit<VisionAiState> {
 
     try {
       final file = await _controller!.takePicture();
+
+      // ── Consent gate for cloud scene description (free plan) ──────────────
+      if (mode == VisionMode.describeScene &&
+          VisionAiConfig.cloudSceneAllowed &&
+          !SceneConsentSheet.hasConsented(_consentBox)) {
+        _pendingConsentFilePath = file.path;
+        if (!isClosed) {
+          emit(VisionAiState.consentRequired(mode: mode));
+        }
+        return;
+      }
+
       await _analyze(filePath: file.path, mode: mode);
     } catch (e) {
       debugPrint('[VisionAiCubit] capture error: $e');
@@ -153,6 +185,34 @@ class VisionAiCubit extends Cubit<VisionAiState> {
           mode: mode,
         ));
       }
+    }
+  }
+
+  /// Called by the screen after the user taps "Setuju / Agree" on the
+  /// [SceneConsentSheet]. Persists the consent and resumes the pending
+  /// scene-description analysis pipeline.
+  ///
+  /// If there is no pending image (edge case), returns to [ready].
+  Future<void> confirmConsent() async {
+    await SceneConsentSheet.persistConsent(_consentBox);
+    final pendingPath = _pendingConsentFilePath;
+    _pendingConsentFilePath = null;
+
+    if (pendingPath == null || isClosed) {
+      if (!isClosed) {
+        emit(VisionAiState.ready(mode: VisionMode.describeScene));
+      }
+      return;
+    }
+    await _analyze(filePath: pendingPath, mode: VisionMode.describeScene);
+  }
+
+  /// Called by the screen when the user cancels or dismisses the consent
+  /// sheet. Clears the pending capture and returns to [ready].
+  void cancelConsent() {
+    _pendingConsentFilePath = null;
+    if (!isClosed) {
+      emit(VisionAiState.ready(mode: VisionMode.describeScene));
     }
   }
 
@@ -253,7 +313,10 @@ class VisionAiCubit extends Cubit<VisionAiState> {
       if (isClosed) return;
 
       // Emit the appropriate state.
-      if (result is SceneResult && result.isOfflineFallback) {
+      // quotaExhausted shares the offlineFallback UI path (degraded display)
+      // but its toSpokenString() returns a distinct BI spoken message.
+      if (result is SceneResult &&
+          (result.isOfflineFallback || result.isQuotaExhausted)) {
         emit(VisionAiState.offlineFallback(result: result, mode: mode));
       } else {
         emit(VisionAiState.result(result: result, mode: mode));

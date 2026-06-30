@@ -98,6 +98,12 @@ class _AccessibilityScreenState extends State<AccessibilityScreen> {
             final bool isHighContrast =
                 settings.theme == AppThemeMode.highContrast;
 
+            // OS-level settings — read from MediaQuery; app cannot change these.
+            final mq = MediaQuery.of(ctx);
+            final bool talkBackOn = mq.accessibleNavigation;
+            final bool boldText = mq.boldText;
+            final bool reduceMotion = mq.disableAnimations;
+
             return SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(
                   18, 0, 18, AppDimensions.space32),
@@ -108,9 +114,13 @@ class _AccessibilityScreenState extends State<AccessibilityScreen> {
                     alignment: Alignment.centerLeft,
                     child: ProfileListenButton(
                       summary: 'Accessibility settings. '
-                          'TalkBack is on. Voice guidance is on. '
+                          'Screen reader: ${talkBackOn ? "on" : "off"}. '
+                          'Voice guidance: ${settings.spokenGuidanceEnabled ? "on" : "off"}. '
                           'Speech rate: ${_rateLabel(settings.speakingRate)}. '
                           'High contrast: ${isHighContrast ? "on" : "off"}. '
+                          'Bold text: ${boldText ? "on" : "off"}. '
+                          'Reduce motion: ${reduceMotion ? "on" : "off"}. '
+                          'Sound effects: ${settings.soundEffectsEnabled ? "on" : "off"}. '
                           'Haptics: ${settings.hapticIntensity == HapticLevel.full ? "on" : "off"}.',
                       label: 'Listen to these settings read aloud',
                     ),
@@ -125,11 +135,13 @@ class _AccessibilityScreenState extends State<AccessibilityScreen> {
                   ProfileSettingCard(children: [
                     ProfileSettingRow(
                       icon: Icons.volume_up_outlined,
-                      title: 'TalkBack',
-                      subtitle: 'Screen reader is on',
+                      title: 'TalkBack / screen reader',
+                      subtitle: talkBackOn
+                          ? 'Screen reader is active'
+                          : 'Change in phone Settings → Accessibility',
                       control: ProfileSwitch(
-                        value: true, // static — system setting, not in cubit
-                        onChanged: (_) {},
+                        value: talkBackOn,
+                        onChanged: (_) {}, // OS-owned — app cannot toggle
                         label: 'TalkBack',
                       ),
                     ),
@@ -214,20 +226,21 @@ class _AccessibilityScreenState extends State<AccessibilityScreen> {
                     ProfileSettingRow(
                       icon: Icons.format_bold,
                       title: 'Bold text',
+                      subtitle: 'Change in phone Settings → Accessibility',
                       control: ProfileSwitch(
-                        value: true, // static placeholder
-                        onChanged: (_) {},
+                        value: boldText,
+                        onChanged: (_) {}, // OS-owned — app cannot toggle
                         label: 'Bold text',
                       ),
                     ),
                     ProfileSettingRow(
                       icon: Icons.motion_photos_off_outlined,
                       title: 'Reduce motion',
-                      subtitle: 'Limit animations & pulses',
+                      subtitle: 'Change in phone Settings → Accessibility',
                       isLast: true,
                       control: ProfileSwitch(
-                        value: true, // static placeholder
-                        onChanged: (_) {},
+                        value: reduceMotion,
+                        onChanged: (_) {}, // OS-owned — app cannot toggle
                         label: 'Reduce motion',
                       ),
                     ),
@@ -258,10 +271,15 @@ class _AccessibilityScreenState extends State<AccessibilityScreen> {
                     ProfileSettingRow(
                       icon: Icons.speaker_outlined,
                       title: 'Sound effects',
+                      subtitle: 'In-app audio cues and confirmations',
                       isLast: true,
                       control: ProfileSwitch(
-                        value: false, // static placeholder
-                        onChanged: (_) {},
+                        value: settings.soundEffectsEnabled,
+                        onChanged: (v) {
+                          cubit.updateSoundEffects(enabled: v);
+                          announce(ctx,
+                              'Sound effects ${v ? "on" : "off"}.');
+                        },
                         label: 'Sound effects',
                       ),
                     ),

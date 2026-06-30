@@ -19,6 +19,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ProfileBloc(this._profile) : super(const ProfileState.initial()) {
     on<LoadProfile>(_onLoadProfile);
     on<UpdateProfile>(_onUpdateProfile);
+    on<ChangeAvatar>(_onChangeAvatar);
     on<UpdateVisionProfile>(_onUpdateVisionProfile);
   }
 
@@ -45,9 +46,6 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     UpdateProfile event,
     Emitter<ProfileState> emit,
   ) async {
-    // Preserve the previously loaded profile during an in-flight update so
-    // the UI can show an overlay spinner without losing current data.
-    final previous = state;
     emit(const ProfileState.loading());
     try {
       await _profile.updateProfile(
@@ -56,24 +54,35 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         phone: event.phone,
         visionProfile: event.visionProfile,
         avatarUrl: event.avatarUrl,
+        username: event.username,
+        pronouns: event.pronouns,
+        bio: event.bio,
+        location: event.location,
       );
       // Reload the updated profile to get the server-confirmed state.
       final updated = await _profile.getProfile(event.userId);
       emit(ProfileState.loaded(profile: updated));
     } on Failure catch (f) {
-      // Restore previous state so the UI isn't left in loading on error.
-      emit(previous is ProfileLoaded
-          ? previous
-          : ProfileState.error(message: f.message));
-      if (previous is ProfileLoaded) {
-        // Also surface the error without replacing the loaded data.
-        emit(ProfileState.error(message: f.message));
-      }
+      emit(ProfileState.error(message: f.message));
     } catch (e) {
-      emit(previous is ProfileLoaded ? previous : const ProfileState.error(message: 'An unexpected error occurred.'));
-      if (previous is ProfileLoaded) {
-        emit(const ProfileState.error(message: 'An unexpected error occurred.'));
-      }
+      emit(const ProfileState.error(message: 'An unexpected error occurred.'));
+    }
+  }
+
+  Future<void> _onChangeAvatar(
+    ChangeAvatar event,
+    Emitter<ProfileState> emit,
+  ) async {
+    emit(const ProfileState.loading());
+    try {
+      final url = await _profile.uploadAvatar(event.localPath);
+      await _profile.updateProfile(event.userId, avatarUrl: url);
+      final updated = await _profile.getProfile(event.userId);
+      emit(ProfileState.loaded(profile: updated));
+    } on Failure catch (f) {
+      emit(ProfileState.error(message: f.message));
+    } catch (e) {
+      emit(const ProfileState.error(message: 'An unexpected error occurred.'));
     }
   }
 

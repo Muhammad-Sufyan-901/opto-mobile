@@ -71,6 +71,10 @@ import 'package:opto/features/profile/domain/repositories/emergency_contact_repo
 import 'package:opto/features/profile/domain/repositories/profile_repository.dart';
 import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
+import 'package:opto/features/profile/presentation/cubit/caregiver_links_cubit.dart';
+import 'package:opto/features/profile/presentation/cubit/emergency_contacts_cubit.dart';
+import 'package:opto/features/profile/presentation/cubit/my_activity_cubit.dart';
+import 'package:opto/features/profile/presentation/cubit/vision_clinical_cubit.dart';
 
 // Service Locator
 final sl = GetIt.instance;
@@ -185,6 +189,22 @@ Future<void> init() async {
 
   sl.registerFactory<ProfileBloc>(
     () => ProfileBloc(sl<ProfileRepository>()),
+  );
+
+  sl.registerFactory<EmergencyContactsCubit>(
+    () => EmergencyContactsCubit(sl<EmergencyContactRepository>()),
+  );
+
+  sl.registerFactory<CaregiverLinksCubit>(
+    () => CaregiverLinksCubit(sl<CaregiverLinkRepository>()),
+  );
+
+  sl.registerFactory<VisionClinicalCubit>(
+    () => VisionClinicalCubit(sl<ProfileRepository>()),
+  );
+
+  sl.registerFactory<MyActivityCubit>(
+    () => MyActivityCubit(sl<MemberRepository>()),
   );
 
   // ===============================================================
@@ -379,7 +399,12 @@ Future<void> init() async {
   // Cubit — registerFactory: each screen push gets a fresh camera +
   // ML Kit warm-up cycle. The cubit's close() disposes the camera
   // controller and calls repository.disposeResources() (ML Kit close).
+  // consentBox: the shared settings_box opened by HiveClient.init() —
+  // used to persist the one-time UU PDP consent for cloud scene description.
   sl.registerFactory<VisionAiCubit>(
-    () => VisionAiCubit(repository: sl<VisionRepository>()),
+    () => VisionAiCubit(
+      repository: sl<VisionRepository>(),
+      consentBox: Hive.box('settings_box'),
+    ),
   );
 }

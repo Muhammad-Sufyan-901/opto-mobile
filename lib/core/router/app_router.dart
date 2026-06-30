@@ -38,6 +38,7 @@ import 'package:opto/features/prosthetic_hub/presentation/screens/care_log_scree
 import 'package:opto/features/prosthetic_hub/presentation/screens/care_guide_detail_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/order_supplies_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/supply_order_summary_screen.dart';
+import 'package:opto/features/prosthetic_hub/presentation/screens/order_payment_result_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/specialist_list_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/specialist_profile_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/specialist_chat_screen.dart';
@@ -55,6 +56,10 @@ import 'package:opto/features/profile/presentation/screens/accessibility_screen.
 import 'package:opto/features/profile/presentation/screens/account_settings_screen.dart';
 import 'package:opto/features/profile/presentation/screens/my_activity_screen.dart';
 import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
+import 'package:opto/features/profile/presentation/cubit/caregiver_links_cubit.dart';
+import 'package:opto/features/profile/presentation/cubit/emergency_contacts_cubit.dart';
+import 'package:opto/features/profile/presentation/screens/caregiver_links_screen.dart';
+import 'package:opto/features/profile/presentation/screens/emergency_contacts_screen.dart';
 import 'package:opto/features/setup/presentation/screens/setup_done_screen.dart';
 import 'package:opto/features/sos/presentation/screens/sos_active_screen.dart';
 import 'package:opto/features/vision_ai/domain/entities/vision_mode.dart';
@@ -388,12 +393,20 @@ final GoRouter appRouter = GoRouter(
           const OrderSuppliesScreen(),
     ),
 
-    // Screen 17b-summary — Order summary & consent
+    // Screen 17b-summary — Checkout (address + payment + order summary)
     GoRoute(
       path: AppRoutes.prostheticOrderSummary.path,
       name: AppRoutes.prostheticOrderSummary.name,
       builder: (BuildContext context, GoRouterState state) =>
           const SupplyOrderSummaryScreen(),
+    ),
+
+    // Screen 17b-result — Payment instructions / confirmation after order
+    GoRoute(
+      path: AppRoutes.prostheticOrderResult.path,
+      name: AppRoutes.prostheticOrderResult.name,
+      builder: (BuildContext context, GoRouterState state) =>
+          const OrderPaymentResultScreen(),
     ),
 
     // Screen 17c — Specialist directory
@@ -576,11 +589,16 @@ final GoRouter appRouter = GoRouter(
     ),
 
     // Screen 20b — Vision Profile (🔒 medical — owner-only display)
+    // ProfileBloc is provided here so the screen can read clinicName from the
+    // loaded profile (used in the privacy banner).
     GoRoute(
       path: AppRoutes.visionProfile.path,
       name: AppRoutes.visionProfile.name,
       builder: (BuildContext context, GoRouterState state) =>
-          const ProfileVisionScreen(),
+          BlocProvider<ProfileBloc>(
+            create: (_) => sl<ProfileBloc>(),
+            child: const ProfileVisionScreen(),
+          ),
     ),
 
     // Screen 20c — Accessibility Preferences (wired to AccessibilitySettingsCubit singleton)
@@ -599,7 +617,10 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.accountSettings.path,
       name: AppRoutes.accountSettings.name,
       builder: (BuildContext context, GoRouterState state) =>
-          const AccountSettingsScreen(),
+          BlocProvider<ProfileBloc>(
+            create: (_) => sl<ProfileBloc>(),
+            child: const AccountSettingsScreen(),
+          ),
     ),
 
     // Screen 20e — My Activity
@@ -608,6 +629,26 @@ final GoRouter appRouter = GoRouter(
       name: AppRoutes.myActivity.name,
       builder: (BuildContext context, GoRouterState state) =>
           const MyActivityScreen(),
+    ),
+
+    // Screen 20f — Emergency Contacts
+    GoRoute(
+      path: AppRoutes.emergencyContacts.path,
+      name: AppRoutes.emergencyContacts.name,
+      builder: (context, state) => BlocProvider<EmergencyContactsCubit>(
+        create: (_) => sl<EmergencyContactsCubit>(),
+        child: const EmergencyContactsScreen(),
+      ),
+    ),
+
+    // Screen 20g — Caregiver Links
+    GoRoute(
+      path: AppRoutes.caregiverLinks.path,
+      name: AppRoutes.caregiverLinks.name,
+      builder: (context, state) => BlocProvider<CaregiverLinksCubit>(
+        create: (_) => sl<CaregiverLinksCubit>(),
+        child: const CaregiverLinksScreen(),
+      ),
     ),
 
     // Screen 21 — Emergency SOS

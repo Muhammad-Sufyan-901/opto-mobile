@@ -131,14 +131,14 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<SupplyProduct> products,  Map<String, int> cart)?  catalog,TResult Function( List<SupplyProduct> products,  Map<String, int> cart)?  submitting,TResult Function()?  confirmed,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<SupplyProduct> products,  Map<String, int> cart)?  catalog,TResult Function( List<SupplyProduct> products,  Map<String, int> cart)?  submitting,TResult Function( OrderResult result)?  confirmed,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case OrderSuppliesInitial() when initial != null:
 return initial();case OrderSuppliesLoading() when loading != null:
 return loading();case OrderSuppliesCatalog() when catalog != null:
 return catalog(_that.products,_that.cart);case OrderSuppliesSubmitting() when submitting != null:
 return submitting(_that.products,_that.cart);case OrderSuppliesConfirmed() when confirmed != null:
-return confirmed();case OrderSuppliesError() when error != null:
+return confirmed(_that.result);case OrderSuppliesError() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -157,14 +157,14 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<SupplyProduct> products,  Map<String, int> cart)  catalog,required TResult Function( List<SupplyProduct> products,  Map<String, int> cart)  submitting,required TResult Function()  confirmed,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<SupplyProduct> products,  Map<String, int> cart)  catalog,required TResult Function( List<SupplyProduct> products,  Map<String, int> cart)  submitting,required TResult Function( OrderResult result)  confirmed,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case OrderSuppliesInitial():
 return initial();case OrderSuppliesLoading():
 return loading();case OrderSuppliesCatalog():
 return catalog(_that.products,_that.cart);case OrderSuppliesSubmitting():
 return submitting(_that.products,_that.cart);case OrderSuppliesConfirmed():
-return confirmed();case OrderSuppliesError():
+return confirmed(_that.result);case OrderSuppliesError():
 return error(_that.message);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -179,14 +179,14 @@ return error(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<SupplyProduct> products,  Map<String, int> cart)?  catalog,TResult? Function( List<SupplyProduct> products,  Map<String, int> cart)?  submitting,TResult? Function()?  confirmed,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<SupplyProduct> products,  Map<String, int> cart)?  catalog,TResult? Function( List<SupplyProduct> products,  Map<String, int> cart)?  submitting,TResult? Function( OrderResult result)?  confirmed,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case OrderSuppliesInitial() when initial != null:
 return initial();case OrderSuppliesLoading() when loading != null:
 return loading();case OrderSuppliesCatalog() when catalog != null:
 return catalog(_that.products,_that.cart);case OrderSuppliesSubmitting() when submitting != null:
 return submitting(_that.products,_that.cart);case OrderSuppliesConfirmed() when confirmed != null:
-return confirmed();case OrderSuppliesError() when error != null:
+return confirmed(_that.result);case OrderSuppliesError() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -423,33 +423,67 @@ as Map<String, int>,
 
 
 class OrderSuppliesConfirmed implements OrderSuppliesState {
-  const OrderSuppliesConfirmed();
+  const OrderSuppliesConfirmed(this.result);
   
 
+ final  OrderResult result;
 
-
+/// Create a copy of OrderSuppliesState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$OrderSuppliesConfirmedCopyWith<OrderSuppliesConfirmed> get copyWith => _$OrderSuppliesConfirmedCopyWithImpl<OrderSuppliesConfirmed>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderSuppliesConfirmed);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderSuppliesConfirmed&&(identical(other.result, result) || other.result == result));
 }
 
 
 @override
-int get hashCode => runtimeType.hashCode;
+int get hashCode => Object.hash(runtimeType,result);
 
 @override
 String toString() {
-  return 'OrderSuppliesState.confirmed()';
+  return 'OrderSuppliesState.confirmed(result: $result)';
 }
 
 
 }
 
+/// @nodoc
+abstract mixin class $OrderSuppliesConfirmedCopyWith<$Res> implements $OrderSuppliesStateCopyWith<$Res> {
+  factory $OrderSuppliesConfirmedCopyWith(OrderSuppliesConfirmed value, $Res Function(OrderSuppliesConfirmed) _then) = _$OrderSuppliesConfirmedCopyWithImpl;
+@useResult
+$Res call({
+ OrderResult result
+});
 
 
+
+
+}
+/// @nodoc
+class _$OrderSuppliesConfirmedCopyWithImpl<$Res>
+    implements $OrderSuppliesConfirmedCopyWith<$Res> {
+  _$OrderSuppliesConfirmedCopyWithImpl(this._self, this._then);
+
+  final OrderSuppliesConfirmed _self;
+  final $Res Function(OrderSuppliesConfirmed) _then;
+
+/// Create a copy of OrderSuppliesState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? result = null,}) {
+  return _then(OrderSuppliesConfirmed(
+null == result ? _self.result : result // ignore: cast_nullable_to_non_nullable
+as OrderResult,
+  ));
+}
+
+
+}
 
 /// @nodoc
 

@@ -6,6 +6,7 @@
 // NOTE: No Supabase or infrastructure imports — domain layer stays pure Dart.
 import 'package:opto/core/constants/identity_enums.dart';
 import 'package:opto/features/profile/domain/entities/profile_entity.dart';
+import 'package:opto/features/profile/domain/entities/vision_clinical_entity.dart';
 
 /// Abstract contract for `profiles` table operations.
 ///
@@ -30,11 +31,38 @@ abstract class ProfileRepository {
     String? phone,
     VisionProfile? visionProfile,
     String? avatarUrl,
+    String? username,
+    String? pronouns,
+    String? bio,
+    String? location,
+    String? preferredLanguage,
   });
+
+  /// Uploads the file at [localPath] to the `avatars` storage bucket and
+  /// returns the public URL of the uploaded file.
+  ///
+  /// Throws `AuthFailure` when there is no active session, and
+  /// `StorageFailure` on upload error.
+  Future<String> uploadAvatar(String localPath);
 
   /// Updates only the `vision_profile` column for the currently signed-in user.
   ///
   /// Throws `AuthFailure` when there is no active session, and `ServerFailure`
   /// on RLS violation or network error.
   Future<void> updateVisionProfile(VisionProfile profile);
+
+  // ── vision_clinical_profile ────────────────────────────────────────────────
+
+  /// Fetches the clinical profile for [userId], or null if no row exists yet.
+  ///
+  /// This is medically sensitive (🔒 owner-only via RLS). Never expose the
+  /// result in community/map/catalog surfaces.
+  ///
+  /// Throws `ServerFailure` on RLS violation or network error.
+  Future<VisionClinicalEntity?> getVisionClinical(String userId);
+
+  /// Upserts the clinical profile row for the current user.
+  ///
+  /// Throws `ServerFailure` on RLS violation or network error.
+  Future<void> upsertVisionClinical(VisionClinicalEntity entity);
 }

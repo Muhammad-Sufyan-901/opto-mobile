@@ -10,10 +10,14 @@ import 'package:opto/core/constants/identity_enums.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:opto/features/connect/domain/entities/member_profile_entity.dart';
+import 'package:opto/features/connect/domain/repositories/member_repository.dart';
 import 'package:opto/features/connect/presentation/widgets/community_avatar.dart';
 import 'package:opto/features/connect/presentation/widgets/profile_badge.dart';
 import 'package:opto/features/home/presentation/widgets/home_bottom_nav.dart';
 import 'package:opto/features/profile/domain/entities/profile_entity.dart';
+import 'package:opto/features/profile/domain/entities/vision_clinical_entity.dart';
+import 'package:opto/features/profile/domain/repositories/profile_repository.dart';
 import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opto/features/profile/presentation/cubit/accessibility_settings_cubit.dart';
 import 'package:opto/features/profile/presentation/widgets/profile_glance_card.dart';
@@ -68,16 +72,42 @@ class _ProfileBody extends StatefulWidget {
 }
 
 class _ProfileBodyState extends State<_ProfileBody> {
+  MemberProfileEntity? _memberProfile;
+  VisionClinicalEntity? _clinicalProfile;
+
   @override
   void initState() {
     super.initState();
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId != null) {
       context.read<ProfileBloc>().add(ProfileEvent.loadProfile(userId: userId));
+      _loadSupplementalData(userId);
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       announce(context, 'Profile.');
+    });
+  }
+
+  void _loadSupplementalData(String userId) {
+    final memberRepo = sl<MemberRepository>();
+    final profileRepo = sl<ProfileRepository>();
+
+    // Fire both calls in parallel; each updates state independently so a
+    // failure in one doesn't block the other.
+    memberRepo.getMemberProfile(userId).then((m) {
+      if (mounted) setState(() { _memberProfile = m; });
+    // ignore: avoid_catches_without_on_clauses
+    }).catchError((Object e) {
+      // Supplemental — degrade gracefully to null/zero fallbacks.
+      debugPrint('[ProfileScreen] getMemberProfile failed: $e');
+    });
+
+    profileRepo.getVisionClinical(userId).then((c) {
+      if (mounted) setState(() { _clinicalProfile = c; });
+    // ignore: avoid_catches_without_on_clauses
+    }).catchError((Object e) {
+      debugPrint('[ProfileScreen] getVisionClinical failed: $e');
     });
   }
 
@@ -97,7 +127,11 @@ class _ProfileBodyState extends State<_ProfileBody> {
             return const ProfileHomeSkeleton();
           }
 
-          return _ProfileContent(profileState: profileState);
+          return _ProfileContent(
+            profileState: profileState,
+            memberProfile: _memberProfile,
+            clinicalProfile: _clinicalProfile,
+          );
         },
       ),
     );
@@ -109,9 +143,42 @@ class _ProfileBodyState extends State<_ProfileBody> {
 // =============================================================================
 
 class _ProfileContent extends StatelessWidget {
-  const _ProfileContent({required this.profileState});
+  const _ProfileContent({
+    required this.profileState,
+    this.memberProfile,
+    this.clinicalProfile,
+  });
 
   final ProfileState profileState;
+  final MemberProfileEntity? memberProfile;
+  final VisionClinicalEntity? clinicalProfile;
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
+  static String _formatCount(int n) {
+    if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}k';
+    return '$n';
+  }
+
+  static const _months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  static String _monthAbbr(int month) => _months[month - 1];
+
+  static String _buildHandle(ProfileEntity? profile, MemberProfileEntity? member) {
+    final parts = <String>[];
+    final handle = profile?.username ?? member?.handle;
+    if (handle != null && handle.isNotEmpty) parts.add('@$handle');
+    if (profile?.location != null && profile!.location!.isNotEmpty) {
+      parts.add(profile.location!);
+    }
+    final year = profile?.createdAt.year ?? member?.joinedYear;
+    if (year != null) parts.add('joined $year');
+    return parts.join(' · ');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,14 +192,85 @@ class _ProfileContent extends StatelessWidget {
     final ProfileEntity? profile = profileState is ProfileLoaded
         ? (profileState as ProfileLoaded).profile
         : null;
-    final String displayName = profile?.fullName ?? 'Rani Putri';
-    final String handle = '@raniputri · Bandung · joined ${profile?.createdAt.year ?? 2022}';
+    final String displayName = profile?.fullName ?? memberProfile?.name ?? 'You';
+    final String handle = _buildHandle(profile, memberProfile);
     final String visionLabel = _visionLabel(profile?.visionProfile);
+
+    // Stats
+    final int posts = memberProfile?.postsCount ?? 0;
+    final int helpful = memberProfile?.helpfulCount ?? 0;
+    final int circles = memberProfile?.circlesCount ?? 0;
 
     // Profile summary for TTS
     final String summary =
-        '$displayName. $visionLabel. 142 posts, 1.8k helpful votes, '
-        '6 circles. Joined ${profile?.createdAt.year ?? 2022}.';
+        '$displayName. $visionLabel. '
+        '$posts posts, ${_formatCount(helpful)} helpful votes, $circles circles. '
+        'Joined ${profile?.createdAt.year ?? memberProfile?.joinedYear ?? 'unknown'}.';
+
+    // ── Badges ──────────────────────────────────────────────────────────────
+    final badges = <ProfileBadge>[];
+    final vp = profile?.visionProfile;
+    if (vp != null &&
+        vp != VisionProfile.unspecified &&
+        vp != VisionProfile.caregiver) {
+      badges.add(ProfileBadge(
+        label: _visionLabel(vp),
+        icon: Icons.visibility_outlined,
+        variant: ProfileBadgeVariant.blue,
+      ));
+    }
+    final isMentor = memberProfile?.isMentor ?? false;
+    if (isMentor) {
+      badges.add(const ProfileBadge(
+        label: 'Peer helper',
+        icon: Icons.school_outlined,
+        variant: ProfileBadgeVariant.green,
+      ));
+    }
+    if (vp == VisionProfile.ocularProsthesis) {
+      badges.add(const ProfileBadge(
+        label: 'Prosthesis user',
+        icon: Icons.adjust_outlined,
+        variant: ProfileBadgeVariant.amber,
+      ));
+    }
+
+    // ── Glance card facts ────────────────────────────────────────────────────
+    final glanceFacts = <ProfileGlanceFact>[];
+
+    if (vp != null && vp != VisionProfile.unspecified) {
+      glanceFacts.add(ProfileGlanceFact(
+        icon: Icons.visibility_outlined,
+        label: 'Condition',
+        value: visionLabel,
+      ));
+    }
+
+    final prosthesisEye = clinicalProfile?.prosthesisEye;
+    final fittedDate = clinicalProfile?.prosthesisFittedDate;
+    if (prosthesisEye != null) {
+      final dateStr = fittedDate != null
+          ? '${_monthAbbr(fittedDate.month)} ${fittedDate.year}'
+          : null;
+      glanceFacts.add(ProfileGlanceFact(
+        icon: Icons.adjust_outlined,
+        label: 'Prosthesis',
+        value: dateStr != null
+            ? '$prosthesisEye eye · $dateStr'
+            : '$prosthesisEye eye',
+      ));
+    }
+
+    // Use watch so the glance card reacts when the user changes a11y settings.
+    final a11y = context.watch<AccessibilitySettingsCubit>().state;
+    final voiceOn = a11y.voiceEnabled;
+    final scale = a11y.textScale;
+    final scaleStr = scale == 1.0 ? '1×' : '${scale.toStringAsFixed(1)}×';
+    glanceFacts.add(ProfileGlanceFact(
+      icon: Icons.volume_up_outlined,
+      label: 'Primary access',
+      value: '${voiceOn ? 'Voice on' : 'Voice off'} · $scaleStr text',
+    ));
 
     return Scaffold(
       backgroundColor: cs.surface,
@@ -239,13 +377,17 @@ class _ProfileContent extends StatelessWidget {
                   // ── Identity header ─────────────────────────────────
                   Semantics(
                     header: true,
-                    label: '$displayName profile. $handle.',
+                    label: handle.isNotEmpty
+                        ? '$displayName profile. $handle.'
+                        : '$displayName profile.',
                     child: Column(
                       children: [
                         ExcludeSemantics(
                           child: CommunityAvatar(
                             name: displayName,
-                            authorId: profile?.id ?? 'raniputri',
+                            authorId: profile?.id ??
+                                Supabase.instance.client.auth.currentUser?.id ??
+                                '',
                             avatarUrl: profile?.avatarUrl,
                             size: 96,
                             fontSize: 34,
@@ -271,41 +413,28 @@ class _ProfileContent extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 3),
-                        ExcludeSemantics(
-                          child: Text(
-                            handle,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: ink3,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14.5,
+                        if (handle.isNotEmpty) ...[
+                          const SizedBox(height: 3),
+                          ExcludeSemantics(
+                            child: Text(
+                              handle,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: ink3,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14.5,
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                         const SizedBox(height: 14),
-                        // Badges
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          alignment: WrapAlignment.center,
-                          children: [
-                            const ProfileBadge(
-                              label: 'Low vision',
-                              icon: Icons.visibility_outlined,
-                              variant: ProfileBadgeVariant.blue,
-                            ),
-                            const ProfileBadge(
-                              label: 'Peer helper',
-                              icon: Icons.school_outlined,
-                              variant: ProfileBadgeVariant.green,
-                            ),
-                            const ProfileBadge(
-                              label: "Prosthesis '24",
-                              icon: Icons.adjust_outlined,
-                              variant: ProfileBadgeVariant.amber,
-                            ),
-                          ],
-                        ),
+                        // Badges — only rendered when at least one badge applies
+                        if (badges.isNotEmpty)
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            alignment: WrapAlignment.center,
+                            children: badges,
+                          ),
                       ],
                     ),
                   ),
@@ -402,11 +531,14 @@ class _ProfileContent extends StatelessWidget {
                   const SizedBox(height: 14),
 
                   // ── Stats strip ────────────────────────────────────────
-                  const ProfileStatsRow(
+                  ProfileStatsRow(
                     stats: [
-                      ProfileStat(value: '142', label: 'Posts'),
-                      ProfileStat(value: '1.8k', label: 'Helpful'),
-                      ProfileStat(value: '6', label: 'Circles'),
+                      ProfileStat(value: '$posts', label: 'Posts'),
+                      ProfileStat(
+                        value: _formatCount(helpful),
+                        label: 'Helpful',
+                      ),
+                      ProfileStat(value: '$circles', label: 'Circles'),
                     ],
                   ),
 
@@ -416,23 +548,7 @@ class _ProfileContent extends StatelessWidget {
                   ProfileGlanceCard(
                     sectionIcon: Icons.shield_outlined,
                     sectionLabel: 'Vision profile',
-                    facts: const [
-                      ProfileGlanceFact(
-                        icon: Icons.visibility_outlined,
-                        label: 'Condition',
-                        value: 'Low vision · right eye',
-                      ),
-                      ProfileGlanceFact(
-                        icon: Icons.adjust_outlined,
-                        label: 'Prosthesis',
-                        value: 'Left eye · Mar 2024',
-                      ),
-                      ProfileGlanceFact(
-                        icon: Icons.volume_up_outlined,
-                        label: 'Primary access',
-                        value: 'TalkBack · 1.5×',
-                      ),
-                    ],
+                    facts: glanceFacts,
                     actionLabel: 'Manage',
                     onAction: () => context.push(AppRoutes.visionProfile.path),
                     footerIcon: Icons.lock_outline,
@@ -478,7 +594,9 @@ class _ProfileContent extends StatelessWidget {
                       ProfileNavRow(
                         icon: Icons.grid_view_outlined,
                         title: 'My activity',
-                        subtitle: '142 posts · 38 saved · 6 circles',
+                        subtitle: memberProfile != null
+                            ? '${memberProfile!.postsCount} posts · ${memberProfile!.circlesCount} circles'
+                            : null,
                         onTap: () =>
                             context.push(AppRoutes.myActivity.path),
                       ),
@@ -523,7 +641,7 @@ class _ProfileContent extends StatelessWidget {
     );
   }
 
-  String _visionLabel(VisionProfile? vp) {
+  static String _visionLabel(VisionProfile? vp) {
     return switch (vp) {
       VisionProfile.blindTotal => 'Blind (total)',
       VisionProfile.lowVision => 'Low vision',

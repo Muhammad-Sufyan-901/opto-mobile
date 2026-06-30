@@ -55,12 +55,13 @@ extension ProfileEventPatterns on ProfileEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LoadProfile value)?  loadProfile,TResult Function( UpdateProfile value)?  updateProfile,TResult Function( UpdateVisionProfile value)?  updateVisionProfile,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LoadProfile value)?  loadProfile,TResult Function( UpdateProfile value)?  updateProfile,TResult Function( ChangeAvatar value)?  changeAvatar,TResult Function( UpdateVisionProfile value)?  updateVisionProfile,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case LoadProfile() when loadProfile != null:
 return loadProfile(_that);case UpdateProfile() when updateProfile != null:
-return updateProfile(_that);case UpdateVisionProfile() when updateVisionProfile != null:
+return updateProfile(_that);case ChangeAvatar() when changeAvatar != null:
+return changeAvatar(_that);case UpdateVisionProfile() when updateVisionProfile != null:
 return updateVisionProfile(_that);case _:
   return orElse();
 
@@ -79,12 +80,13 @@ return updateVisionProfile(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LoadProfile value)  loadProfile,required TResult Function( UpdateProfile value)  updateProfile,required TResult Function( UpdateVisionProfile value)  updateVisionProfile,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LoadProfile value)  loadProfile,required TResult Function( UpdateProfile value)  updateProfile,required TResult Function( ChangeAvatar value)  changeAvatar,required TResult Function( UpdateVisionProfile value)  updateVisionProfile,}){
 final _that = this;
 switch (_that) {
 case LoadProfile():
 return loadProfile(_that);case UpdateProfile():
-return updateProfile(_that);case UpdateVisionProfile():
+return updateProfile(_that);case ChangeAvatar():
+return changeAvatar(_that);case UpdateVisionProfile():
 return updateVisionProfile(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -99,12 +101,13 @@ return updateVisionProfile(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LoadProfile value)?  loadProfile,TResult? Function( UpdateProfile value)?  updateProfile,TResult? Function( UpdateVisionProfile value)?  updateVisionProfile,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LoadProfile value)?  loadProfile,TResult? Function( UpdateProfile value)?  updateProfile,TResult? Function( ChangeAvatar value)?  changeAvatar,TResult? Function( UpdateVisionProfile value)?  updateVisionProfile,}){
 final _that = this;
 switch (_that) {
 case LoadProfile() when loadProfile != null:
 return loadProfile(_that);case UpdateProfile() when updateProfile != null:
-return updateProfile(_that);case UpdateVisionProfile() when updateVisionProfile != null:
+return updateProfile(_that);case ChangeAvatar() when changeAvatar != null:
+return changeAvatar(_that);case UpdateVisionProfile() when updateVisionProfile != null:
 return updateVisionProfile(_that);case _:
   return null;
 
@@ -122,11 +125,12 @@ return updateVisionProfile(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String userId)?  loadProfile,TResult Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl)?  updateProfile,TResult Function( VisionProfile profile)?  updateVisionProfile,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String userId)?  loadProfile,TResult Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl,  String? username,  String? pronouns,  String? bio,  String? location)?  updateProfile,TResult Function( String userId,  String localPath)?  changeAvatar,TResult Function( VisionProfile profile)?  updateVisionProfile,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case LoadProfile() when loadProfile != null:
 return loadProfile(_that.userId);case UpdateProfile() when updateProfile != null:
-return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl);case UpdateVisionProfile() when updateVisionProfile != null:
+return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.username,_that.pronouns,_that.bio,_that.location);case ChangeAvatar() when changeAvatar != null:
+return changeAvatar(_that.userId,_that.localPath);case UpdateVisionProfile() when updateVisionProfile != null:
 return updateVisionProfile(_that.profile);case _:
   return orElse();
 
@@ -145,11 +149,12 @@ return updateVisionProfile(_that.profile);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String userId)  loadProfile,required TResult Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl)  updateProfile,required TResult Function( VisionProfile profile)  updateVisionProfile,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String userId)  loadProfile,required TResult Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl,  String? username,  String? pronouns,  String? bio,  String? location)  updateProfile,required TResult Function( String userId,  String localPath)  changeAvatar,required TResult Function( VisionProfile profile)  updateVisionProfile,}) {final _that = this;
 switch (_that) {
 case LoadProfile():
 return loadProfile(_that.userId);case UpdateProfile():
-return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl);case UpdateVisionProfile():
+return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.username,_that.pronouns,_that.bio,_that.location);case ChangeAvatar():
+return changeAvatar(_that.userId,_that.localPath);case UpdateVisionProfile():
 return updateVisionProfile(_that.profile);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -164,11 +169,12 @@ return updateVisionProfile(_that.profile);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String userId)?  loadProfile,TResult? Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl)?  updateProfile,TResult? Function( VisionProfile profile)?  updateVisionProfile,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String userId)?  loadProfile,TResult? Function( String userId,  String? fullName,  String? phone,  VisionProfile? visionProfile,  String? avatarUrl,  String? username,  String? pronouns,  String? bio,  String? location)?  updateProfile,TResult? Function( String userId,  String localPath)?  changeAvatar,TResult? Function( VisionProfile profile)?  updateVisionProfile,}) {final _that = this;
 switch (_that) {
 case LoadProfile() when loadProfile != null:
 return loadProfile(_that.userId);case UpdateProfile() when updateProfile != null:
-return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl);case UpdateVisionProfile() when updateVisionProfile != null:
+return updateProfile(_that.userId,_that.fullName,_that.phone,_that.visionProfile,_that.avatarUrl,_that.username,_that.pronouns,_that.bio,_that.location);case ChangeAvatar() when changeAvatar != null:
+return changeAvatar(_that.userId,_that.localPath);case UpdateVisionProfile() when updateVisionProfile != null:
 return updateVisionProfile(_that.profile);case _:
   return null;
 
@@ -247,7 +253,7 @@ as String,
 
 
 class UpdateProfile implements ProfileEvent {
-  const UpdateProfile({required this.userId, this.fullName, this.phone, this.visionProfile, this.avatarUrl});
+  const UpdateProfile({required this.userId, this.fullName, this.phone, this.visionProfile, this.avatarUrl, this.username, this.pronouns, this.bio, this.location});
   
 
  final  String userId;
@@ -255,6 +261,10 @@ class UpdateProfile implements ProfileEvent {
  final  String? phone;
  final  VisionProfile? visionProfile;
  final  String? avatarUrl;
+ final  String? username;
+ final  String? pronouns;
+ final  String? bio;
+ final  String? location;
 
 /// Create a copy of ProfileEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -266,16 +276,16 @@ $UpdateProfileCopyWith<UpdateProfile> get copyWith => _$UpdateProfileCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UpdateProfile&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.visionProfile, visionProfile) || other.visionProfile == visionProfile)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UpdateProfile&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.visionProfile, visionProfile) || other.visionProfile == visionProfile)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.username, username) || other.username == username)&&(identical(other.pronouns, pronouns) || other.pronouns == pronouns)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.location, location) || other.location == location));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,userId,fullName,phone,visionProfile,avatarUrl);
+int get hashCode => Object.hash(runtimeType,userId,fullName,phone,visionProfile,avatarUrl,username,pronouns,bio,location);
 
 @override
 String toString() {
-  return 'ProfileEvent.updateProfile(userId: $userId, fullName: $fullName, phone: $phone, visionProfile: $visionProfile, avatarUrl: $avatarUrl)';
+  return 'ProfileEvent.updateProfile(userId: $userId, fullName: $fullName, phone: $phone, visionProfile: $visionProfile, avatarUrl: $avatarUrl, username: $username, pronouns: $pronouns, bio: $bio, location: $location)';
 }
 
 
@@ -286,7 +296,7 @@ abstract mixin class $UpdateProfileCopyWith<$Res> implements $ProfileEventCopyWi
   factory $UpdateProfileCopyWith(UpdateProfile value, $Res Function(UpdateProfile) _then) = _$UpdateProfileCopyWithImpl;
 @useResult
 $Res call({
- String userId, String? fullName, String? phone, VisionProfile? visionProfile, String? avatarUrl
+ String userId, String? fullName, String? phone, VisionProfile? visionProfile, String? avatarUrl, String? username, String? pronouns, String? bio, String? location
 });
 
 
@@ -303,14 +313,86 @@ class _$UpdateProfileCopyWithImpl<$Res>
 
 /// Create a copy of ProfileEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? fullName = freezed,Object? phone = freezed,Object? visionProfile = freezed,Object? avatarUrl = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? fullName = freezed,Object? phone = freezed,Object? visionProfile = freezed,Object? avatarUrl = freezed,Object? username = freezed,Object? pronouns = freezed,Object? bio = freezed,Object? location = freezed,}) {
   return _then(UpdateProfile(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,fullName: freezed == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
 as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
 as String?,visionProfile: freezed == visionProfile ? _self.visionProfile : visionProfile // ignore: cast_nullable_to_non_nullable
 as VisionProfile?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,username: freezed == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
+as String?,pronouns: freezed == pronouns ? _self.pronouns : pronouns // ignore: cast_nullable_to_non_nullable
+as String?,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
+as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class ChangeAvatar implements ProfileEvent {
+  const ChangeAvatar({required this.userId, required this.localPath});
+  
+
+ final  String userId;
+ final  String localPath;
+
+/// Create a copy of ProfileEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ChangeAvatarCopyWith<ChangeAvatar> get copyWith => _$ChangeAvatarCopyWithImpl<ChangeAvatar>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChangeAvatar&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.localPath, localPath) || other.localPath == localPath));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,userId,localPath);
+
+@override
+String toString() {
+  return 'ProfileEvent.changeAvatar(userId: $userId, localPath: $localPath)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ChangeAvatarCopyWith<$Res> implements $ProfileEventCopyWith<$Res> {
+  factory $ChangeAvatarCopyWith(ChangeAvatar value, $Res Function(ChangeAvatar) _then) = _$ChangeAvatarCopyWithImpl;
+@useResult
+$Res call({
+ String userId, String localPath
+});
+
+
+
+
+}
+/// @nodoc
+class _$ChangeAvatarCopyWithImpl<$Res>
+    implements $ChangeAvatarCopyWith<$Res> {
+  _$ChangeAvatarCopyWithImpl(this._self, this._then);
+
+  final ChangeAvatar _self;
+  final $Res Function(ChangeAvatar) _then;
+
+/// Create a copy of ProfileEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? localPath = null,}) {
+  return _then(ChangeAvatar(
+userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String,localPath: null == localPath ? _self.localPath : localPath // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

@@ -24,7 +24,8 @@ mixin _$AccessibilitySettingsModel {
 @JsonKey(name: 'voice_enabled') bool get voiceEnabled;/// Whether the always-on hotword listener is active; defaults to false.
 @JsonKey(name: 'hotword_enabled') bool get hotwordEnabled;/// Whether spoken guidance (TTS feedback) is enabled; defaults to true.
 @JsonKey(name: 'spoken_guidance_enabled') bool get spokenGuidanceEnabled;/// TTS speaking rate multiplier — 0.0 (slowest) to 1.0 (fastest); default 0.45.
-@JsonKey(name: 'speaking_rate') double get speakingRate;/// Timestamp of the last settings update (nullable if never explicitly saved).
+@JsonKey(name: 'speaking_rate') double get speakingRate;/// DB column `sound_effects_enabled` (not null, default true).
+@JsonKey(name: 'sound_effects_enabled') bool get soundEffectsEnabled;/// Timestamp of the last settings update (nullable if never explicitly saved).
 @JsonKey(name: 'updated_at') DateTime? get updatedAt;
 /// Create a copy of AccessibilitySettingsModel
 /// with the given fields replaced by the non-null parameter values.
@@ -38,16 +39,16 @@ $AccessibilitySettingsModelCopyWith<AccessibilitySettingsModel> get copyWith => 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AccessibilitySettingsModel&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.theme, theme) || other.theme == theme)&&(identical(other.textScale, textScale) || other.textScale == textScale)&&(identical(other.fontFamily, fontFamily) || other.fontFamily == fontFamily)&&(identical(other.hapticIntensity, hapticIntensity) || other.hapticIntensity == hapticIntensity)&&(identical(other.voiceEnabled, voiceEnabled) || other.voiceEnabled == voiceEnabled)&&(identical(other.hotwordEnabled, hotwordEnabled) || other.hotwordEnabled == hotwordEnabled)&&(identical(other.spokenGuidanceEnabled, spokenGuidanceEnabled) || other.spokenGuidanceEnabled == spokenGuidanceEnabled)&&(identical(other.speakingRate, speakingRate) || other.speakingRate == speakingRate)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AccessibilitySettingsModel&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.theme, theme) || other.theme == theme)&&(identical(other.textScale, textScale) || other.textScale == textScale)&&(identical(other.fontFamily, fontFamily) || other.fontFamily == fontFamily)&&(identical(other.hapticIntensity, hapticIntensity) || other.hapticIntensity == hapticIntensity)&&(identical(other.voiceEnabled, voiceEnabled) || other.voiceEnabled == voiceEnabled)&&(identical(other.hotwordEnabled, hotwordEnabled) || other.hotwordEnabled == hotwordEnabled)&&(identical(other.spokenGuidanceEnabled, spokenGuidanceEnabled) || other.spokenGuidanceEnabled == spokenGuidanceEnabled)&&(identical(other.speakingRate, speakingRate) || other.speakingRate == speakingRate)&&(identical(other.soundEffectsEnabled, soundEffectsEnabled) || other.soundEffectsEnabled == soundEffectsEnabled)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userId,theme,textScale,fontFamily,hapticIntensity,voiceEnabled,hotwordEnabled,spokenGuidanceEnabled,speakingRate,updatedAt);
+int get hashCode => Object.hash(runtimeType,userId,theme,textScale,fontFamily,hapticIntensity,voiceEnabled,hotwordEnabled,spokenGuidanceEnabled,speakingRate,soundEffectsEnabled,updatedAt);
 
 @override
 String toString() {
-  return 'AccessibilitySettingsModel(userId: $userId, theme: $theme, textScale: $textScale, fontFamily: $fontFamily, hapticIntensity: $hapticIntensity, voiceEnabled: $voiceEnabled, hotwordEnabled: $hotwordEnabled, spokenGuidanceEnabled: $spokenGuidanceEnabled, speakingRate: $speakingRate, updatedAt: $updatedAt)';
+  return 'AccessibilitySettingsModel(userId: $userId, theme: $theme, textScale: $textScale, fontFamily: $fontFamily, hapticIntensity: $hapticIntensity, voiceEnabled: $voiceEnabled, hotwordEnabled: $hotwordEnabled, spokenGuidanceEnabled: $spokenGuidanceEnabled, speakingRate: $speakingRate, soundEffectsEnabled: $soundEffectsEnabled, updatedAt: $updatedAt)';
 }
 
 
@@ -58,7 +59,7 @@ abstract mixin class $AccessibilitySettingsModelCopyWith<$Res>  {
   factory $AccessibilitySettingsModelCopyWith(AccessibilitySettingsModel value, $Res Function(AccessibilitySettingsModel) _then) = _$AccessibilitySettingsModelCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'user_id') String userId,@_AppThemeModeConverter() AppThemeMode theme,@JsonKey(name: 'text_scale') double textScale,@JsonKey(name: 'font_family') String fontFamily,@JsonKey(name: 'haptic_intensity')@_HapticLevelConverter() HapticLevel hapticIntensity,@JsonKey(name: 'voice_enabled') bool voiceEnabled,@JsonKey(name: 'hotword_enabled') bool hotwordEnabled,@JsonKey(name: 'spoken_guidance_enabled') bool spokenGuidanceEnabled,@JsonKey(name: 'speaking_rate') double speakingRate,@JsonKey(name: 'updated_at') DateTime? updatedAt
+@JsonKey(name: 'user_id') String userId,@_AppThemeModeConverter() AppThemeMode theme,@JsonKey(name: 'text_scale') double textScale,@JsonKey(name: 'font_family') String fontFamily,@JsonKey(name: 'haptic_intensity')@_HapticLevelConverter() HapticLevel hapticIntensity,@JsonKey(name: 'voice_enabled') bool voiceEnabled,@JsonKey(name: 'hotword_enabled') bool hotwordEnabled,@JsonKey(name: 'spoken_guidance_enabled') bool spokenGuidanceEnabled,@JsonKey(name: 'speaking_rate') double speakingRate,@JsonKey(name: 'sound_effects_enabled') bool soundEffectsEnabled,@JsonKey(name: 'updated_at') DateTime? updatedAt
 });
 
 
@@ -75,7 +76,7 @@ class _$AccessibilitySettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of AccessibilitySettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? theme = null,Object? textScale = null,Object? fontFamily = null,Object? hapticIntensity = null,Object? voiceEnabled = null,Object? hotwordEnabled = null,Object? spokenGuidanceEnabled = null,Object? speakingRate = null,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? theme = null,Object? textScale = null,Object? fontFamily = null,Object? hapticIntensity = null,Object? voiceEnabled = null,Object? hotwordEnabled = null,Object? spokenGuidanceEnabled = null,Object? speakingRate = null,Object? soundEffectsEnabled = null,Object? updatedAt = freezed,}) {
   return _then(_self.copyWith(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,theme: null == theme ? _self.theme : theme // ignore: cast_nullable_to_non_nullable
@@ -86,7 +87,8 @@ as HapticLevel,voiceEnabled: null == voiceEnabled ? _self.voiceEnabled : voiceEn
 as bool,hotwordEnabled: null == hotwordEnabled ? _self.hotwordEnabled : hotwordEnabled // ignore: cast_nullable_to_non_nullable
 as bool,spokenGuidanceEnabled: null == spokenGuidanceEnabled ? _self.spokenGuidanceEnabled : spokenGuidanceEnabled // ignore: cast_nullable_to_non_nullable
 as bool,speakingRate: null == speakingRate ? _self.speakingRate : speakingRate // ignore: cast_nullable_to_non_nullable
-as double,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as double,soundEffectsEnabled: null == soundEffectsEnabled ? _self.soundEffectsEnabled : soundEffectsEnabled // ignore: cast_nullable_to_non_nullable
+as bool,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }
@@ -172,10 +174,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'user_id')  String userId, @_AppThemeModeConverter()  AppThemeMode theme, @JsonKey(name: 'text_scale')  double textScale, @JsonKey(name: 'font_family')  String fontFamily, @JsonKey(name: 'haptic_intensity')@_HapticLevelConverter()  HapticLevel hapticIntensity, @JsonKey(name: 'voice_enabled')  bool voiceEnabled, @JsonKey(name: 'hotword_enabled')  bool hotwordEnabled, @JsonKey(name: 'spoken_guidance_enabled')  bool spokenGuidanceEnabled, @JsonKey(name: 'speaking_rate')  double speakingRate, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'user_id')  String userId, @_AppThemeModeConverter()  AppThemeMode theme, @JsonKey(name: 'text_scale')  double textScale, @JsonKey(name: 'font_family')  String fontFamily, @JsonKey(name: 'haptic_intensity')@_HapticLevelConverter()  HapticLevel hapticIntensity, @JsonKey(name: 'voice_enabled')  bool voiceEnabled, @JsonKey(name: 'hotword_enabled')  bool hotwordEnabled, @JsonKey(name: 'spoken_guidance_enabled')  bool spokenGuidanceEnabled, @JsonKey(name: 'speaking_rate')  double speakingRate, @JsonKey(name: 'sound_effects_enabled')  bool soundEffectsEnabled, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AccessibilitySettingsModel() when $default != null:
-return $default(_that.userId,_that.theme,_that.textScale,_that.fontFamily,_that.hapticIntensity,_that.voiceEnabled,_that.hotwordEnabled,_that.spokenGuidanceEnabled,_that.speakingRate,_that.updatedAt);case _:
+return $default(_that.userId,_that.theme,_that.textScale,_that.fontFamily,_that.hapticIntensity,_that.voiceEnabled,_that.hotwordEnabled,_that.spokenGuidanceEnabled,_that.speakingRate,_that.soundEffectsEnabled,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -193,10 +195,10 @@ return $default(_that.userId,_that.theme,_that.textScale,_that.fontFamily,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'user_id')  String userId, @_AppThemeModeConverter()  AppThemeMode theme, @JsonKey(name: 'text_scale')  double textScale, @JsonKey(name: 'font_family')  String fontFamily, @JsonKey(name: 'haptic_intensity')@_HapticLevelConverter()  HapticLevel hapticIntensity, @JsonKey(name: 'voice_enabled')  bool voiceEnabled, @JsonKey(name: 'hotword_enabled')  bool hotwordEnabled, @JsonKey(name: 'spoken_guidance_enabled')  bool spokenGuidanceEnabled, @JsonKey(name: 'speaking_rate')  double speakingRate, @JsonKey(name: 'updated_at')  DateTime? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'user_id')  String userId, @_AppThemeModeConverter()  AppThemeMode theme, @JsonKey(name: 'text_scale')  double textScale, @JsonKey(name: 'font_family')  String fontFamily, @JsonKey(name: 'haptic_intensity')@_HapticLevelConverter()  HapticLevel hapticIntensity, @JsonKey(name: 'voice_enabled')  bool voiceEnabled, @JsonKey(name: 'hotword_enabled')  bool hotwordEnabled, @JsonKey(name: 'spoken_guidance_enabled')  bool spokenGuidanceEnabled, @JsonKey(name: 'speaking_rate')  double speakingRate, @JsonKey(name: 'sound_effects_enabled')  bool soundEffectsEnabled, @JsonKey(name: 'updated_at')  DateTime? updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _AccessibilitySettingsModel():
-return $default(_that.userId,_that.theme,_that.textScale,_that.fontFamily,_that.hapticIntensity,_that.voiceEnabled,_that.hotwordEnabled,_that.spokenGuidanceEnabled,_that.speakingRate,_that.updatedAt);case _:
+return $default(_that.userId,_that.theme,_that.textScale,_that.fontFamily,_that.hapticIntensity,_that.voiceEnabled,_that.hotwordEnabled,_that.spokenGuidanceEnabled,_that.speakingRate,_that.soundEffectsEnabled,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -213,10 +215,10 @@ return $default(_that.userId,_that.theme,_that.textScale,_that.fontFamily,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'user_id')  String userId, @_AppThemeModeConverter()  AppThemeMode theme, @JsonKey(name: 'text_scale')  double textScale, @JsonKey(name: 'font_family')  String fontFamily, @JsonKey(name: 'haptic_intensity')@_HapticLevelConverter()  HapticLevel hapticIntensity, @JsonKey(name: 'voice_enabled')  bool voiceEnabled, @JsonKey(name: 'hotword_enabled')  bool hotwordEnabled, @JsonKey(name: 'spoken_guidance_enabled')  bool spokenGuidanceEnabled, @JsonKey(name: 'speaking_rate')  double speakingRate, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'user_id')  String userId, @_AppThemeModeConverter()  AppThemeMode theme, @JsonKey(name: 'text_scale')  double textScale, @JsonKey(name: 'font_family')  String fontFamily, @JsonKey(name: 'haptic_intensity')@_HapticLevelConverter()  HapticLevel hapticIntensity, @JsonKey(name: 'voice_enabled')  bool voiceEnabled, @JsonKey(name: 'hotword_enabled')  bool hotwordEnabled, @JsonKey(name: 'spoken_guidance_enabled')  bool spokenGuidanceEnabled, @JsonKey(name: 'speaking_rate')  double speakingRate, @JsonKey(name: 'sound_effects_enabled')  bool soundEffectsEnabled, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _AccessibilitySettingsModel() when $default != null:
-return $default(_that.userId,_that.theme,_that.textScale,_that.fontFamily,_that.hapticIntensity,_that.voiceEnabled,_that.hotwordEnabled,_that.spokenGuidanceEnabled,_that.speakingRate,_that.updatedAt);case _:
+return $default(_that.userId,_that.theme,_that.textScale,_that.fontFamily,_that.hapticIntensity,_that.voiceEnabled,_that.hotwordEnabled,_that.spokenGuidanceEnabled,_that.speakingRate,_that.soundEffectsEnabled,_that.updatedAt);case _:
   return null;
 
 }
@@ -228,7 +230,7 @@ return $default(_that.userId,_that.theme,_that.textScale,_that.fontFamily,_that.
 @JsonSerializable()
 
 class _AccessibilitySettingsModel implements AccessibilitySettingsModel {
-  const _AccessibilitySettingsModel({@JsonKey(name: 'user_id') required this.userId, @_AppThemeModeConverter() this.theme = AppThemeMode.light, @JsonKey(name: 'text_scale') this.textScale = 1.0, @JsonKey(name: 'font_family') this.fontFamily = 'AtkinsonHyperlegible', @JsonKey(name: 'haptic_intensity')@_HapticLevelConverter() this.hapticIntensity = HapticLevel.full, @JsonKey(name: 'voice_enabled') this.voiceEnabled = true, @JsonKey(name: 'hotword_enabled') this.hotwordEnabled = false, @JsonKey(name: 'spoken_guidance_enabled') this.spokenGuidanceEnabled = true, @JsonKey(name: 'speaking_rate') this.speakingRate = 0.45, @JsonKey(name: 'updated_at') this.updatedAt});
+  const _AccessibilitySettingsModel({@JsonKey(name: 'user_id') required this.userId, @_AppThemeModeConverter() this.theme = AppThemeMode.light, @JsonKey(name: 'text_scale') this.textScale = 1.0, @JsonKey(name: 'font_family') this.fontFamily = 'AtkinsonHyperlegible', @JsonKey(name: 'haptic_intensity')@_HapticLevelConverter() this.hapticIntensity = HapticLevel.full, @JsonKey(name: 'voice_enabled') this.voiceEnabled = true, @JsonKey(name: 'hotword_enabled') this.hotwordEnabled = false, @JsonKey(name: 'spoken_guidance_enabled') this.spokenGuidanceEnabled = true, @JsonKey(name: 'speaking_rate') this.speakingRate = 0.45, @JsonKey(name: 'sound_effects_enabled') this.soundEffectsEnabled = true, @JsonKey(name: 'updated_at') this.updatedAt});
   factory _AccessibilitySettingsModel.fromJson(Map<String, dynamic> json) => _$AccessibilitySettingsModelFromJson(json);
 
 /// Foreign key to `profiles.id` (UUID).
@@ -249,6 +251,8 @@ class _AccessibilitySettingsModel implements AccessibilitySettingsModel {
 @override@JsonKey(name: 'spoken_guidance_enabled') final  bool spokenGuidanceEnabled;
 /// TTS speaking rate multiplier — 0.0 (slowest) to 1.0 (fastest); default 0.45.
 @override@JsonKey(name: 'speaking_rate') final  double speakingRate;
+/// DB column `sound_effects_enabled` (not null, default true).
+@override@JsonKey(name: 'sound_effects_enabled') final  bool soundEffectsEnabled;
 /// Timestamp of the last settings update (nullable if never explicitly saved).
 @override@JsonKey(name: 'updated_at') final  DateTime? updatedAt;
 
@@ -265,16 +269,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AccessibilitySettingsModel&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.theme, theme) || other.theme == theme)&&(identical(other.textScale, textScale) || other.textScale == textScale)&&(identical(other.fontFamily, fontFamily) || other.fontFamily == fontFamily)&&(identical(other.hapticIntensity, hapticIntensity) || other.hapticIntensity == hapticIntensity)&&(identical(other.voiceEnabled, voiceEnabled) || other.voiceEnabled == voiceEnabled)&&(identical(other.hotwordEnabled, hotwordEnabled) || other.hotwordEnabled == hotwordEnabled)&&(identical(other.spokenGuidanceEnabled, spokenGuidanceEnabled) || other.spokenGuidanceEnabled == spokenGuidanceEnabled)&&(identical(other.speakingRate, speakingRate) || other.speakingRate == speakingRate)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AccessibilitySettingsModel&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.theme, theme) || other.theme == theme)&&(identical(other.textScale, textScale) || other.textScale == textScale)&&(identical(other.fontFamily, fontFamily) || other.fontFamily == fontFamily)&&(identical(other.hapticIntensity, hapticIntensity) || other.hapticIntensity == hapticIntensity)&&(identical(other.voiceEnabled, voiceEnabled) || other.voiceEnabled == voiceEnabled)&&(identical(other.hotwordEnabled, hotwordEnabled) || other.hotwordEnabled == hotwordEnabled)&&(identical(other.spokenGuidanceEnabled, spokenGuidanceEnabled) || other.spokenGuidanceEnabled == spokenGuidanceEnabled)&&(identical(other.speakingRate, speakingRate) || other.speakingRate == speakingRate)&&(identical(other.soundEffectsEnabled, soundEffectsEnabled) || other.soundEffectsEnabled == soundEffectsEnabled)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userId,theme,textScale,fontFamily,hapticIntensity,voiceEnabled,hotwordEnabled,spokenGuidanceEnabled,speakingRate,updatedAt);
+int get hashCode => Object.hash(runtimeType,userId,theme,textScale,fontFamily,hapticIntensity,voiceEnabled,hotwordEnabled,spokenGuidanceEnabled,speakingRate,soundEffectsEnabled,updatedAt);
 
 @override
 String toString() {
-  return 'AccessibilitySettingsModel(userId: $userId, theme: $theme, textScale: $textScale, fontFamily: $fontFamily, hapticIntensity: $hapticIntensity, voiceEnabled: $voiceEnabled, hotwordEnabled: $hotwordEnabled, spokenGuidanceEnabled: $spokenGuidanceEnabled, speakingRate: $speakingRate, updatedAt: $updatedAt)';
+  return 'AccessibilitySettingsModel(userId: $userId, theme: $theme, textScale: $textScale, fontFamily: $fontFamily, hapticIntensity: $hapticIntensity, voiceEnabled: $voiceEnabled, hotwordEnabled: $hotwordEnabled, spokenGuidanceEnabled: $spokenGuidanceEnabled, speakingRate: $speakingRate, soundEffectsEnabled: $soundEffectsEnabled, updatedAt: $updatedAt)';
 }
 
 
@@ -285,7 +289,7 @@ abstract mixin class _$AccessibilitySettingsModelCopyWith<$Res> implements $Acce
   factory _$AccessibilitySettingsModelCopyWith(_AccessibilitySettingsModel value, $Res Function(_AccessibilitySettingsModel) _then) = __$AccessibilitySettingsModelCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'user_id') String userId,@_AppThemeModeConverter() AppThemeMode theme,@JsonKey(name: 'text_scale') double textScale,@JsonKey(name: 'font_family') String fontFamily,@JsonKey(name: 'haptic_intensity')@_HapticLevelConverter() HapticLevel hapticIntensity,@JsonKey(name: 'voice_enabled') bool voiceEnabled,@JsonKey(name: 'hotword_enabled') bool hotwordEnabled,@JsonKey(name: 'spoken_guidance_enabled') bool spokenGuidanceEnabled,@JsonKey(name: 'speaking_rate') double speakingRate,@JsonKey(name: 'updated_at') DateTime? updatedAt
+@JsonKey(name: 'user_id') String userId,@_AppThemeModeConverter() AppThemeMode theme,@JsonKey(name: 'text_scale') double textScale,@JsonKey(name: 'font_family') String fontFamily,@JsonKey(name: 'haptic_intensity')@_HapticLevelConverter() HapticLevel hapticIntensity,@JsonKey(name: 'voice_enabled') bool voiceEnabled,@JsonKey(name: 'hotword_enabled') bool hotwordEnabled,@JsonKey(name: 'spoken_guidance_enabled') bool spokenGuidanceEnabled,@JsonKey(name: 'speaking_rate') double speakingRate,@JsonKey(name: 'sound_effects_enabled') bool soundEffectsEnabled,@JsonKey(name: 'updated_at') DateTime? updatedAt
 });
 
 
@@ -302,7 +306,7 @@ class __$AccessibilitySettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of AccessibilitySettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? theme = null,Object? textScale = null,Object? fontFamily = null,Object? hapticIntensity = null,Object? voiceEnabled = null,Object? hotwordEnabled = null,Object? spokenGuidanceEnabled = null,Object? speakingRate = null,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? theme = null,Object? textScale = null,Object? fontFamily = null,Object? hapticIntensity = null,Object? voiceEnabled = null,Object? hotwordEnabled = null,Object? spokenGuidanceEnabled = null,Object? speakingRate = null,Object? soundEffectsEnabled = null,Object? updatedAt = freezed,}) {
   return _then(_AccessibilitySettingsModel(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,theme: null == theme ? _self.theme : theme // ignore: cast_nullable_to_non_nullable
@@ -313,7 +317,8 @@ as HapticLevel,voiceEnabled: null == voiceEnabled ? _self.voiceEnabled : voiceEn
 as bool,hotwordEnabled: null == hotwordEnabled ? _self.hotwordEnabled : hotwordEnabled // ignore: cast_nullable_to_non_nullable
 as bool,spokenGuidanceEnabled: null == spokenGuidanceEnabled ? _self.spokenGuidanceEnabled : spokenGuidanceEnabled // ignore: cast_nullable_to_non_nullable
 as bool,speakingRate: null == speakingRate ? _self.speakingRate : speakingRate // ignore: cast_nullable_to_non_nullable
-as double,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as double,soundEffectsEnabled: null == soundEffectsEnabled ? _self.soundEffectsEnabled : soundEffectsEnabled // ignore: cast_nullable_to_non_nullable
+as bool,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }

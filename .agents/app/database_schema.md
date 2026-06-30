@@ -18,6 +18,8 @@
 | `vision_profile` | `vision_profile` enum | nullable | `blind_total`, `low_vision`, `ocular_prosthesis`, `caregiver`, `unspecified` |
 | `avatar_url` | `text` | nullable | |
 | `created_at` | `timestamptz` | default `now()` | |
+| `preferred_language` | `text` | not null, default `'en'` | user's preferred UI language |
+| `clinic_id` | `uuid` | FK → `clinics.id`, nullable | linked care clinic |
 
 **RLS:** a user may `select/update` only their own row (`auth.uid() = id`). Doctors/admins read limited fields via dedicated views, not direct table access.
 
@@ -34,6 +36,7 @@
 | `spoken_guidance_enabled` | `boolean` | default `true` | whether TTS guidance is read aloud |
 | `speaking_rate` | `numeric(3,2)` | default `0.45` | TTS playback speed: 0.0 (slowest)–1.0 (fastest) |
 | `updated_at` | `timestamptz` | default `now()` | |
+| `sound_effects_enabled` | `boolean` | default `true` | app sound effects on/off |
 
 **RLS:** owner-only (`auth.uid() = user_id`).
 
@@ -58,6 +61,30 @@
 | `relationship` | `text` | nullable | |
 | `priority` | `int` | default `0` | dispatch order |
 > **RLS:** owner-only.
+
+### `vision_clinical_profile` 🔒 — clinical eye/vision details (owner-only)
+| Field | Type | Attributes | Notes |
+| :-- | :-- | :-- | :-- |
+| `user_id` | `uuid` | **PK**, FK → `profiles.id` | |
+| `diagnosis` | `text` | nullable | e.g. "Glaucoma — advanced" |
+| `diagnosis_severity` | `text` | nullable | |
+| `affected_eyes` | `text` | nullable | e.g. "Right (functional) · Left (prosthetic)" |
+| `diagnosed_year` | `int` | nullable | |
+| `light_perception` | `text` | nullable | |
+| `central_acuity` | `text` | nullable | e.g. "20/200 · counting fingers" |
+| `visual_field` | `text` | nullable | e.g. "Tunnel · ~10° remaining" |
+| `prosthesis_eye` | `text` | nullable | "Left", "Right", or "Both" |
+| `prosthesis_type` | `text` | nullable | e.g. "scleral shell" |
+| `prosthesis_material` | `text` | nullable | e.g. "PMMA acrylic" |
+| `prosthesis_fitted_date` | `date` | nullable | |
+| `prosthesis_fitted_clinic` | `text` | nullable | clinic name (free text, may differ from linked clinic) |
+| `last_polish_date` | `date` | nullable | |
+| `next_polish_due` | `date` | nullable | |
+| `assistive_tech` | `jsonb` | not null, default `'[]'` | array of `{name: string, enabled: bool}` |
+| `created_at` | `timestamptz` | not null, default `now()` | |
+| `updated_at` | `timestamptz` | default `now()` | |
+
+**RLS:** owner-only (`auth.uid() = user_id`) for all operations. Medically sensitive — **never** join into community/map/catalog queries, never cache beyond session.
 
 ---
 
@@ -113,6 +140,11 @@ Verified catalog: ocular prosthetics and self-cleaning cases.
 > **RLS (strict):** owner-only; signed URLs only. Storage bucket policy mirrors this.
 
 ### `prosthetic_orders`
+
+New enums (migration `20260630000000_prosthetic_orders_payment.sql`):
+- `payment_method`: `virtual_account`, `cod`
+- `payment_status`: `pending`, `paid`, `cancelled`
+
 | Field | Type | Attributes | Notes |
 | :-- | :-- | :-- | :-- |
 | `id` | `uuid` | **PK** | |
@@ -122,8 +154,17 @@ Verified catalog: ocular prosthetics and self-cleaning cases.
 | `status` | `order_status` enum | default `'draft'` | `draft`, `submitted`, `in_review`, `in_production`, `shipped`, `completed`, `cancelled` |
 | `consent_given` | `boolean` | default `false` | explicit read-aloud confirmation |
 | `total_idr` | `int` | | |
+| `order_group_id` | `uuid` | nullable | ties all line-item rows of one checkout together |
+| `payment_method` | `payment_method` enum | nullable | `virtual_account` or `cod` |
+| `payment_status` | `payment_status` enum | default `'pending'` | `pending`, `paid`, `cancelled` |
+| `virtual_account_no` | `text` | nullable | populated only for `virtual_account` orders |
+| `recipient_name` | `text` | nullable | delivery recipient full name |
+| `recipient_phone` | `text` | nullable | delivery contact phone number |
+| `shipping_address` | `text` | nullable | street address |
+| `shipping_city` | `text` | nullable | city |
+| `shipping_postal_code` | `text` | nullable | postal / ZIP code |
 | `created_at` | `timestamptz` | default `now()` | |
-> **RLS:** owner read/write; assigned vendor/ocularist reads via order; admin full.
+> **RLS:** owner read/write; assigned vendor/ocularist reads via order; admin full. `virtual_account_no` is owner-sensitive — never expose in community/map/catalog joins.
 
 ### `care_tutorials`
 | Field | Type | Attributes | Notes |

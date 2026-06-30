@@ -59,6 +59,7 @@ dependencies:
  flutter_dotenv: ^6.0.0
  flutter_secure_storage: ^10.0.0
  intl: ^0.20.2
+ package_info_plus: ^9.0.0
  phosphor_flutter: ^2.1.0
  image_picker: ^1.2.1
  # ── Vision AI (Phase 3F) ───────────────────────────────────────────────────
@@ -68,6 +69,10 @@ dependencies:
  google_mlkit_object_detection: ^0.14.0
  # Text-to-speech for Aura result announcements (independent of screen reader).
  flutter_tts: ^4.0.0
+ # Pure-Dart image decode/resize/encode — used to compress camera frames to
+ # 1024px longest edge / JPEG 85 before uploading to scene-describe Edge Function.
+ # Run via compute() to avoid jank on the capture thread.
+ image: ^4.5.4
  # ── Accessibility Map (Phase 3B) ───────────────────────────────────────────
  # Device location — used for "nearby POIs" query and Emergency SOS (Phase 3E).
  geolocator: ^13.0.0
@@ -76,6 +81,13 @@ dependencies:
  flutter_map: ^8.0.1
  # Lightweight LatLng type used by flutter_map + haversine sort.
  latlong2: ^0.9.1
+
+# Force wakelock_plus to >=1.4.0 — the 1.3.x series uses Kotlin 1.7.22 which
+# is incompatible with the project's Kotlin 2.2.20 + AGP 8.11.1 build setup.
+# chewie: ^1.3.2 already allows 1.4.0; this override simply prevents pub from
+# resolving to the older 1.3.3 patch.
+dependency_overrides:
+ wakelock_plus: ^1.4.0
 
 dev_dependencies:
  flutter_test:

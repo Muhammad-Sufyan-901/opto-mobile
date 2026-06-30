@@ -5,6 +5,9 @@
 //
 // SECURITY NOTE: Owner-only data — never expose in community or map features.
 
+// Sentinel used by copyWith to distinguish "pass null to clear" from "omitted".
+const _absent = Object();
+
 /// Immutable domain representation of the `emergency_contacts` table row.
 class EmergencyContactEntity {
   const EmergencyContactEntity({
@@ -35,12 +38,15 @@ class EmergencyContactEntity {
   final int priority;
 
   /// Creates a copy with the given fields replaced.
+  ///
+  /// Pass `null` explicitly for [relationship] to clear it:
+  /// `contact.copyWith(relationship: null)`.
   EmergencyContactEntity copyWith({
     String? id,
     String? userId,
     String? name,
     String? phone,
-    String? relationship,
+    Object? relationship = _absent,
     int? priority,
   }) {
     return EmergencyContactEntity(
@@ -48,7 +54,9 @@ class EmergencyContactEntity {
       userId: userId ?? this.userId,
       name: name ?? this.name,
       phone: phone ?? this.phone,
-      relationship: relationship ?? this.relationship,
+      relationship: identical(relationship, _absent)
+          ? this.relationship
+          : relationship as String?,
       priority: priority ?? this.priority,
     );
   }

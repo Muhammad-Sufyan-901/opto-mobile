@@ -30,9 +30,12 @@ abstract class VisionRepository {
 
   /// Produces a natural-language scene description.
   ///
-  /// Online → calls the `scene-describe` Edge Function (Claude LLM).
+  /// Online + [VisionAiConfig.cloudSceneAllowed] → calls the
+  /// `scene-describe` Edge Function (Google Gemini 2.5 Flash-Lite).
+  /// Free plan + production → skips cloud, returns on-device fallback.
   /// Offline → falls back to on-device object labels and announces
   /// the degraded state via [SceneResultSource.offlineFallback].
+  /// Quota exhausted (HTTP 429) → [SceneResultSource.quotaExhausted].
   Future<SceneResult> describeScene(String filePath);
 
   /// Releases underlying ML Kit model resources.
