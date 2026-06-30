@@ -244,6 +244,16 @@ New enums (migration `20260630000000_prosthetic_orders_payment.sql`):
 | `created_at` | `timestamptz` | default `now()` | |
 > **RLS (strict):** patient + assigned doctor only.
 
+### `consultation_messages` 🔒 — text-chat messages
+| Field | Type | Attributes | Notes |
+| :-- | :-- | :-- | :-- |
+| `id` | `uuid` | **PK** | |
+| `booking_id` | `uuid` | FK → `consultation_bookings.id` ON DELETE CASCADE | |
+| `sender_id` | `uuid` | FK → `profiles.id` ON DELETE CASCADE | patient or doctor |
+| `body` | `text` | not null | message text |
+| `created_at` | `timestamptz` | default `now()` | |
+> **RLS (strict):** patient + assigned doctor only via `can_access_booking(booking_id)`; `sender_id = auth.uid()` enforced on insert. Messages are **immutable** — no UPDATE/DELETE policies. Realtime enabled; clients must filter subscription by `booking_id`. Must never be joined into catalog, community, or map queries.
+
 ### `eye_care_exercises`
 | Field | Type | Attributes | Notes |
 | :-- | :-- | :-- | :-- |
