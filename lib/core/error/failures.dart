@@ -9,6 +9,13 @@ class ServerFailure extends Failure {
   const ServerFailure(super.message);
 }
 
+// Failure from API rate-limiting (HTTP 429 / Gemini quota exhausted).
+// BLoC presenters should surface a distinct "try again tomorrow" message
+// rather than the generic offline fallback.
+class RateLimitFailure extends Failure {
+  const RateLimitFailure(super.message);
+}
+
 // Failure from Local Storage
 class CacheFailure extends Failure {
   const CacheFailure(super.message);

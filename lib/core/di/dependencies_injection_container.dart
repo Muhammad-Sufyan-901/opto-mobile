@@ -399,7 +399,12 @@ Future<void> init() async {
   // Cubit — registerFactory: each screen push gets a fresh camera +
   // ML Kit warm-up cycle. The cubit's close() disposes the camera
   // controller and calls repository.disposeResources() (ML Kit close).
+  // consentBox: the shared settings_box opened by HiveClient.init() —
+  // used to persist the one-time UU PDP consent for cloud scene description.
   sl.registerFactory<VisionAiCubit>(
-    () => VisionAiCubit(repository: sl<VisionRepository>()),
+    () => VisionAiCubit(
+      repository: sl<VisionRepository>(),
+      consentBox: Hive.box('settings_box'),
+    ),
   );
 }

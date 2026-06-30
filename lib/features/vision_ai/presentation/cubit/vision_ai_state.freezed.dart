@@ -55,7 +55,7 @@ extension VisionAiStatePatterns on VisionAiState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( VisionAiInitializing value)?  initializing,TResult Function( VisionAiPermissionDenied value)?  permissionDenied,TResult Function( VisionAiReady value)?  ready,TResult Function( VisionAiCapturing value)?  capturing,TResult Function( VisionAiAnalyzing value)?  analyzing,TResult Function( VisionAiResult value)?  result,TResult Function( VisionAiOfflineFallback value)?  offlineFallback,TResult Function( VisionAiError value)?  error,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( VisionAiInitializing value)?  initializing,TResult Function( VisionAiPermissionDenied value)?  permissionDenied,TResult Function( VisionAiReady value)?  ready,TResult Function( VisionAiCapturing value)?  capturing,TResult Function( VisionAiAnalyzing value)?  analyzing,TResult Function( VisionAiResult value)?  result,TResult Function( VisionAiOfflineFallback value)?  offlineFallback,TResult Function( VisionAiConsentRequired value)?  consentRequired,TResult Function( VisionAiError value)?  error,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case VisionAiInitializing() when initializing != null:
@@ -65,7 +65,8 @@ return ready(_that);case VisionAiCapturing() when capturing != null:
 return capturing(_that);case VisionAiAnalyzing() when analyzing != null:
 return analyzing(_that);case VisionAiResult() when result != null:
 return result(_that);case VisionAiOfflineFallback() when offlineFallback != null:
-return offlineFallback(_that);case VisionAiError() when error != null:
+return offlineFallback(_that);case VisionAiConsentRequired() when consentRequired != null:
+return consentRequired(_that);case VisionAiError() when error != null:
 return error(_that);case _:
   return orElse();
 
@@ -84,7 +85,7 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( VisionAiInitializing value)  initializing,required TResult Function( VisionAiPermissionDenied value)  permissionDenied,required TResult Function( VisionAiReady value)  ready,required TResult Function( VisionAiCapturing value)  capturing,required TResult Function( VisionAiAnalyzing value)  analyzing,required TResult Function( VisionAiResult value)  result,required TResult Function( VisionAiOfflineFallback value)  offlineFallback,required TResult Function( VisionAiError value)  error,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( VisionAiInitializing value)  initializing,required TResult Function( VisionAiPermissionDenied value)  permissionDenied,required TResult Function( VisionAiReady value)  ready,required TResult Function( VisionAiCapturing value)  capturing,required TResult Function( VisionAiAnalyzing value)  analyzing,required TResult Function( VisionAiResult value)  result,required TResult Function( VisionAiOfflineFallback value)  offlineFallback,required TResult Function( VisionAiConsentRequired value)  consentRequired,required TResult Function( VisionAiError value)  error,}){
 final _that = this;
 switch (_that) {
 case VisionAiInitializing():
@@ -94,7 +95,8 @@ return ready(_that);case VisionAiCapturing():
 return capturing(_that);case VisionAiAnalyzing():
 return analyzing(_that);case VisionAiResult():
 return result(_that);case VisionAiOfflineFallback():
-return offlineFallback(_that);case VisionAiError():
+return offlineFallback(_that);case VisionAiConsentRequired():
+return consentRequired(_that);case VisionAiError():
 return error(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -109,7 +111,7 @@ return error(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( VisionAiInitializing value)?  initializing,TResult? Function( VisionAiPermissionDenied value)?  permissionDenied,TResult? Function( VisionAiReady value)?  ready,TResult? Function( VisionAiCapturing value)?  capturing,TResult? Function( VisionAiAnalyzing value)?  analyzing,TResult? Function( VisionAiResult value)?  result,TResult? Function( VisionAiOfflineFallback value)?  offlineFallback,TResult? Function( VisionAiError value)?  error,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( VisionAiInitializing value)?  initializing,TResult? Function( VisionAiPermissionDenied value)?  permissionDenied,TResult? Function( VisionAiReady value)?  ready,TResult? Function( VisionAiCapturing value)?  capturing,TResult? Function( VisionAiAnalyzing value)?  analyzing,TResult? Function( VisionAiResult value)?  result,TResult? Function( VisionAiOfflineFallback value)?  offlineFallback,TResult? Function( VisionAiConsentRequired value)?  consentRequired,TResult? Function( VisionAiError value)?  error,}){
 final _that = this;
 switch (_that) {
 case VisionAiInitializing() when initializing != null:
@@ -119,7 +121,8 @@ return ready(_that);case VisionAiCapturing() when capturing != null:
 return capturing(_that);case VisionAiAnalyzing() when analyzing != null:
 return analyzing(_that);case VisionAiResult() when result != null:
 return result(_that);case VisionAiOfflineFallback() when offlineFallback != null:
-return offlineFallback(_that);case VisionAiError() when error != null:
+return offlineFallback(_that);case VisionAiConsentRequired() when consentRequired != null:
+return consentRequired(_that);case VisionAiError() when error != null:
 return error(_that);case _:
   return null;
 
@@ -137,7 +140,7 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initializing,TResult Function()?  permissionDenied,TResult Function( VisionMode mode)?  ready,TResult Function( VisionMode mode)?  capturing,TResult Function( VisionMode mode)?  analyzing,TResult Function( VisionResult result,  VisionMode mode)?  result,TResult Function( VisionResult result,  VisionMode mode)?  offlineFallback,TResult Function( String message,  VisionMode mode)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initializing,TResult Function()?  permissionDenied,TResult Function( VisionMode mode)?  ready,TResult Function( VisionMode mode)?  capturing,TResult Function( VisionMode mode)?  analyzing,TResult Function( VisionResult result,  VisionMode mode)?  result,TResult Function( VisionResult result,  VisionMode mode)?  offlineFallback,TResult Function( VisionMode mode)?  consentRequired,TResult Function( String message,  VisionMode mode)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case VisionAiInitializing() when initializing != null:
 return initializing();case VisionAiPermissionDenied() when permissionDenied != null:
@@ -146,7 +149,8 @@ return ready(_that.mode);case VisionAiCapturing() when capturing != null:
 return capturing(_that.mode);case VisionAiAnalyzing() when analyzing != null:
 return analyzing(_that.mode);case VisionAiResult() when result != null:
 return result(_that.result,_that.mode);case VisionAiOfflineFallback() when offlineFallback != null:
-return offlineFallback(_that.result,_that.mode);case VisionAiError() when error != null:
+return offlineFallback(_that.result,_that.mode);case VisionAiConsentRequired() when consentRequired != null:
+return consentRequired(_that.mode);case VisionAiError() when error != null:
 return error(_that.message,_that.mode);case _:
   return orElse();
 
@@ -165,7 +169,7 @@ return error(_that.message,_that.mode);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initializing,required TResult Function()  permissionDenied,required TResult Function( VisionMode mode)  ready,required TResult Function( VisionMode mode)  capturing,required TResult Function( VisionMode mode)  analyzing,required TResult Function( VisionResult result,  VisionMode mode)  result,required TResult Function( VisionResult result,  VisionMode mode)  offlineFallback,required TResult Function( String message,  VisionMode mode)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initializing,required TResult Function()  permissionDenied,required TResult Function( VisionMode mode)  ready,required TResult Function( VisionMode mode)  capturing,required TResult Function( VisionMode mode)  analyzing,required TResult Function( VisionResult result,  VisionMode mode)  result,required TResult Function( VisionResult result,  VisionMode mode)  offlineFallback,required TResult Function( VisionMode mode)  consentRequired,required TResult Function( String message,  VisionMode mode)  error,}) {final _that = this;
 switch (_that) {
 case VisionAiInitializing():
 return initializing();case VisionAiPermissionDenied():
@@ -174,7 +178,8 @@ return ready(_that.mode);case VisionAiCapturing():
 return capturing(_that.mode);case VisionAiAnalyzing():
 return analyzing(_that.mode);case VisionAiResult():
 return result(_that.result,_that.mode);case VisionAiOfflineFallback():
-return offlineFallback(_that.result,_that.mode);case VisionAiError():
+return offlineFallback(_that.result,_that.mode);case VisionAiConsentRequired():
+return consentRequired(_that.mode);case VisionAiError():
 return error(_that.message,_that.mode);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -189,7 +194,7 @@ return error(_that.message,_that.mode);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initializing,TResult? Function()?  permissionDenied,TResult? Function( VisionMode mode)?  ready,TResult? Function( VisionMode mode)?  capturing,TResult? Function( VisionMode mode)?  analyzing,TResult? Function( VisionResult result,  VisionMode mode)?  result,TResult? Function( VisionResult result,  VisionMode mode)?  offlineFallback,TResult? Function( String message,  VisionMode mode)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initializing,TResult? Function()?  permissionDenied,TResult? Function( VisionMode mode)?  ready,TResult? Function( VisionMode mode)?  capturing,TResult? Function( VisionMode mode)?  analyzing,TResult? Function( VisionResult result,  VisionMode mode)?  result,TResult? Function( VisionResult result,  VisionMode mode)?  offlineFallback,TResult? Function( VisionMode mode)?  consentRequired,TResult? Function( String message,  VisionMode mode)?  error,}) {final _that = this;
 switch (_that) {
 case VisionAiInitializing() when initializing != null:
 return initializing();case VisionAiPermissionDenied() when permissionDenied != null:
@@ -198,7 +203,8 @@ return ready(_that.mode);case VisionAiCapturing() when capturing != null:
 return capturing(_that.mode);case VisionAiAnalyzing() when analyzing != null:
 return analyzing(_that.mode);case VisionAiResult() when result != null:
 return result(_that.result,_that.mode);case VisionAiOfflineFallback() when offlineFallback != null:
-return offlineFallback(_that.result,_that.mode);case VisionAiError() when error != null:
+return offlineFallback(_that.result,_that.mode);case VisionAiConsentRequired() when consentRequired != null:
+return consentRequired(_that.mode);case VisionAiError() when error != null:
 return error(_that.message,_that.mode);case _:
   return null;
 
@@ -598,6 +604,72 @@ class _$VisionAiOfflineFallbackCopyWithImpl<$Res>
   return _then(VisionAiOfflineFallback(
 result: null == result ? _self.result : result // ignore: cast_nullable_to_non_nullable
 as VisionResult,mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
+as VisionMode,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class VisionAiConsentRequired implements VisionAiState {
+  const VisionAiConsentRequired({required this.mode});
+  
+
+ final  VisionMode mode;
+
+/// Create a copy of VisionAiState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$VisionAiConsentRequiredCopyWith<VisionAiConsentRequired> get copyWith => _$VisionAiConsentRequiredCopyWithImpl<VisionAiConsentRequired>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VisionAiConsentRequired&&(identical(other.mode, mode) || other.mode == mode));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,mode);
+
+@override
+String toString() {
+  return 'VisionAiState.consentRequired(mode: $mode)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $VisionAiConsentRequiredCopyWith<$Res> implements $VisionAiStateCopyWith<$Res> {
+  factory $VisionAiConsentRequiredCopyWith(VisionAiConsentRequired value, $Res Function(VisionAiConsentRequired) _then) = _$VisionAiConsentRequiredCopyWithImpl;
+@useResult
+$Res call({
+ VisionMode mode
+});
+
+
+
+
+}
+/// @nodoc
+class _$VisionAiConsentRequiredCopyWithImpl<$Res>
+    implements $VisionAiConsentRequiredCopyWith<$Res> {
+  _$VisionAiConsentRequiredCopyWithImpl(this._self, this._then);
+
+  final VisionAiConsentRequired _self;
+  final $Res Function(VisionAiConsentRequired) _then;
+
+/// Create a copy of VisionAiState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? mode = null,}) {
+  return _then(VisionAiConsentRequired(
+mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
 as VisionMode,
   ));
 }

@@ -12,9 +12,10 @@ enum VisionMode {
   identify,
 
   /// Cloud scene description via the `scene-describe` Edge Function
-  /// (Claude multimodal LLM). Requires internet; graceful fallback
+  /// (Google Gemini 2.5 Flash-Lite). Requires internet; graceful fallback
   /// when offline announces degraded mode and uses on-device object
-  /// labels as a substitute.
+  /// labels as a substitute. Cloud calls are gated to development builds
+  /// on the free plan (see [VisionAiConfig.cloudSceneAllowed]).
   describeScene,
 
   /// On-device dominant-color analysis using pixel sampling.
