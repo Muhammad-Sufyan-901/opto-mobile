@@ -25,6 +25,7 @@ import 'package:opto/core/supabase/supabase_client_provider.dart';
 import 'package:opto/core/supabase/supabase_error_mapper.dart';
 import 'package:opto/features/consultation/data/models/clinic_model.dart';
 import 'package:opto/features/consultation/data/models/consultation_booking_model.dart';
+import 'package:opto/features/consultation/data/models/consultation_message_model.dart';
 import 'package:opto/features/consultation/data/models/consultation_model.dart';
 import 'package:opto/features/consultation/data/models/doctor_availability_model.dart';
 import 'package:opto/features/consultation/data/models/doctor_model.dart';
@@ -58,6 +59,21 @@ abstract class ConsultationRemoteDataSource {
   // CONSULTATION HISTORY 🔒 ─────────────────────────────────────────────────────
   Future<List<ConsultationModel>> getMyConsultations();
   Future<ConsultationModel> getConsultationByBookingId(String bookingId);
+
+  // CONSULTATION CHAT 🔒 ────────────────────────────────────────────────────────
+  /// Live stream of messages for [bookingId], ordered by created_at ascending.
+  /// Uses Supabase Realtime (.stream) — RLS applies; client must filter by
+  /// booking_id at subscription time.
+  Stream<List<ConsultationMessageModel>> watchMessages(String bookingId);
+
+  /// Inserts a new message from the current user into [bookingId].
+  Future<void> sendMessage({
+    required String bookingId,
+    required String body,
+  });
+
+  /// The current authenticated user's id, or null if unauthenticated.
+  String? get currentUserId;
 }
 
 // =============================================================================
@@ -292,4 +308,51 @@ class ConsultationRemoteDataSourceImpl implements ConsultationRemoteDataSource {
       throw ServerFailure(e.toString());
     }
   }
+
+  // CONSULTATION CHAT 🔒 ────────────────────────────────────────────────────────
+  // These methods touch the `consultation_messages` table which is owner-only
+  // (RLS). Never reference this table from catalog, map, or community queries.
+
+  @override
+  Stream<List<ConsultationMessageModel>> watchMessages(String bookingId) {
+    // .stream() opens a Supabase Realtime subscription.  RLS applies on the
+    // server side; the eq filter ensures the client only receives rows for this
+    // booking, matching the subscription scoping requirement in the schema brief.
+    return _client
+        .from('consultation_messages')
+        .stream(primaryKey: ['id'])
+        .eq('booking_id', bookingId)
+        .order('created_at')
+        .map(
+          (rows) => rows
+              .map((row) =>
+                  ConsultationMessageModel.fromJson(row as Map<String, dynamic>))
+              .toList(),
+        );
+  }
+
+  @override
+  Future<void> sendMessage({
+    required String bookingId,
+    required String body,
+  }) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) {
+      throw const AuthFailure('Sesi tidak ditemukan. Silakan masuk kembali.');
+    }
+    try {
+      await _client.from('consultation_messages').insert({
+        'booking_id': bookingId,
+        'sender_id': userId,
+        'body': body,
+      });
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  String? get currentUserId => _client.auth.currentUser?.id;
 }
