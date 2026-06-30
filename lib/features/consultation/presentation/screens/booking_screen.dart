@@ -70,6 +70,10 @@ class _BookingViewState extends State<_BookingView> {
   /// The slot the user has tapped in the current date's grid.
   DoctorAvailabilityEntity? _selectedSlot;
 
+  /// When true, the booking listener will navigate to the chat room once
+  /// [BookingConfirmed] arrives (Text-chat mode only).
+  bool _pendingChatNav = false;
+
   /// Availability slots grouped by calendar day.
   List<_DateGroup> _dateGroups = [];
 
@@ -319,15 +323,12 @@ class _BookingViewState extends State<_BookingView> {
     // Navigate based on selected consultation mode.
     switch (widget.mode) {
       case ConsultMode.nonVerbal:
-        // Text chat goes directly to the non-verbal consultation session.
-        SemanticsService.announce(
-          'Opening text chat session with ${widget.doctor.fullName ?? 'your doctor'}.',
-          TextDirection.ltr,
-        );
-        context.push(
-          AppRoutes.consultNonVerbal.path,
-          extra: _selectedSlot!.id, // bookingId expected as a plain String
-        );
+        // Text chat: set a pending flag so the BlocListener navigates to the
+        // chatroom once BookingConfirmed arrives with the real booking id.
+        // We must NOT navigate immediately because booking confirmation is
+        // asynchronous and the chat screen's RLS check requires a committed
+        // consultation_bookings row (can_access_booking).
+        setState(() => _pendingChatNav = true);
       case ConsultMode.voice:
       case ConsultMode.video:
       case ConsultMode.inPerson:
@@ -355,9 +356,26 @@ class _BookingViewState extends State<_BookingView> {
     return BlocListener<BookingCubit, BookingState>(
       listener: (context, state) {
         if (state is BookingError) {
+          // Reset the pending chat nav so the user can retry.
+          if (_pendingChatNav) setState(() => _pendingChatNav = false);
           SemanticsService.announce(state.message, TextDirection.ltr);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
+          );
+        }
+        if (state is BookingConfirmed && _pendingChatNav) {
+          // Booking row now exists in the DB — RLS will pass.
+          setState(() => _pendingChatNav = false);
+          SemanticsService.announce(
+            'Opening text chat session with ${widget.doctor.fullName ?? 'your doctor'}.',
+            TextDirection.ltr,
+          );
+          context.push(
+            AppRoutes.consultChat.path,
+            extra: {
+              'doctor': widget.doctor,
+              'bookingId': state.booking.id,
+            },
           );
         }
       },

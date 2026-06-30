@@ -34,13 +34,16 @@ import 'package:opto/features/prosthetic_hub/presentation/cubit/specialist_direc
 import 'package:opto/features/prosthetic_hub/presentation/cubit/specialist_chat_cubit.dart';
 import 'package:opto/features/consultation/data/datasources/consultation_remote_data_source.dart';
 import 'package:opto/features/consultation/data/repositories/booking_repository_impl.dart';
+import 'package:opto/features/consultation/data/repositories/consultation_chat_repository_impl.dart';
 import 'package:opto/features/consultation/data/repositories/consultation_history_repository_impl.dart';
 import 'package:opto/features/consultation/data/repositories/doctor_directory_repository_impl.dart';
 import 'package:opto/features/consultation/domain/repositories/booking_repository.dart';
+import 'package:opto/features/consultation/domain/repositories/consultation_chat_repository.dart';
 import 'package:opto/features/consultation/domain/repositories/consultation_history_repository.dart';
 import 'package:opto/features/consultation/domain/repositories/doctor_directory_repository.dart';
 import 'package:opto/features/consultation/presentation/bloc/doctor_search_bloc.dart';
 import 'package:opto/features/consultation/presentation/cubit/booking_cubit.dart';
+import 'package:opto/features/consultation/presentation/cubit/consultation_chat_cubit.dart';
 import 'package:opto/features/consultation/presentation/cubit/consultation_history_cubit.dart';
 import 'package:opto/features/consultation/presentation/cubit/eye_care_exercises_cubit.dart';
 import 'package:opto/features/connect/data/repositories/circles_repository_impl.dart';
@@ -332,6 +335,16 @@ Future<void> init() async {
 
   sl.registerFactory<EyeCareExercisesCubit>(
     () => EyeCareExercisesCubit(sl<DoctorDirectoryRepository>()),
+  );
+
+  sl.registerLazySingleton<ConsultationChatRepository>(
+    () => ConsultationChatRepositoryImpl(
+      remoteDataSource: sl<ConsultationRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerFactory<ConsultationChatCubit>(
+    () => ConsultationChatCubit(sl<ConsultationChatRepository>()),
   );
 
   // ===============================================================
