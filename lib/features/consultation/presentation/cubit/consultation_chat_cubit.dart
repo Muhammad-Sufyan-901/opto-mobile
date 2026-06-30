@@ -11,6 +11,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opto/features/consultation/domain/repositories/consultation_chat_repository.dart';
+import 'package:opto/features/consultation/presentation/cubit/consultation_chat_state.dart';
 
 export 'consultation_chat_state.dart';
 

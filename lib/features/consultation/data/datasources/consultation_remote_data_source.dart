@@ -325,8 +325,7 @@ class ConsultationRemoteDataSourceImpl implements ConsultationRemoteDataSource {
         .order('created_at')
         .map(
           (rows) => rows
-              .map((row) =>
-                  ConsultationMessageModel.fromJson(row as Map<String, dynamic>))
+              .map(ConsultationMessageModel.fromJson)
               .toList(),
         );
   }
