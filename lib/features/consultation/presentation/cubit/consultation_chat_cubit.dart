@@ -10,6 +10,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:opto/features/consultation/domain/entities/consultation_message_entity.dart';
 import 'package:opto/features/consultation/domain/repositories/consultation_chat_repository.dart';
 import 'package:opto/features/consultation/presentation/cubit/consultation_chat_state.dart';
 
@@ -29,7 +30,7 @@ class ConsultationChatCubit extends Cubit<ConsultationChatState> {
 
   final ConsultationChatRepository _repo;
 
-  StreamSubscription<dynamic>? _subscription;
+  StreamSubscription<List<ConsultationMessageEntity>>? _subscription;
 
   // ---------------------------------------------------------------------------
   // PUBLIC API

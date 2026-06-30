@@ -39,8 +39,10 @@ class ConsultChatScreen extends StatelessWidget {
       return const Scaffold(body: SizedBox.shrink());
     }
 
-    final doctor = extra['doctor'] as DoctorEntity?;
-    final bookingId = extra['bookingId'] as String?;
+    final doctor =
+        extra['doctor'] is DoctorEntity ? extra['doctor'] as DoctorEntity : null;
+    final bookingId =
+        extra['bookingId'] is String ? extra['bookingId'] as String : null;
 
     if (doctor == null || bookingId == null || bookingId.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -72,6 +74,11 @@ class _ConsultChatView extends StatefulWidget {
 class _ConsultChatViewState extends State<_ConsultChatView> {
   final ScrollController _scrollController = ScrollController();
   int _lastMessageCount = 0;
+
+  /// True until the first Realtime emission has been processed.
+  /// Suppresses false "new message" announcements for historical messages
+  /// that arrive on the initial stream event when opening a chat with history.
+  bool _initialLoad = true;
 
   @override
   void initState() {
@@ -136,8 +143,11 @@ class _ConsultChatViewState extends State<_ConsultChatView> {
                       WidgetsBinding.instance.addPostFrameCallback(
                         (_) => _scrollToBottom(),
                       );
-                      // Announce incoming doctor messages to the screen reader.
-                      if (msgs.isNotEmpty) {
+                      // Only announce incoming messages after the initial load.
+                      // The first Realtime emission carries the full message
+                      // history — announcing it would falsely signal that old
+                      // messages just arrived, misleading blind users.
+                      if (!_initialLoad && msgs.isNotEmpty) {
                         final last = msgs.last;
                         final fromMe = last.senderId == state.currentUserId;
                         if (!fromMe) {
@@ -147,6 +157,7 @@ class _ConsultChatViewState extends State<_ConsultChatView> {
                           );
                         }
                       }
+                      _initialLoad = false;
                     }
                   }
                   if (state is ConsultationChatError) {
@@ -159,7 +170,12 @@ class _ConsultChatViewState extends State<_ConsultChatView> {
                 builder: (context, state) {
                   if (state is ConsultationChatLoading ||
                       state is ConsultationChatInitial) {
-                    return const Center(child: CircularProgressIndicator());
+                    return Center(
+                      child: Semantics(
+                        label: 'Loading messages',
+                        child: const CircularProgressIndicator(),
+                      ),
+                    );
                   }
                   if (state is ConsultationChatError) {
                     return Center(
