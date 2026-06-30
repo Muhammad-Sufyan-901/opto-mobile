@@ -203,10 +203,12 @@ abstract class AppRoutes {
     name: 'consult_history',
   );
 
-  /// Screen 18d — Non-verbal consultation session (audio/text, no video).
-  static const AppRoute consultNonVerbal = AppRoute(
-    path: '/consult/session/non-verbal',
-    name: 'consult_non_verbal',
+  /// Screen 18d — Text-chat consultation session (🔒 medically sensitive).
+  ///
+  /// Navigate with `GoRouterState.extra = {'doctor': DoctorEntity, 'bookingId': String}`.
+  static const AppRoute consultChat = AppRoute(
+    path: '/consult/session/chat',
+    name: 'consult_chat',
   );
 
   /// Screen 18e — Pre-consult intake (symptom chips, voice note, photo attach).

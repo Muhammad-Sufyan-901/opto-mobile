@@ -30,7 +30,7 @@ import 'package:opto/features/consultation/presentation/screens/consult_screen.d
 import 'package:opto/features/consultation/presentation/screens/consultation_history_screen.dart';
 import 'package:opto/features/consultation/presentation/screens/doctor_profile_screen.dart';
 import 'package:opto/features/consultation/presentation/screens/intake_screen.dart';
-import 'package:opto/features/consultation/presentation/screens/non_verbal_consult_screen.dart';
+import 'package:opto/features/consultation/presentation/screens/consult_chat_screen.dart';
 import 'package:opto/features/consultation/presentation/screens/summary_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/prosthetic_hub_screen.dart';
 import 'package:opto/features/prosthetic_hub/presentation/screens/care_guides_screen.dart';
@@ -468,12 +468,12 @@ final GoRouter appRouter = GoRouter(
           const ConsultationHistoryScreen(),
     ),
 
-    // Screen 18d — Non-verbal consultation session (no video)
+    // Screen 18d — Text-chat consultation session (🔒 medically sensitive)
     GoRoute(
-      path: AppRoutes.consultNonVerbal.path,
-      name: AppRoutes.consultNonVerbal.name,
+      path: AppRoutes.consultChat.path,
+      name: AppRoutes.consultChat.name,
       builder: (BuildContext context, GoRouterState state) =>
-          const NonVerbalConsultScreen(),
+          const ConsultChatScreen(),
     ),
 
     // Screen 18e — Pre-consult intake (C4)
