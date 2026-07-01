@@ -363,11 +363,13 @@ class _ProgressSteps extends StatelessWidget {
               const SizedBox(width: 7),
               _Step(filled: true, active: true, cs: cs, ext: ext),
               const SizedBox(width: 8),
-              Text(
-                'Step 3 of 3 · Tell the doctor what\'s going on',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: ext?.ink2 ?? cs.onSurfaceVariant,
+              Expanded(
+                child: Text(
+                  'Step 3 of 3 · Tell the doctor what\'s going on',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: ext?.ink2 ?? cs.onSurfaceVariant,
+                  ),
                 ),
               ),
             ],
