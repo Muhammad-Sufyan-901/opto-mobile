@@ -143,6 +143,31 @@ class PostThreadCubit extends Cubit<PostThreadState> {
     }
   }
 
+  /// Toggles the like state on [postId] for the current user.
+  ///
+  /// Applies an optimistic update immediately; reverts on failure.
+  Future<void> toggleLike(String postId) async {
+    final current = state;
+    if (current is! PostThreadLoaded) return;
+
+    final preToggle = current.post;
+    final nowLiked = !preToggle.likedByMe;
+    emit(current.copyWith(
+      post: preToggle.copyWith(
+        likedByMe: nowLiked,
+        likeCount: nowLiked ? preToggle.likeCount + 1 : preToggle.likeCount - 1,
+      ),
+    ));
+
+    try {
+      await _connect.toggleLike(postId);
+    } on Failure catch (_) {
+      emit(current.copyWith(post: preToggle));
+    } catch (_) {
+      emit(current.copyWith(post: preToggle));
+    }
+  }
+
   /// Toggles the bookmark/save state on [postId] for the current user.
   ///
   /// Applies an optimistic update immediately; reverts on failure.

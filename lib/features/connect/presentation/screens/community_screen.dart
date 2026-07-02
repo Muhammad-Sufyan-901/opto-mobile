@@ -7,6 +7,7 @@ import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/connect/domain/entities/post_entity.dart';
 import 'package:opto/features/connect/presentation/bloc/connect_feed_bloc.dart';
+import 'package:opto/features/connect/presentation/share_post.dart';
 import 'package:opto/features/connect/presentation/widgets/community_thread_card.dart';
 import 'package:opto/features/connect/presentation/widgets/report_post_sheet.dart';
 import 'package:opto/features/home/presentation/widgets/home_bottom_nav.dart';
@@ -229,6 +230,7 @@ class _CommunityViewState extends State<_CommunityView> {
                                   .read<ConnectFeedBloc>()
                                   .add(ConnectFeedEvent.toggleBookmark(
                                       post.id)),
+                              onShare: () => sharePost(post),
                               onTap: () => _openThread(context, post),
                             );
                           },

@@ -7,6 +7,7 @@ import 'package:opto/core/di/dependencies_injection_container.dart';
 import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/connect/domain/entities/post_entity.dart';
 import 'package:opto/features/connect/presentation/cubit/circle_detail_cubit.dart';
+import 'package:opto/features/connect/presentation/share_post.dart';
 import 'package:opto/features/connect/presentation/widgets/circle_cover.dart';
 import 'package:opto/features/connect/presentation/widgets/community_thread_card.dart';
 import 'package:opto/features/connect/presentation/widgets/pinned_note.dart';
@@ -312,6 +313,7 @@ class _CircleDetailViewState extends State<_CircleDetailView> {
                                   onReply: () => _openThread(context, post),
                                   onReport: () {},
                                   onSave: () {},
+                                  onShare: () => sharePost(post),
                                   onTap: () => _openThread(context, post),
                                 ),
                               ),

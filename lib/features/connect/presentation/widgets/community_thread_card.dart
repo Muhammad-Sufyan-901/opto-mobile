@@ -30,6 +30,7 @@ class CommunityThreadCard extends StatelessWidget {
     required this.onReply,
     required this.onReport,
     required this.onSave,
+    required this.onShare,
     this.onTap,
   });
 
@@ -38,6 +39,7 @@ class CommunityThreadCard extends StatelessWidget {
   final VoidCallback onReply;
   final VoidCallback onReport;
   final VoidCallback onSave;
+  final VoidCallback onShare;
   final VoidCallback? onTap;
 
   // ── Relative time ───────────────────────────────────────────────────────
@@ -156,6 +158,7 @@ class CommunityThreadCard extends StatelessWidget {
                   onLike: onLike,
                   onReply: onReply,
                   onSave: onSave,
+                  onShare: onShare,
                 ),
               ),
 
@@ -167,6 +170,7 @@ class CommunityThreadCard extends StatelessWidget {
                 onLike: onLike,
                 onReply: onReply,
                 onSave: onSave,
+                onShare: onShare,
               ),
             ],
           ),
@@ -316,6 +320,7 @@ class _FooterRow extends StatelessWidget {
     required this.onLike,
     required this.onReply,
     required this.onSave,
+    required this.onShare,
   });
 
   final PostEntity post;
@@ -325,6 +330,7 @@ class _FooterRow extends StatelessWidget {
   final VoidCallback onLike;
   final VoidCallback onReply;
   final VoidCallback onSave;
+  final VoidCallback onShare;
 
   @override
   Widget build(BuildContext context) {
@@ -371,9 +377,7 @@ class _FooterRow extends StatelessWidget {
           surface: surface,
           line: line,
           ink2: ink2,
-          onTap: () {
-            // TODO(community): share post — native share sheet.
-          },
+          onTap: onShare,
         );
 
         final leftGroup = Wrap(
@@ -497,12 +501,14 @@ class _InvisibleActions extends StatelessWidget {
     required this.onLike,
     required this.onReply,
     required this.onSave,
+    required this.onShare,
   });
 
   final PostEntity post;
   final VoidCallback onLike;
   final VoidCallback onReply;
   final VoidCallback onSave;
+  final VoidCallback onShare;
 
   @override
   Widget build(BuildContext context) {
@@ -546,9 +552,12 @@ class _InvisibleActions extends StatelessWidget {
           Semantics(
             button: true,
             label: 'Share post',
-            child: const SizedBox(
-                width: AppDimensions.minTapTarget,
-                height: AppDimensions.minTapTarget),
+            child: GestureDetector(
+              onTap: onShare,
+              child: const SizedBox(
+                  width: AppDimensions.minTapTarget,
+                  height: AppDimensions.minTapTarget),
+            ),
           ),
         ],
       ),

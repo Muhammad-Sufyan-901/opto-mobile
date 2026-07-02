@@ -12,6 +12,7 @@ import 'package:opto/features/connect/presentation/cubit/community_home_cubit.da
 import 'package:opto/features/connect/presentation/widgets/ask_community_prompt.dart';
 import 'package:opto/features/connect/presentation/widgets/circle_tile.dart';
 import 'package:opto/features/connect/presentation/widgets/community_home_skeleton.dart';
+import 'package:opto/features/connect/presentation/share_post.dart';
 import 'package:opto/features/connect/presentation/widgets/community_thread_card.dart';
 import 'package:opto/features/connect/presentation/widgets/featured_hero_card.dart';
 import 'package:opto/features/connect/presentation/widgets/report_post_sheet.dart';
@@ -204,6 +205,7 @@ class _HomeViewState extends State<_HomeView> {
                                     onReply: () => _openThread(context, post),
                                     onReport: () {},
                                     onSave: () {}, // stub — no feed BLoC here
+                                    onShare: () => sharePost(post),
                                     onTap: () => _openThread(context, post),
                                   ),
                                 ),
@@ -530,6 +532,7 @@ class _LatestFeedSection extends StatelessWidget {
                     onSave: () => context
                         .read<ConnectFeedBloc>()
                         .add(ConnectFeedEvent.toggleBookmark(post.id)),
+                    onShare: () => sharePost(post),
                     onTap: () => _openThread(context, post),
                   ),
                 ),

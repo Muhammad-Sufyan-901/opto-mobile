@@ -284,7 +284,7 @@ class _HomeScreenState extends State<HomeScreen> {
       subtitle: item.subtitle,
       showChevron: item.targetRoute != null,
       onTap: item.targetRoute != null
-          ? () => context.go(item.targetRoute!)
+          ? () => context.push(item.targetRoute!)
           : null,
     );
   }

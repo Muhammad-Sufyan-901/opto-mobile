@@ -13,6 +13,7 @@ import 'package:opto/core/themes/app_custom_colors.dart';
 import 'package:opto/features/connect/domain/entities/post_entity.dart';
 import 'package:opto/features/connect/domain/entities/post_reply_entity.dart';
 import 'package:opto/features/connect/presentation/cubit/post_thread_cubit.dart';
+import 'package:opto/features/connect/presentation/share_post.dart';
 import 'package:opto/features/connect/presentation/widgets/voice_note_player.dart';
 
 /// Screen 19b — Post Thread (K3)
@@ -142,7 +143,19 @@ class _PostThreadViewState extends State<_PostThreadView> {
       },
       child: Scaffold(
         backgroundColor: cs.surface,
-        appBar: _ThreadAppBar(cs: cs, blueTint: blueTint),
+        appBar: _ThreadAppBar(
+          cs: cs,
+          blueTint: blueTint,
+          onShare: () {
+            final state = context.read<PostThreadCubit>().state;
+            final post = switch (state) {
+              PostThreadLoaded(:final post) => post,
+              PostThreadLoading(:final seedPost) => seedPost,
+              _ => null,
+            };
+            if (post != null) sharePost(post);
+          },
+        ),
         body: SafeArea(
           child: Column(
             children: [
@@ -206,9 +219,9 @@ class _PostThreadViewState extends State<_PostThreadView> {
                               );
                           announce(context, 'Marked as best answer.');
                         },
-                        onLikePost: () {
-                          // TODO(community): thread-level post like.
-                        },
+                        onLikePost: () => context
+                            .read<PostThreadCubit>()
+                            .toggleLike(widget.postId),
                         onSaveTapped: () => context
                             .read<PostThreadCubit>()
                             .toggleBookmark(widget.postId),
@@ -245,10 +258,15 @@ class _PostThreadViewState extends State<_PostThreadView> {
 // =============================================================================
 
 class _ThreadAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _ThreadAppBar({required this.cs, required this.blueTint});
+  const _ThreadAppBar({
+    required this.cs,
+    required this.blueTint,
+    required this.onShare,
+  });
 
   final ColorScheme cs;
   final Color blueTint;
+  final VoidCallback onShare;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -305,9 +323,7 @@ class _ThreadAppBar extends StatelessWidget implements PreferredSizeWidget {
             icon: ExcludeSemantics(
               child: Icon(Icons.share_outlined, color: cs.onSurface),
             ),
-            onPressed: () {
-              // TODO(community): share thread.
-            },
+            onPressed: onShare,
           ),
         ),
         Semantics(
