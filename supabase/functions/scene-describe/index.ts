@@ -189,53 +189,76 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // ── Gemini multimodal call ─────────────────────────────────────────────────
   // Proxy-and-discard: the frame is passed in-memory and never persisted.
   // Only error metadata (not frame bytes) is logged.
-  try {
-    const geminiRes = await fetch(GEMINI_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: SYSTEM_PROMPT }],
-        },
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                inline_data: {
-                  mime_type: "image/jpeg",
-                  data: base64Image,
-                },
-              },
-              { text: "Deskripsikan gambar ini." },
-            ],
-          },
-        ],
-        generationConfig: {
-          maxOutputTokens: 150,
-          temperature: 0.4,
-        },
-      }),
-    });
+  //
+  // Retry: Gemini 2.5 Flash-Lite occasionally returns a transient 5xx
+  // ("model overloaded") — observed failing back-to-back on a single retry
+  // during load testing, so 2 retries (3 attempts total) with a short
+  // backoff are used to absorb sustained overload instead of forcing the
+  // client down to the degraded on-device fallback. 429 (quota) is never
+  // retried — it's not transient and must stay on the distinct quota path
+  // below.
+  const MAX_ATTEMPTS = 3;
+  const RETRY_DELAY_MS = 700;
 
-    if (!geminiRes.ok) {
-      const errBody = await geminiRes.text();
+  try {
+    let geminiRes: Response | undefined;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      geminiRes = await fetch(GEMINI_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: SYSTEM_PROMPT }],
+          },
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  inline_data: {
+                    mime_type: "image/jpeg",
+                    data: base64Image,
+                  },
+                },
+                { text: "Deskripsikan gambar ini." },
+              ],
+            },
+          ],
+          generationConfig: {
+            maxOutputTokens: 150,
+            temperature: 0.4,
+          },
+        }),
+      });
+
+      const transient = !geminiRes.ok &&
+        [500, 502, 503].includes(geminiRes.status);
+      if (!transient || attempt === MAX_ATTEMPTS) break;
+
+      console.error(
+        `[scene-describe] Gemini HTTP ${geminiRes.status} (attempt ${attempt}/${MAX_ATTEMPTS}), retrying...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+    }
+
+    if (!geminiRes!.ok) {
+      const errBody = await geminiRes!.text();
       // Log status + first 200 chars of error body only (no frame bytes).
       console.error(
-        `[scene-describe] Gemini HTTP ${geminiRes.status}:`,
+        `[scene-describe] Gemini HTTP ${geminiRes!.status}:`,
         errBody.slice(0, 200),
       );
       // Map upstream Gemini 429 (quota exhaustion) to a distinct quota error
       // so the Flutter client can surface a spoken "try again tomorrow" message
       // rather than the generic offline fallback.
-      if (geminiRes.status === 429) {
+      if (geminiRes!.status === 429) {
         return jsonQuotaError(
           "Batas kuota Gemini tercapai. Coba lagi besok. OCR masih berfungsi.",
           429,
         );
       }
       return jsonError(
-        `Layanan deskripsi adegan tidak tersedia (${geminiRes.status}).`,
+        `Layanan deskripsi adegan tidak tersedia (${geminiRes!.status}).`,
         502,
       );
     }

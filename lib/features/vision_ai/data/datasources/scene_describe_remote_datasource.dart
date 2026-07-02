@@ -33,13 +33,20 @@ import 'package:opto/features/vision_ai/domain/entities/vision_result.dart';
 /// **Compression:** frames are resized to a 1024 px longest edge at JPEG
 /// quality 85 before base64-encoding. This happens in a background isolate
 /// via [ImageCompressor.compressToJpeg] and keeps the upload well inside
-/// the Edge Function's ~1 MB base64 ceiling while targeting < 3 s latency.
+/// the Edge Function's ~1 MB base64 ceiling.
+///
+/// **Latency:** measured round-trips to the deployed function range ~3-21 s
+/// (cold start + Gemini vision inference, occasionally retried server-side
+/// up to 3 attempts on a transient 5xx — see
+/// `supabase/functions/scene-describe/index.ts`). The client timeout below
+/// is sized to that reality; do not lower it without re-measuring, or most
+/// calls will spuriously fall back on-device.
 class SceneDescribeRemoteDatasource {
   const SceneDescribeRemoteDatasource();
 
   // Client-side timeout before the repository falls back to the on-device
   // path (see `vision_repository_impl.dart`).
-  static const _timeout = Duration(seconds: 8);
+  static const _timeout = Duration(seconds: 30);
 
   // ---------------------------------------------------------------------------
   // Public API
