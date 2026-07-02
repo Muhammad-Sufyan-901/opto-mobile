@@ -4,12 +4,21 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:opto/core/accessibility/haptic_controller.dart';
 import 'package:opto/core/config/secure_storage_config.dart';
+import 'package:opto/core/location/location_service.dart';
 import 'package:opto/core/network/connectivity_service.dart';
 import 'package:opto/core/utils/secure_storage_helper.dart';
 import 'package:opto/core/voice/aura_tts.dart';
 import 'package:opto/core/voice/intent_parser.dart';
 import 'package:opto/core/voice/speech_recognizer.dart';
 import 'package:opto/core/voice/voice_controller.dart';
+import 'package:opto/features/accessibility_map/data/datasources/map_remote_data_source.dart';
+import 'package:opto/features/accessibility_map/data/repositories/contributions_repository_impl.dart';
+import 'package:opto/features/accessibility_map/data/repositories/poi_repository_impl.dart';
+import 'package:opto/features/accessibility_map/domain/repositories/contributions_repository.dart';
+import 'package:opto/features/accessibility_map/domain/repositories/poi_repository.dart';
+import 'package:opto/features/accessibility_map/presentation/bloc/add_poi/add_poi_cubit.dart';
+import 'package:opto/features/accessibility_map/presentation/bloc/nearby_pois/nearby_pois_bloc.dart';
+import 'package:opto/features/accessibility_map/presentation/bloc/poi_detail/poi_detail_cubit.dart';
 import 'package:opto/features/vision_ai/data/datasources/color_detector.dart';
 import 'package:opto/features/vision_ai/data/datasources/ml_kit_vision_datasource.dart';
 import 'package:opto/features/vision_ai/data/datasources/scene_describe_remote_datasource.dart';
@@ -437,6 +446,42 @@ Future<void> init() async {
     () => VisionAiCubit(
       repository: sl<VisionRepository>(),
       consentBox: Hive.box('settings_box'),
+    ),
+  );
+
+  // ===============================================================
+  // ── ACCESSIBILITY MAP (Phase 3B) ──
+  // ===============================================================
+  sl.registerLazySingleton<LocationService>(
+    () => GeolocatorLocationService(),
+  );
+
+  sl.registerLazySingleton<MapRemoteDataSource>(
+    () => MapRemoteDataSourceImpl(),
+  );
+
+  sl.registerLazySingleton<PoiRepository>(
+    () => PoiRepositoryImpl(remoteDataSource: sl<MapRemoteDataSource>()),
+  );
+
+  sl.registerLazySingleton<ContributionsRepository>(
+    () => ContributionsRepositoryImpl(remoteDataSource: sl<MapRemoteDataSource>()),
+  );
+
+  // NearbyPoisBloc is a lazy singleton — the visual map screen reads the
+  // same already-loaded state as the list screen without re-fetching.
+  sl.registerLazySingleton<NearbyPoisBloc>(
+    () => NearbyPoisBloc(sl<PoiRepository>()),
+  );
+
+  sl.registerFactory<AddPoiCubit>(
+    () => AddPoiCubit(sl<PoiRepository>()),
+  );
+
+  sl.registerFactory<PoiDetailCubit>(
+    () => PoiDetailCubit(
+      poiRepository: sl<PoiRepository>(),
+      contributionsRepository: sl<ContributionsRepository>(),
     ),
   );
 }
