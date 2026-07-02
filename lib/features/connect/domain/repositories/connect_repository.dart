@@ -121,6 +121,16 @@ abstract class ConnectRepository {
   /// Throws [AuthFailure] when unauthenticated.
   Future<bool> toggleLike(String postId);
 
+  // ── bookmarks ──────────────────────────────────────────────────────────────
+
+  /// Toggles a bookmark/save on [postId] for the current user.
+  ///
+  /// Inserts a `post_bookmarks` row if not saved; deletes if already saved.
+  /// Returns `true` if the post is now saved, `false` if unsaved.
+  ///
+  /// Throws [AuthFailure] when unauthenticated.
+  Future<bool> toggleBookmark(String postId);
+
   // ── realtime feed ──────────────────────────────────────────────────────────
 
   /// Returns a stream of new [PostEntity] inserts from the Supabase Realtime

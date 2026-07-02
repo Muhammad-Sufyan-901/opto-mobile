@@ -27,4 +27,13 @@ abstract class MemberRepository {
   ///
   /// Throws [ServerFailure] on network/RLS error.
   Future<List<PostEntity>> getContributions(String memberId);
+
+  /// Returns posts bookmarked/saved by [userId], newest-bookmarked-first.
+  ///
+  /// RLS restricts `post_bookmarks` to rows owned by the caller, so this only
+  /// ever returns results when [userId] is the currently-authenticated user;
+  /// other callers receive an empty list.
+  ///
+  /// Throws [ServerFailure] on network/RLS error.
+  Future<List<PostEntity>> getSavedPosts(String userId);
 }

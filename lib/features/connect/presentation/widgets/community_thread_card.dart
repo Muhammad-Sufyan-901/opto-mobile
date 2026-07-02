@@ -29,6 +29,7 @@ class CommunityThreadCard extends StatelessWidget {
     required this.onLike,
     required this.onReply,
     required this.onReport,
+    required this.onSave,
     this.onTap,
   });
 
@@ -36,6 +37,7 @@ class CommunityThreadCard extends StatelessWidget {
   final VoidCallback onLike;
   final VoidCallback onReply;
   final VoidCallback onReport;
+  final VoidCallback onSave;
   final VoidCallback? onTap;
 
   // ── Relative time ───────────────────────────────────────────────────────
@@ -153,6 +155,7 @@ class CommunityThreadCard extends StatelessWidget {
                   line: line,
                   onLike: onLike,
                   onReply: onReply,
+                  onSave: onSave,
                 ),
               ),
 
@@ -163,6 +166,7 @@ class CommunityThreadCard extends StatelessWidget {
                 post: post,
                 onLike: onLike,
                 onReply: onReply,
+                onSave: onSave,
               ),
             ],
           ),
@@ -311,6 +315,7 @@ class _FooterRow extends StatelessWidget {
     required this.line,
     required this.onLike,
     required this.onReply,
+    required this.onSave,
   });
 
   final PostEntity post;
@@ -319,6 +324,7 @@ class _FooterRow extends StatelessWidget {
   final Color line;
   final VoidCallback onLike;
   final VoidCallback onReply;
+  final VoidCallback onSave;
 
   @override
   Widget build(BuildContext context) {
@@ -348,16 +354,14 @@ class _FooterRow extends StatelessWidget {
           onTap: onReply,
         );
         final saveButton = _StatPill(
-          icon: Icons.bookmark_border,
+          icon: post.bookmarkedByMe ? Icons.bookmark : Icons.bookmark_border,
           label: '',
-          active: false,
+          active: post.bookmarkedByMe,
           activeColor: cs.primary,
           surface: surface,
           line: line,
           ink2: ink2,
-          onTap: () {
-            // TODO(community): bookmark / save post — not yet backed by DB.
-          },
+          onTap: onSave,
         );
         final shareButton = _StatPill(
           icon: Icons.share_outlined,
@@ -492,11 +496,13 @@ class _InvisibleActions extends StatelessWidget {
     required this.post,
     required this.onLike,
     required this.onReply,
+    required this.onSave,
   });
 
   final PostEntity post;
   final VoidCallback onLike;
   final VoidCallback onReply;
+  final VoidCallback onSave;
 
   @override
   Widget build(BuildContext context) {
@@ -529,10 +535,13 @@ class _InvisibleActions extends StatelessWidget {
           ),
           Semantics(
             button: true,
-            label: 'Save post',
-            child: const SizedBox(
-                width: AppDimensions.minTapTarget,
-                height: AppDimensions.minTapTarget),
+            label: post.bookmarkedByMe ? 'Remove from saved' : 'Save post',
+            child: GestureDetector(
+              onTap: onSave,
+              child: const SizedBox(
+                  width: AppDimensions.minTapTarget,
+                  height: AppDimensions.minTapTarget),
+            ),
           ),
           Semantics(
             button: true,

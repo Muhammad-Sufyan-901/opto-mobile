@@ -323,13 +323,19 @@ class _ActivityBodyState extends State<_ActivityBody> {
 
               const SizedBox(height: 14),
 
-              // ── Content area — posts or coming-soon ──────────────────
-              if (_filter == 'posts') ...[
-                if (state.posts.isEmpty)
-                  _buildEmptyPosts(context, theme, cs,
-                      ext?.ink2 ?? cs.onSurfaceVariant)
+              // ── Content area — posts/saved or coming-soon ─────────────
+              if (_filter == 'posts' || _filter == 'saved') ...[
+                if ((_filter == 'posts' ? state.posts : state.savedPosts)
+                    .isEmpty)
+                  _filter == 'posts'
+                      ? _buildEmptyPosts(context, theme, cs,
+                          ext?.ink2 ?? cs.onSurfaceVariant)
+                      : _buildEmptySaved(context, theme, cs,
+                          ext?.ink2 ?? cs.onSurfaceVariant)
                 else
-                  for (final post in state.posts) ...[
+                  for (final post in (_filter == 'posts'
+                      ? state.posts
+                      : state.savedPosts)) ...[
                     _ActivityCard(
                       post: post,
                       theme: theme,
@@ -384,6 +390,41 @@ class _ActivityBodyState extends State<_ActivityBody> {
               child: Text(
                 'Your posts will appear here once you share something '
                 'with the community.',
+                style: theme.textTheme.bodySmall?.copyWith(color: ink2),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptySaved(
+      BuildContext context, ThemeData theme, ColorScheme cs, Color ink2) {
+    return Semantics(
+      label: 'No saved posts yet. Posts you bookmark will appear here.',
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ExcludeSemantics(
+              child: Icon(Icons.bookmark_border,
+                  size: 48, color: cs.outlineVariant),
+            ),
+            const SizedBox(height: 12),
+            ExcludeSemantics(
+              child: Text(
+                'No saved posts yet',
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+            const SizedBox(height: 6),
+            ExcludeSemantics(
+              child: Text(
+                'Posts you bookmark will appear here.',
                 style: theme.textTheme.bodySmall?.copyWith(color: ink2),
                 textAlign: TextAlign.center,
               ),

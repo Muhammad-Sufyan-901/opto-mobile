@@ -33,6 +33,12 @@ sealed class ConnectFeedEvent with _$ConnectFeedEvent {
   /// Applies an optimistic update immediately; reverts on failure.
   const factory ConnectFeedEvent.toggleLike(String postId) = ToggleLike;
 
+  /// Toggle the bookmark/save state on [postId] for the current user.
+  ///
+  /// Applies an optimistic update immediately; reverts on failure.
+  const factory ConnectFeedEvent.toggleBookmark(String postId) =
+      ToggleBookmark;
+
   /// Change the active topic-filter chip to [index].
   ///
   /// [topic] is the string label of the selected topic, or null for "All".

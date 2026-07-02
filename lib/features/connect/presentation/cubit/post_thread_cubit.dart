@@ -143,6 +143,27 @@ class PostThreadCubit extends Cubit<PostThreadState> {
     }
   }
 
+  /// Toggles the bookmark/save state on [postId] for the current user.
+  ///
+  /// Applies an optimistic update immediately; reverts on failure.
+  Future<void> toggleBookmark(String postId) async {
+    final current = state;
+    if (current is! PostThreadLoaded) return;
+
+    final preToggle = current.post;
+    emit(current.copyWith(
+      post: preToggle.copyWith(bookmarkedByMe: !preToggle.bookmarkedByMe),
+    ));
+
+    try {
+      await _connect.toggleBookmark(postId);
+    } on Failure catch (_) {
+      emit(current.copyWith(post: preToggle));
+    } catch (_) {
+      emit(current.copyWith(post: preToggle));
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // PRIVATE HELPERS
   // ---------------------------------------------------------------------------

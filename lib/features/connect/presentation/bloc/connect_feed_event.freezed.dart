@@ -55,14 +55,15 @@ extension ConnectFeedEventPatterns on ConnectFeedEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LoadFeed value)?  loadFeed,TResult Function( SubscribeFeed value)?  subscribeFeed,TResult Function( NewPostReceived value)?  newPostReceived,TResult Function( ToggleLike value)?  toggleLike,TResult Function( ChangeTopicFilter value)?  changeTopicFilter,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LoadFeed value)?  loadFeed,TResult Function( SubscribeFeed value)?  subscribeFeed,TResult Function( NewPostReceived value)?  newPostReceived,TResult Function( ToggleLike value)?  toggleLike,TResult Function( ToggleBookmark value)?  toggleBookmark,TResult Function( ChangeTopicFilter value)?  changeTopicFilter,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case LoadFeed() when loadFeed != null:
 return loadFeed(_that);case SubscribeFeed() when subscribeFeed != null:
 return subscribeFeed(_that);case NewPostReceived() when newPostReceived != null:
 return newPostReceived(_that);case ToggleLike() when toggleLike != null:
-return toggleLike(_that);case ChangeTopicFilter() when changeTopicFilter != null:
+return toggleLike(_that);case ToggleBookmark() when toggleBookmark != null:
+return toggleBookmark(_that);case ChangeTopicFilter() when changeTopicFilter != null:
 return changeTopicFilter(_that);case _:
   return orElse();
 
@@ -81,14 +82,15 @@ return changeTopicFilter(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LoadFeed value)  loadFeed,required TResult Function( SubscribeFeed value)  subscribeFeed,required TResult Function( NewPostReceived value)  newPostReceived,required TResult Function( ToggleLike value)  toggleLike,required TResult Function( ChangeTopicFilter value)  changeTopicFilter,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LoadFeed value)  loadFeed,required TResult Function( SubscribeFeed value)  subscribeFeed,required TResult Function( NewPostReceived value)  newPostReceived,required TResult Function( ToggleLike value)  toggleLike,required TResult Function( ToggleBookmark value)  toggleBookmark,required TResult Function( ChangeTopicFilter value)  changeTopicFilter,}){
 final _that = this;
 switch (_that) {
 case LoadFeed():
 return loadFeed(_that);case SubscribeFeed():
 return subscribeFeed(_that);case NewPostReceived():
 return newPostReceived(_that);case ToggleLike():
-return toggleLike(_that);case ChangeTopicFilter():
+return toggleLike(_that);case ToggleBookmark():
+return toggleBookmark(_that);case ChangeTopicFilter():
 return changeTopicFilter(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -103,14 +105,15 @@ return changeTopicFilter(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LoadFeed value)?  loadFeed,TResult? Function( SubscribeFeed value)?  subscribeFeed,TResult? Function( NewPostReceived value)?  newPostReceived,TResult? Function( ToggleLike value)?  toggleLike,TResult? Function( ChangeTopicFilter value)?  changeTopicFilter,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LoadFeed value)?  loadFeed,TResult? Function( SubscribeFeed value)?  subscribeFeed,TResult? Function( NewPostReceived value)?  newPostReceived,TResult? Function( ToggleLike value)?  toggleLike,TResult? Function( ToggleBookmark value)?  toggleBookmark,TResult? Function( ChangeTopicFilter value)?  changeTopicFilter,}){
 final _that = this;
 switch (_that) {
 case LoadFeed() when loadFeed != null:
 return loadFeed(_that);case SubscribeFeed() when subscribeFeed != null:
 return subscribeFeed(_that);case NewPostReceived() when newPostReceived != null:
 return newPostReceived(_that);case ToggleLike() when toggleLike != null:
-return toggleLike(_that);case ChangeTopicFilter() when changeTopicFilter != null:
+return toggleLike(_that);case ToggleBookmark() when toggleBookmark != null:
+return toggleBookmark(_that);case ChangeTopicFilter() when changeTopicFilter != null:
 return changeTopicFilter(_that);case _:
   return null;
 
@@ -128,13 +131,14 @@ return changeTopicFilter(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( bool reset)?  loadFeed,TResult Function()?  subscribeFeed,TResult Function( PostEntity post)?  newPostReceived,TResult Function( String postId)?  toggleLike,TResult Function( int index,  String? topic)?  changeTopicFilter,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( bool reset)?  loadFeed,TResult Function()?  subscribeFeed,TResult Function( PostEntity post)?  newPostReceived,TResult Function( String postId)?  toggleLike,TResult Function( String postId)?  toggleBookmark,TResult Function( int index,  String? topic)?  changeTopicFilter,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case LoadFeed() when loadFeed != null:
 return loadFeed(_that.reset);case SubscribeFeed() when subscribeFeed != null:
 return subscribeFeed();case NewPostReceived() when newPostReceived != null:
 return newPostReceived(_that.post);case ToggleLike() when toggleLike != null:
-return toggleLike(_that.postId);case ChangeTopicFilter() when changeTopicFilter != null:
+return toggleLike(_that.postId);case ToggleBookmark() when toggleBookmark != null:
+return toggleBookmark(_that.postId);case ChangeTopicFilter() when changeTopicFilter != null:
 return changeTopicFilter(_that.index,_that.topic);case _:
   return orElse();
 
@@ -153,13 +157,14 @@ return changeTopicFilter(_that.index,_that.topic);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( bool reset)  loadFeed,required TResult Function()  subscribeFeed,required TResult Function( PostEntity post)  newPostReceived,required TResult Function( String postId)  toggleLike,required TResult Function( int index,  String? topic)  changeTopicFilter,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( bool reset)  loadFeed,required TResult Function()  subscribeFeed,required TResult Function( PostEntity post)  newPostReceived,required TResult Function( String postId)  toggleLike,required TResult Function( String postId)  toggleBookmark,required TResult Function( int index,  String? topic)  changeTopicFilter,}) {final _that = this;
 switch (_that) {
 case LoadFeed():
 return loadFeed(_that.reset);case SubscribeFeed():
 return subscribeFeed();case NewPostReceived():
 return newPostReceived(_that.post);case ToggleLike():
-return toggleLike(_that.postId);case ChangeTopicFilter():
+return toggleLike(_that.postId);case ToggleBookmark():
+return toggleBookmark(_that.postId);case ChangeTopicFilter():
 return changeTopicFilter(_that.index,_that.topic);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -174,13 +179,14 @@ return changeTopicFilter(_that.index,_that.topic);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( bool reset)?  loadFeed,TResult? Function()?  subscribeFeed,TResult? Function( PostEntity post)?  newPostReceived,TResult? Function( String postId)?  toggleLike,TResult? Function( int index,  String? topic)?  changeTopicFilter,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( bool reset)?  loadFeed,TResult? Function()?  subscribeFeed,TResult? Function( PostEntity post)?  newPostReceived,TResult? Function( String postId)?  toggleLike,TResult? Function( String postId)?  toggleBookmark,TResult? Function( int index,  String? topic)?  changeTopicFilter,}) {final _that = this;
 switch (_that) {
 case LoadFeed() when loadFeed != null:
 return loadFeed(_that.reset);case SubscribeFeed() when subscribeFeed != null:
 return subscribeFeed();case NewPostReceived() when newPostReceived != null:
 return newPostReceived(_that.post);case ToggleLike() when toggleLike != null:
-return toggleLike(_that.postId);case ChangeTopicFilter() when changeTopicFilter != null:
+return toggleLike(_that.postId);case ToggleBookmark() when toggleBookmark != null:
+return toggleBookmark(_that.postId);case ChangeTopicFilter() when changeTopicFilter != null:
 return changeTopicFilter(_that.index,_that.topic);case _:
   return null;
 
@@ -411,6 +417,72 @@ class _$ToggleLikeCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') $Res call({Object? postId = null,}) {
   return _then(ToggleLike(
+null == postId ? _self.postId : postId // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class ToggleBookmark implements ConnectFeedEvent {
+  const ToggleBookmark(this.postId);
+  
+
+ final  String postId;
+
+/// Create a copy of ConnectFeedEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ToggleBookmarkCopyWith<ToggleBookmark> get copyWith => _$ToggleBookmarkCopyWithImpl<ToggleBookmark>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ToggleBookmark&&(identical(other.postId, postId) || other.postId == postId));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,postId);
+
+@override
+String toString() {
+  return 'ConnectFeedEvent.toggleBookmark(postId: $postId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ToggleBookmarkCopyWith<$Res> implements $ConnectFeedEventCopyWith<$Res> {
+  factory $ToggleBookmarkCopyWith(ToggleBookmark value, $Res Function(ToggleBookmark) _then) = _$ToggleBookmarkCopyWithImpl;
+@useResult
+$Res call({
+ String postId
+});
+
+
+
+
+}
+/// @nodoc
+class _$ToggleBookmarkCopyWithImpl<$Res>
+    implements $ToggleBookmarkCopyWith<$Res> {
+  _$ToggleBookmarkCopyWithImpl(this._self, this._then);
+
+  final ToggleBookmark _self;
+  final $Res Function(ToggleBookmark) _then;
+
+/// Create a copy of ConnectFeedEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? postId = null,}) {
+  return _then(ToggleBookmark(
 null == postId ? _self.postId : postId // ignore: cast_nullable_to_non_nullable
 as String,
   ));

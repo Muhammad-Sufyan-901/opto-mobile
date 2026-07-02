@@ -311,6 +311,7 @@ class _CircleDetailViewState extends State<_CircleDetailView> {
                                   onLike: () {},
                                   onReply: () => _openThread(context, post),
                                   onReport: () {},
+                                  onSave: () {},
                                   onTap: () => _openThread(context, post),
                                 ),
                               ),

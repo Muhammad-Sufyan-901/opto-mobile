@@ -86,6 +86,7 @@ int _extractCount(dynamic raw) {
 PostEntity _hydratePost(
   Map<String, dynamic> row, {
   required Set<String> likedPostIds,
+  required Set<String> bookmarkedPostIds,
 }) {
   final authorMap = row['author'] as Map<String, dynamic>?;
   final likeCountRaw = row['like_count'];
@@ -99,6 +100,7 @@ PostEntity _hydratePost(
     likeCount: _extractCount(likeCountRaw),
     replyCount: _extractCount(replyCountRaw),
     likedByMe: likedPostIds.contains(model.id),
+    bookmarkedByMe: bookmarkedPostIds.contains(model.id),
   );
 }
 
@@ -165,6 +167,10 @@ abstract class ConnectRemoteDataSource {
   /// Returns `true` if the user just liked (insert), `false` if unliked (delete).
   Future<bool> toggleLike(String postId);
 
+  // ── bookmarks ──────────────────────────────────────────────────────────────
+  /// Returns `true` if the user just saved (insert), `false` if unsaved (delete).
+  Future<bool> toggleBookmark(String postId);
+
   // ── realtime feed ──────────────────────────────────────────────────────────
   /// Subscribes to INSERT events on the `posts` table.
   /// Returns a [Stream] that emits raw JSON maps for each new post.
@@ -210,6 +216,11 @@ abstract class ConnectRemoteDataSource {
 
   /// Returns recent posts authored by [memberId], ordered by created_at desc.
   Future<List<PostEntity>> getMemberContributions(String memberId);
+
+  /// Returns posts bookmarked by [userId], newest-bookmarked-first.
+  ///
+  /// RLS restricts `post_bookmarks` reads to the caller's own rows.
+  Future<List<PostEntity>> getMemberBookmarkedPosts(String userId);
 }
 
 // =============================================================================
@@ -246,13 +257,21 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
 
-      // 2. Collect liked post-ids for the current user in one round-trip.
-      final likedPostIds = await _fetchLikedPostIds(
-        rows.map((r) => r['id'] as String).toList(),
-      );
+      // 2. Collect liked + bookmarked post-ids for the current user in parallel.
+      final postIds = rows.map((r) => r['id'] as String).toList();
+      final idSets = await Future.wait([
+        _fetchLikedPostIds(postIds),
+        _fetchBookmarkedPostIds(postIds),
+      ]);
+      final likedPostIds = idSets[0];
+      final bookmarkedPostIds = idSets[1];
 
       return rows
-          .map((r) => _hydratePost(r, likedPostIds: likedPostIds))
+          .map((r) => _hydratePost(
+                r,
+                likedPostIds: likedPostIds,
+                bookmarkedPostIds: bookmarkedPostIds,
+              ))
           .toList();
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
@@ -270,8 +289,15 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
           .eq('id', postId)
           .single();
 
-      final likedPostIds = await _fetchLikedPostIds([postId]);
-      return _hydratePost(row, likedPostIds: likedPostIds);
+      final idSets = await Future.wait([
+        _fetchLikedPostIds([postId]),
+        _fetchBookmarkedPostIds([postId]),
+      ]);
+      return _hydratePost(
+        row,
+        likedPostIds: idSets[0],
+        bookmarkedPostIds: idSets[1],
+      );
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
@@ -301,8 +327,12 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
           .select(_postSelect)
           .single();
 
-      // Newly created — not liked by anyone yet.
-      return _hydratePost(row, likedPostIds: const {});
+      // Newly created — not liked or bookmarked by anyone yet.
+      return _hydratePost(
+        row,
+        likedPostIds: const {},
+        bookmarkedPostIds: const {},
+      );
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
     } catch (e) {
@@ -523,6 +553,58 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
       try {
         await _client
             .from('post_likes')
+            .delete()
+            .eq('post_id', postId)
+            .eq('user_id', userId);
+        return false;
+      } on PostgrestException catch (e) {
+        throw SupabaseErrorMapper.fromPostgrest(e);
+      } catch (e) {
+        throw ServerFailure(e.toString());
+      }
+    }
+  }
+
+  // ── bookmarks ──────────────────────────────────────────────────────────────
+
+  @override
+  Future<bool> toggleBookmark(String postId) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw const AuthFailure('Not authenticated');
+
+    // 1. Check if a bookmark row already exists.
+    final existing = await _client
+        .from('post_bookmarks')
+        .select('id')
+        .eq('post_id', postId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    if (existing == null) {
+      // 2. Not saved yet — insert and return true.
+      // Guard against TOCTOU: a concurrent tap may have already inserted a row
+      // between step 1 and now. Catch the unique-violation (23505) and treat
+      // it as "already saved" rather than propagating an error.
+      try {
+        await _client.from('post_bookmarks').insert({
+          'post_id': postId,
+          'user_id': userId,
+        });
+        return true;
+      } on PostgrestException catch (e) {
+        if (e.code == '23505') {
+          // Concurrent insert — already saved; treat as saved.
+          return false;
+        }
+        throw SupabaseErrorMapper.fromPostgrest(e);
+      } catch (e) {
+        throw ServerFailure(e.toString());
+      }
+    } else {
+      // 3. Already saved — delete it and return false.
+      try {
+        await _client
+            .from('post_bookmarks')
             .delete()
             .eq('post_id', postId)
             .eq('user_id', userId);
@@ -839,10 +921,52 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
           .order('created_at', ascending: false)
           .limit(10);
 
-      // Contributions are viewed in a read-only context; skip like hydration
-      // to save a round-trip. likedByMe will default to false.
+      // Contributions are viewed in a read-only context; skip like/bookmark
+      // hydration to save round-trips. likedByMe/bookmarkedByMe default false.
       return rows
-          .map((row) => _hydratePost(row, likedPostIds: const {}))
+          .map((row) => _hydratePost(
+                row,
+                likedPostIds: const {},
+                bookmarkedPostIds: const {},
+              ))
+          .toList();
+    } on PostgrestException catch (e) {
+      throw SupabaseErrorMapper.fromPostgrest(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<List<PostEntity>> getMemberBookmarkedPosts(String userId) async {
+    try {
+      // 1. Fetch the caller's bookmarked post-ids, newest-bookmarked-first.
+      // RLS scopes this to the caller's own rows.
+      final bookmarkRows = await _client
+          .from('post_bookmarks')
+          .select('post_id')
+          .eq('user_id', userId)
+          .order('created_at', ascending: false)
+          .limit(20);
+      final orderedPostIds =
+          bookmarkRows.map((r) => r['post_id'] as String).toList();
+      if (orderedPostIds.isEmpty) return [];
+
+      // 2. Hydrate the referenced posts. `inFilter` doesn't preserve order, so
+      // re-sort by the bookmark order from step 1.
+      final rows = await _client
+          .from('posts')
+          .select(_postSelect)
+          .inFilter('id', orderedPostIds);
+      final rowsById = {for (final r in rows) r['id'] as String: r};
+
+      return orderedPostIds
+          .where(rowsById.containsKey)
+          .map((id) => _hydratePost(
+                rowsById[id]!,
+                likedPostIds: const {},
+                bookmarkedPostIds: {id},
+              ))
           .toList();
     } on PostgrestException catch (e) {
       throw SupabaseErrorMapper.fromPostgrest(e);
@@ -867,6 +991,27 @@ class ConnectRemoteDataSourceImpl implements ConnectRemoteDataSource {
       return {for (final r in rows) r['post_id'] as String};
     } catch (_) {
       // Non-fatal — like indicators gracefully fall back to unliked.
+      return const {};
+    }
+  }
+
+  /// Returns the set of post-ids from [candidateIds] that the current user has
+  /// bookmarked. Returns an empty set if unauthenticated or if [candidateIds]
+  /// is empty.
+  Future<Set<String>> _fetchBookmarkedPostIds(
+    List<String> candidateIds,
+  ) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null || candidateIds.isEmpty) return const {};
+    try {
+      final rows = await _client
+          .from('post_bookmarks')
+          .select('post_id')
+          .eq('user_id', userId)
+          .inFilter('post_id', candidateIds);
+      return {for (final r in rows) r['post_id'] as String};
+    } catch (_) {
+      // Non-fatal — bookmark indicators gracefully fall back to unsaved.
       return const {};
     }
   }

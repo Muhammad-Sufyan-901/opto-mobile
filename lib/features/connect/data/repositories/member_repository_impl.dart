@@ -31,4 +31,8 @@ class MemberRepositoryImpl implements MemberRepository {
   @override
   Future<List<PostEntity>> getContributions(String memberId) =>
       _ds.getMemberContributions(memberId);
+
+  @override
+  Future<List<PostEntity>> getSavedPosts(String userId) =>
+      _ds.getMemberBookmarkedPosts(userId);
 }

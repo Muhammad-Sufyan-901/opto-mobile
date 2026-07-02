@@ -225,6 +225,10 @@ class _CommunityViewState extends State<_CommunityView> {
                               onReply: () => _openThread(context, post),
                               onReport: () =>
                                   ReportPostSheet.show(context, post.id),
+                              onSave: () => context
+                                  .read<ConnectFeedBloc>()
+                                  .add(ConnectFeedEvent.toggleBookmark(
+                                      post.id)),
                               onTap: () => _openThread(context, post),
                             );
                           },

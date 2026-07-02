@@ -20,6 +20,7 @@ extension PostModelX on PostModel {
     int replyCount = 0,
     int likeCount = 0,
     bool likedByMe = false,
+    bool bookmarkedByMe = false,
   }) =>
       PostEntity(
         id: id,
@@ -36,5 +37,6 @@ extension PostModelX on PostModel {
         replyCount: replyCount,
         likeCount: likeCount,
         likedByMe: likedByMe,
+        bookmarkedByMe: bookmarkedByMe,
       );
 }

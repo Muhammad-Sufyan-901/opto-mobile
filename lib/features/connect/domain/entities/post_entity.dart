@@ -26,6 +26,7 @@ class PostEntity {
     this.replyCount = 0,
     this.likeCount = 0,
     this.likedByMe = false,
+    this.bookmarkedByMe = false,
   });
 
   /// Primary key (UUID).
@@ -72,6 +73,9 @@ class PostEntity {
   /// Whether the currently-authenticated user has liked this post.
   final bool likedByMe;
 
+  /// Whether the currently-authenticated user has bookmarked/saved this post.
+  final bool bookmarkedByMe;
+
   PostEntity copyWith({
     String? id,
     String? authorId,
@@ -87,6 +91,7 @@ class PostEntity {
     int? replyCount,
     int? likeCount,
     bool? likedByMe,
+    bool? bookmarkedByMe,
   }) {
     return PostEntity(
       id: id ?? this.id,
@@ -103,6 +108,7 @@ class PostEntity {
       replyCount: replyCount ?? this.replyCount,
       likeCount: likeCount ?? this.likeCount,
       likedByMe: likedByMe ?? this.likedByMe,
+      bookmarkedByMe: bookmarkedByMe ?? this.bookmarkedByMe,
     );
   }
 
@@ -124,7 +130,8 @@ class PostEntity {
           mediaList == other.mediaList &&
           replyCount == other.replyCount &&
           likeCount == other.likeCount &&
-          likedByMe == other.likedByMe;
+          likedByMe == other.likedByMe &&
+          bookmarkedByMe == other.bookmarkedByMe;
 
   @override
   int get hashCode => Object.hash(
@@ -142,6 +149,7 @@ class PostEntity {
         replyCount,
         likeCount,
         likedByMe,
+        bookmarkedByMe,
       );
 }
 

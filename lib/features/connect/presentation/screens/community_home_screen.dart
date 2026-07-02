@@ -203,6 +203,7 @@ class _HomeViewState extends State<_HomeView> {
                                     onLike: () {}, // stub — no feed BLoC here
                                     onReply: () => _openThread(context, post),
                                     onReport: () {},
+                                    onSave: () {}, // stub — no feed BLoC here
                                     onTap: () => _openThread(context, post),
                                   ),
                                 ),
@@ -526,6 +527,9 @@ class _LatestFeedSection extends StatelessWidget {
                         .add(ConnectFeedEvent.toggleLike(post.id)),
                     onReply: () => _openThread(context, post),
                     onReport: () => ReportPostSheet.show(context, post.id),
+                    onSave: () => context
+                        .read<ConnectFeedBloc>()
+                        .add(ConnectFeedEvent.toggleBookmark(post.id)),
                     onTap: () => _openThread(context, post),
                   ),
                 ),

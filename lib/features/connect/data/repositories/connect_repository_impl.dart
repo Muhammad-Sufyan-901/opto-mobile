@@ -132,6 +132,11 @@ class ConnectRepositoryImpl implements ConnectRepository {
   @override
   Future<bool> toggleLike(String postId) => _remote.toggleLike(postId);
 
+  // ── bookmarks ──────────────────────────────────────────────────────────────
+
+  @override
+  Future<bool> toggleBookmark(String postId) => _remote.toggleBookmark(postId);
+
   // ── realtime feed ──────────────────────────────────────────────────────────
 
   @override

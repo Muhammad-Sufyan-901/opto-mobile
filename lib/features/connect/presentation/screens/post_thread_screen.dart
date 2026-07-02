@@ -162,6 +162,7 @@ class _PostThreadViewState extends State<_PostThreadView> {
                                 isLoading: true,
                                 onLike: () {},
                                 onReply: () {},
+                                onSave: () {},
                               ),
                             ),
                           SliverFillRemaining(
@@ -208,6 +209,9 @@ class _PostThreadViewState extends State<_PostThreadView> {
                         onLikePost: () {
                           // TODO(community): thread-level post like.
                         },
+                        onSaveTapped: () => context
+                            .read<PostThreadCubit>()
+                            .toggleBookmark(widget.postId),
                       );
                     }
 
@@ -338,6 +342,7 @@ class _ThreadBody extends StatelessWidget {
     required this.onStartReplyTo,
     required this.onMarkBestAnswer,
     required this.onLikePost,
+    required this.onSaveTapped,
   });
 
   final PostEntity post;
@@ -349,6 +354,7 @@ class _ThreadBody extends StatelessWidget {
   final void Function(String replyId, String? replyAuthor) onStartReplyTo;
   final ValueChanged<String> onMarkBestAnswer;
   final VoidCallback onLikePost;
+  final VoidCallback onSaveTapped;
 
   @override
   Widget build(BuildContext context) {
@@ -370,6 +376,7 @@ class _ThreadBody extends StatelessWidget {
             isLoading: false,
             onLike: onLikePost,
             onReply: () => onStartReplyTo('', null),
+            onSave: onSaveTapped,
           ),
         ),
 
@@ -499,6 +506,7 @@ class _OriginalPostBlock extends StatelessWidget {
     required this.isLoading,
     required this.onLike,
     required this.onReply,
+    required this.onSave,
   });
 
   final PostEntity post;
@@ -507,6 +515,7 @@ class _OriginalPostBlock extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onLike;
   final VoidCallback onReply;
+  final VoidCallback onSave;
 
   static const List<Color> _avatarPalette = [
     Color(0xFF2563D6),
@@ -732,15 +741,16 @@ class _OriginalPostBlock extends StatelessWidget {
                 );
                 final saveButton = Semantics(
                   button: true,
-                  label: 'Save post',
+                  label:
+                      post.bookmarkedByMe ? 'Remove from saved' : 'Save post',
                   child: GestureDetector(
-                    onTap: () {
-                      // TODO(community): save/bookmark post.
-                    },
+                    onTap: onSave,
                     child: _OpStatPill(
-                      icon: Icons.bookmark_border,
+                      icon: post.bookmarkedByMe
+                          ? Icons.bookmark
+                          : Icons.bookmark_border,
                       label: '',
-                      active: false,
+                      active: post.bookmarkedByMe,
                       activeColor: cs.primary,
                       line: line,
                       ink2: ink2,

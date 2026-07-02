@@ -34,6 +34,7 @@ class ConnectFeedBloc extends Bloc<ConnectFeedEvent, ConnectFeedState> {
     on<SubscribeFeed>(_onSubscribeFeed);
     on<NewPostReceived>(_onNewPostReceived);
     on<ToggleLike>(_onToggleLike);
+    on<ToggleBookmark>(_onToggleBookmark);
     on<ChangeTopicFilter>(_onChangeTopicFilter);
   }
 
@@ -163,6 +164,33 @@ class ConnectFeedBloc extends Bloc<ConnectFeedEvent, ConnectFeedState> {
       emit(current.copyWith(posts: preLikePosts));
     } catch (_) {
       emit(current.copyWith(posts: preLikePosts));
+    }
+  }
+
+  Future<void> _onToggleBookmark(
+    ToggleBookmark event,
+    Emitter<ConnectFeedState> emit,
+  ) async {
+    if (state is! FeedLoaded) return;
+    final current = state as FeedLoaded;
+
+    // Optimistic update.
+    final preSavePosts = current.posts;
+    final optimisticPosts = preSavePosts.map((post) {
+      if (post.id != event.postId) return post;
+      return post.copyWith(bookmarkedByMe: !post.bookmarkedByMe);
+    }).toList();
+
+    emit(current.copyWith(posts: optimisticPosts));
+
+    try {
+      await _connect.toggleBookmark(event.postId);
+      // Server confirms; state is already correct from optimistic update.
+    } on Failure catch (_) {
+      // Revert to the pre-toggle list on failure.
+      emit(current.copyWith(posts: preSavePosts));
+    } catch (_) {
+      emit(current.copyWith(posts: preSavePosts));
     }
   }
 
