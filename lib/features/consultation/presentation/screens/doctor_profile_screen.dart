@@ -806,29 +806,35 @@ class _StickyBar extends StatelessWidget {
       child: Row(
         children: [
           // Price info
-          ExcludeSemantics(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  modeLabel,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: ext?.ink3 ?? cs.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
+          Flexible(
+            child: ExcludeSemantics(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    modeLabel,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: ext?.ink3 ?? cs.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  'Rp 90.000', // TODO(backend): hydrate from doctor pricing
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: cs.onSurface,
-                    letterSpacing: -0.3,
-                    fontSize: 19,
+                  const SizedBox(height: 1),
+                  Text(
+                    'Rp 90.000', // TODO(backend): hydrate from doctor pricing
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: cs.onSurface,
+                      letterSpacing: -0.3,
+                      fontSize: 19,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -857,11 +863,15 @@ class _StickyBar extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          'Choose a time',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
+                        Flexible(
+                          child: Text(
+                            'Choose a time',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
                         SizedBox(width: 8),
@@ -876,7 +886,7 @@ class _StickyBar extends StatelessWidget {
                       borderRadius:
                           BorderRadius.circular(AppDimensions.radiusButton),
                     ),
-                    padding: EdgeInsets.zero,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                   ),
                 ),
               ),
