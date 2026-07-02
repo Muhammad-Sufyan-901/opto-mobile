@@ -46,6 +46,10 @@ import 'package:opto/features/consultation/presentation/cubit/booking_cubit.dart
 import 'package:opto/features/consultation/presentation/cubit/consultation_chat_cubit.dart';
 import 'package:opto/features/consultation/presentation/cubit/consultation_history_cubit.dart';
 import 'package:opto/features/consultation/presentation/cubit/eye_care_exercises_cubit.dart';
+import 'package:opto/features/home/data/datasources/home_remote_data_source.dart';
+import 'package:opto/features/home/data/repositories/home_summary_repository_impl.dart';
+import 'package:opto/features/home/domain/repositories/home_summary_repository.dart';
+import 'package:opto/features/home/presentation/cubit/home_summary_cubit.dart';
 import 'package:opto/features/connect/data/repositories/circles_repository_impl.dart';
 import 'package:opto/features/connect/data/repositories/connect_repository_impl.dart';
 import 'package:opto/features/connect/data/repositories/follow_repository_impl.dart';
@@ -345,6 +349,21 @@ Future<void> init() async {
 
   sl.registerFactory<ConsultationChatCubit>(
     () => ConsultationChatCubit(sl<ConsultationChatRepository>()),
+  );
+
+  // ===============================================================
+  // ── HOME (dashboard "Up next" / "Recent activity") ──
+  // ===============================================================
+  sl.registerLazySingleton<HomeRemoteDataSource>(
+    () => HomeRemoteDataSourceImpl(),
+  );
+  sl.registerLazySingleton<HomeSummaryRepository>(
+    () => HomeSummaryRepositoryImpl(
+      remoteDataSource: sl<HomeRemoteDataSource>(),
+    ),
+  );
+  sl.registerFactory<HomeSummaryCubit>(
+    () => HomeSummaryCubit(sl<HomeSummaryRepository>()),
   );
 
   // ===============================================================

@@ -7,6 +7,8 @@ import 'package:opto/core/accessibility/accessibility.dart';
 import 'package:opto/core/constants/app_dimensions.dart';
 import 'package:opto/core/constants/app_routes.dart';
 import 'package:opto/core/di/dependencies_injection_container.dart';
+import 'package:opto/features/home/domain/entities/home_summary_item.dart';
+import 'package:opto/features/home/presentation/cubit/home_summary_cubit.dart';
 import 'package:opto/features/home/presentation/widgets/aura_voice_card.dart';
 import 'package:opto/features/home/presentation/widgets/home_bottom_nav.dart';
 import 'package:opto/features/home/presentation/widgets/home_list_card.dart';
@@ -28,9 +30,9 @@ import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 ///   2. Emergency SOS — **bold hero** (red gradient, pulsing ring)
 ///   3. Aura Voice bar — "Ask Opto anything"
 ///   4. "Quick actions" section → 2×2 grey M3 tiles
-///   5. "Up next" section → grouped card (prosthetic reminder + doctor avatar)
+///   5. "Up next" section → grouped card (live data via `HomeSummaryCubit`)
 ///   6. Navigate nearby — borderless surfaceContainer card
-///   7. "Recent activity" section → grouped card with 3 rows (no chevrons)
+///   7. "Recent activity" section → grouped card (live data via `HomeSummaryCubit`)
 ///   8. Pinned 5-tab bottom nav — M3 pill style
 ///
 /// Accessibility:
@@ -43,9 +45,9 @@ import 'package:opto/features/profile/presentation/bloc/profile_bloc.dart';
 ///   - Respects MediaQuery.textScaler; SingleChildScrollView prevents clipping.
 ///   - SOS pulsing ring stops when MediaQuery.disableAnimations is true.
 ///
-/// State: presentation-only (StatefulWidget + setState pattern matching the
-/// existing codebase). Hardcoded content will be replaced by
-/// `HomeSummaryRepository` once the domain/data layer is built (⛔ Planned).
+/// State: `ProfileBloc` drives the greeting/avatar; `HomeSummaryCubit` drives
+/// the "Up next" / "Recent activity" cards via `HomeSummaryRepository`
+/// (see `home_summary_repository_impl.dart`).
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -57,6 +59,10 @@ class _HomeScreenState extends State<HomeScreen> {
   /// ProfileBloc instance owned by this screen.
   late final ProfileBloc _profileBloc;
 
+  /// HomeSummaryCubit instance owned by this screen — loads "Up next" and
+  /// "Recent activity" data.
+  late final HomeSummaryCubit _homeSummaryCubit;
+
   @override
   void initState() {
     super.initState();
@@ -66,6 +72,8 @@ class _HomeScreenState extends State<HomeScreen> {
     if (userId != null) {
       _profileBloc.add(LoadProfile(userId: userId));
     }
+
+    _homeSummaryCubit = sl<HomeSummaryCubit>()..load();
 
     // Announce a concise one-line summary on arrival (design_system.md §21.3).
     // The name will be announced again when the profile loads (see BlocListener).
@@ -78,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _profileBloc.close();
+    _homeSummaryCubit.close();
     super.dispose();
   }
 
@@ -87,7 +96,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return BlocProvider<ProfileBloc>.value(
       value: _profileBloc,
-      child: BlocListener<ProfileBloc, ProfileState>(
+      child: BlocProvider<HomeSummaryCubit>.value(
+        value: _homeSummaryCubit,
+        child: BlocListener<ProfileBloc, ProfileState>(
         listener: (context, state) {
           // Announce the user's name once the profile loads successfully.
           if (state is ProfileLoaded) {
@@ -159,79 +170,59 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       const SizedBox(height: 14),
 
-                      // ── 5. Up next grouped card ────────────────────────────────
-                      HomeSectionHeader(
-                        title: 'Up next',
-                        onSeeAll: () {
-                          // TODO: navigate to full schedule / upcoming list.
+                      // ── 5–7. Up next / Nearby / Recent activity ────────────────
+                      // Driven by a single HomeSummaryCubit — see
+                      // `home_summary_repository_impl.dart` for the data merge.
+                      BlocBuilder<HomeSummaryCubit, HomeSummaryState>(
+                        builder: (context, summaryState) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // ── 5. Up next grouped card ──────────────────────
+                              HomeSectionHeader(
+                                title: 'Up next',
+                                onSeeAll: () {
+                                  // TODO: navigate to full schedule / upcoming list.
+                                },
+                              ),
+
+                              const SizedBox(height: 8),
+
+                              HomeListCard(
+                                items: _sectionRows(
+                                  context,
+                                  summaryState,
+                                  isUpNext: true,
+                                ),
+                              ),
+
+                              const SizedBox(height: 14),
+
+                              // ── 6. Navigate nearby ───────────────────────────
+                              const HomeNearbyCard(),
+
+                              const SizedBox(height: 14),
+
+                              // ── 7. Recent activity grouped card ──────────────
+                              HomeSectionHeader(
+                                title: 'Recent activity',
+                                onSeeAll: () {
+                                  // TODO: navigate to full activity history.
+                                },
+                              ),
+
+                              const SizedBox(height: 8),
+
+                              HomeListCard(
+                                items: _sectionRows(
+                                  context,
+                                  summaryState,
+                                  isUpNext: false,
+                                ),
+                              ),
+                            ],
+                          );
                         },
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      HomeListCard(
-                        items: [
-                          HomeListItem(
-                            icon: Icons.calendar_today_outlined,
-                            title: 'Prosthetic cleaning',
-                            subtitle: 'Tomorrow · 09:00',
-                            semanticLabel:
-                                'Prosthetic cleaning. Tomorrow at 09:00.',
-                          ),
-                          HomeListItem(
-                            avatarInitials: 'BP',
-                            title: 'Fitting — Dr. Budi Pratama',
-                            subtitle: 'Fri, Apr 18 · RSU Mata Cicendo',
-                            semanticLabel:
-                                'Fitting with Dr. Budi Pratama. Friday, April 18 at RSU Mata Cicendo.',
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      // ── 6. Navigate nearby ─────────────────────────────────────
-                      const HomeNearbyCard(),
-
-                      const SizedBox(height: 14),
-
-                      // ── 7. Recent activity grouped card ───────────────────────
-                      HomeSectionHeader(
-                        title: 'Recent activity',
-                        onSeeAll: () {
-                          // TODO: navigate to full activity history.
-                        },
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      HomeListCard(
-                        items: [
-                          HomeListItem(
-                            icon: Icons.visibility_outlined,
-                            title: 'Read a letter from BPJS',
-                            subtitle: 'Today · 08:14',
-                            showChevron: false,
-                            semanticLabel:
-                                'Read a letter from BPJS. Today at 08:14.',
-                          ),
-                          HomeListItem(
-                            icon: Icons.forum_outlined,
-                            title: 'Replied in "Low-vision tips"',
-                            subtitle: 'Yesterday · 19:02',
-                            showChevron: false,
-                            semanticLabel:
-                                'Replied in Low-vision tips. Yesterday at 19:02.',
-                          ),
-                          HomeListItem(
-                            icon: Icons.medical_services_outlined,
-                            title: 'Booked Dr. Anwar — eye check',
-                            subtitle: 'Mon · 14:30',
-                            showChevron: false,
-                            semanticLabel:
-                                'Booked Dr. Anwar for eye check. Monday at 14:30.',
-                          ),
-                        ],
                       ),
 
                       // Extra bottom breathing room above nav.
@@ -243,6 +234,161 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
+        ),
+      ),
+    );
+  }
+
+  /// Maps the current [HomeSummaryState] to the row widgets for one section.
+  ///
+  /// [isUpNext] selects `upNext` vs `recentActivity` from a loaded state.
+  /// Each row's trailing chevron reflects whether it has a
+  /// [HomeSummaryItem.targetRoute] to navigate to on tap.
+  List<Widget> _sectionRows(
+    BuildContext context,
+    HomeSummaryState state, {
+    required bool isUpNext,
+  }) {
+    if (state is HomeSummaryError) {
+      return [
+        _HomeCardError(
+          message: state.message,
+          onRetry: () => _homeSummaryCubit.load(),
+        ),
+      ];
+    }
+
+    if (state is HomeSummaryLoaded) {
+      final items = isUpNext ? state.upNext : state.recentActivity;
+      if (items.isEmpty) {
+        return [
+          _HomeCardEmpty(
+            message: isUpNext ? 'Nothing upcoming.' : 'No recent activity yet.',
+          ),
+        ];
+      }
+      return items
+          .map((item) => _summaryItemToListItem(context, item))
+          .toList();
+    }
+
+    // Initial / loading.
+    return const [_HomeCardLoading()];
+  }
+
+  HomeListItem _summaryItemToListItem(BuildContext context, HomeSummaryItem item) {
+    return HomeListItem(
+      icon: item.avatarInitials == null ? _iconForKind(item.kind) : null,
+      avatarInitials: item.avatarInitials,
+      title: item.title,
+      subtitle: item.subtitle,
+      showChevron: item.targetRoute != null,
+      onTap: item.targetRoute != null
+          ? () => context.go(item.targetRoute!)
+          : null,
+    );
+  }
+
+  IconData _iconForKind(HomeItemKind kind) {
+    switch (kind) {
+      case HomeItemKind.appointment:
+      case HomeItemKind.booking:
+        return Icons.calendar_today_outlined;
+      case HomeItemKind.order:
+        return Icons.local_shipping_outlined;
+      case HomeItemKind.reminder:
+        return Icons.notifications_active_outlined;
+      case HomeItemKind.post:
+        return Icons.edit_outlined;
+      case HomeItemKind.reply:
+        return Icons.forum_outlined;
+      case HomeItemKind.bookmark:
+        return Icons.bookmark_outline;
+      case HomeItemKind.consultation:
+        return Icons.medical_services_outlined;
+    }
+  }
+}
+
+// =============================================================================
+// PRIVATE — "Up next" / "Recent activity" placeholder rows
+// =============================================================================
+
+/// Single-row loading placeholder shown inside a [HomeListCard] while
+/// [HomeSummaryCubit] fetches data.
+class _HomeCardLoading extends StatelessWidget {
+  const _HomeCardLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 14),
+      child: SizedBox(
+        height: 46,
+        child: Center(
+          child: SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(strokeWidth: 2.5),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Single-row empty state shown inside a [HomeListCard].
+class _HomeCardEmpty extends StatelessWidget {
+  const _HomeCardEmpty({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Semantics(
+        label: message,
+        child: ExcludeSemantics(
+          child: Text(
+            message,
+            style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Single-row error state with a retry action, shown inside a [HomeListCard].
+class _HomeCardError extends StatelessWidget {
+  const _HomeCardError({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Row(
+        children: [
+          Expanded(
+            child: ExcludeSemantics(
+              child: Text(
+                message,
+                style: TextStyle(fontSize: 14, color: cs.error),
+              ),
+            ),
+          ),
+          Semantics(
+            button: true,
+            label: 'Retry',
+            child: TextButton(onPressed: onRetry, child: const Text('Retry')),
+          ),
+        ],
       ),
     );
   }

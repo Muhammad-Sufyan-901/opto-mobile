@@ -28,6 +28,26 @@ class DateFormatter {
     return '$datePart, $timePart WIB';
   }
 
+  /// Format: "Today · 09:00" / "Tomorrow · 09:00" / "Yesterday · 09:00",
+  /// falling back to "18 Apr · 09:00" for dates outside that ±1-day window.
+  ///
+  /// Used by the Home dashboard's "Up next" / "Recent activity" rows —
+  /// English copy to match the surrounding screen (unlike the Indonesian
+  /// helpers above).
+  static String toRelativeDayTime(DateTime date) {
+    final local = date.toLocal();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(local.year, local.month, local.day);
+    final diff = day.difference(today).inDays;
+    final time = DateFormat('HH:mm').format(local);
+
+    if (diff == 0) return 'Today · $time';
+    if (diff == 1) return 'Tomorrow · $time';
+    if (diff == -1) return 'Yesterday · $time';
+    return '${DateFormat('d MMM').format(local)} · $time';
+  }
+
   /// Greeting based on time
   static String getGreeting(DateTime date) {
     final hour = date.hour;
